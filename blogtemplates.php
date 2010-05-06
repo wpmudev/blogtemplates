@@ -1,15 +1,16 @@
 <?php
   /*
 Plugin Name: Blog Templates
-Plugin URI: 
+Plugin URI: http://premium.wpmudev.org
 Description: Allows the site admin to create new blogs based on templates, to speed up the blog creation process
 Author: Jason DeVelvis  (Incsub)
 Version: 1.0
 Author URI: http://Pressography.com
 Site Wide Only: true
+WDP ID: 130
 */   
    
-/*  Copyright 2010  
+/*  Copyright 2010 Incsub (http://incsub.com)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
