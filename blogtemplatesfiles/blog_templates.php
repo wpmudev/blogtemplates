@@ -178,8 +178,8 @@ if (!class_exists('blog_templates')) {
                                 //Now, insert the templated settings into the newly created blog
                                 foreach ($templated as $row) {
                                     //Make sure none of the options are using wp_X_ convention, and if they are, replace the value with the new blog ID
-                                    $row->option_name = preg_replace('/wp_[0-9].*_/i', "wp_{$blog_id}_",$row->option_name);
-                                    $row->option_value = preg_replace('/wp_[0-9].*_/i', "wp_{$blog_id}_",$row->option_value);
+                                    $row->option_name = preg_replace('/wp_[0-9]*_/i', "wp_{$blog_id}_",$row->option_name);
+                                    $row->option_value = preg_replace('/wp_[0-9]*_/i', "wp_{$blog_id}_",$row->option_value);
 
                                     //To prevent duplicate entry errors, since we're not deleting ALL of the options, there could be an ID collision
                                     unset($row->option_id);
@@ -210,6 +210,9 @@ if (!class_exists('blog_templates')) {
                             $this->copy_table($template['blog_id'],"postmeta");
                         break;
                         case 'terms':
+                            $this->clear_table($wpdb->links);
+                            $this->copy_table($template['blog_id'],"links");
+                            
                             $this->clear_table($wpdb->terms);
                             $this->copy_table($template['blog_id'],"terms");
                             
@@ -220,9 +223,7 @@ if (!class_exists('blog_templates')) {
                             $this->copy_table($template['blog_id'],"term_taxonomy");
                         break;
                         case 'users':
-                            /* This one will be tougher, we have to loop through all of the blog's users, then add the new blog to them using the same capabilities */
-                            //###Can I simply select * from wp_usermeta where meta_key LIKE 'wp_X_%' and copy it? I think I can!
-
+                            //Copy over the users to this blog
                             $users = $wpdb->get_results("SELECT * FROM $wpdb->usermeta WHERE meta_key LIKE 'wp\_{$template['blog_id']}\_%'");
                             if (empty($users)) continue; //If there are no users to copy, just leave. We don't want to leave this blog without any users
                             
@@ -236,16 +237,12 @@ if (!class_exists('blog_templates')) {
                                 restore_current_blog();
                                 wp_die($error);
                             }                           
-                            /*echo "SELECT * FROM $wpdb->usermeta WHERE meta_key LIKE 'wp\_{$template['blog_id']}\_%'"; 
-                            echo '<pre>';
-                            print_r($users);
-                            echo '</pre>';*/
                             
                             //Now, insert the templated settings into the newly created blog
                             foreach ($users as $user) {
                                 //###Could add logic here to check if the user email entered via the New Blog form has been added, and if not, add them after the foreach loop...
                                 //echo 'Adding User';
-                                $user->meta_key = preg_replace('/wp_[0-9].*_/i', "wp_{$blog_id}_",$user->meta_key);
+                                $user->meta_key = preg_replace('/wp_[0-9]*_/i', "wp_{$blog_id}_",$user->meta_key);
                                 unset($user->umeta_id); //Remove the umeta_id field, let it autoincrement
                                 //Insert the user
                                 $wpdb->insert($wpdb->usermeta,(array) $user);
@@ -270,6 +267,12 @@ if (!class_exists('blog_templates')) {
             }
         }
         
+        /**
+        * Added to automate comparing the two tables, and making sure no old fields that have been removed get copied to the new table
+        * 
+        * @param mixed $new_table_name
+        * @param mixed $old_table_row
+        */
         function get_fields_to_remove($new_table_name, $old_table_row) {
             //make sure we have something to compare it to
             if (empty($old_table_row)) return false;
