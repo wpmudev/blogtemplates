@@ -1,12 +1,12 @@
 <?php
   /*
-Plugin Name: Blog Templates
-Plugin URI: http://premium.wpmudev.org
+Plugin Name: New Blog Templates
+Plugin URI: http://premium.wpmudev.org/project/new-blog-template
 Description: Allows the site admin to create new blogs based on templates, to speed up the blog creation process
-Author: Jason DeVelvis  (Incsub)
-Version: 1.0
-Author URI: http://Pressography.com
+Author: Jason DeVelvis (Incsub)
+Version: 1.1.1
 Site Wide Only: true
+Network: true
 WDP ID: 130
 */   
    

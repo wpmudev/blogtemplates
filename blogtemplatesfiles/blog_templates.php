@@ -23,6 +23,8 @@ if (!class_exists('blog_templates')) {
         * @var string $pluginurlpath The path to this plugin
         */
         var $thispluginpath = '';
+        
+        var $currenturl_with_querystring;
             
         /**
         * @var array $options Stores the options for this plugin
@@ -39,19 +41,22 @@ if (!class_exists('blog_templates')) {
         * PHP 5 Constructor
         */        
         function __construct(){
-            //Language Setup
-            $locale = get_locale();
-            $mo = dirname(__FILE__) . "/languages/" . $this->localizationDomain . "-".$locale.".mo";
-            load_textdomain($this->localizationDomain, $mo);
+
 
             //"Constants" setup
             if (defined('WPMU_PLUGIN_DIR') && strpos(__FILE__,WPMU_PLUGIN_DIR) === false) { //We're not in the WPMU Plugin Directory
                 $this->thispluginpath = WP_PLUGIN_DIR . '/' . dirname(plugin_basename(__FILE__)).'/';
                 $this->thispluginurl = WP_PLUGIN_URL . '/' . dirname(plugin_basename(__FILE__)).'/';
+                //Language Setup
+                load_plugin_textdomain($this->localizationDomain, false, dirname(plugin_basename(__FILE__))."/languages/");
             } else { //We are in the WPMU Plugin Directory
-                $this->thispluginurl = WPMU_PLUGIN_DIR . '/' . dirname(plugin_basename(__FILE__)).'/';
+                $this->thispluginpath = WPMU_PLUGIN_DIR . '/' . dirname(plugin_basename(__FILE__)).'/';
                 $this->thispluginurl = WPMU_PLUGIN_URL . '/' . dirname(plugin_basename(__FILE__)).'/';
+                //Language Setup
+                load_muplugin_textdomain($this->localizationDomain, "/blogtemplatesfiles/languages/");
             }
+            
+            $this->currenturl_with_querystring = (!empty($_SERVER['HTTPS'])) ? "https://".$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'] : "http://".$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'];
             
             //Initialize the options
             //This is REQUIRED to initialize the options when the plugin is loaded!
@@ -63,49 +68,17 @@ if (!class_exists('blog_templates')) {
             
             //Actions        
             add_action("admin_menu", array(&$this,"admin_menu_link"));
-            add_action('wpmu_new_blog', array(&$this, 'set_blog_defaults'), 999, 2); // Set to 999 so this runs after every other action
+            add_action('wpmu_new_blog', array(&$this, 'wpmu_new_blog'), 999, 2); // Set to 999 so this runs after every other action
+            add_action('init', array(&$this,'admin_options_page_posted')); //Catch the admin options page postback
             
             add_action('admin_footer', array(&$this,'add_template_dd'));
             
             wp_enqueue_script('jquery');
             
-            if (isset($_GET['t'])) {
-                //Add the JS to initiate the tabs
-                //add_action("admin_head", array(&$this,"admin_head"));
-                
-                //wp_enqueue_script('jquery-ui-tabs');
-                //The jQuery UI CSS is required for the tabs
-                //wp_enqueue_style( 'jquery-custom-ui-tabs', $this->thispluginurl.'css/jquery.ui.tabs.css');
-            }
-            
             //Filters
             /*
             add_filter('the_content', array(&$this, 'filter_content'), 0);
             */
-        }
-        
-        /**
-        * @desc Adds the necessary JS and CSS to the admin header for the easy admin area
-        */
-        function admin_head() {
-            /*?>
-            <script type="text/javascript">
-                jQuery(document).ready(function(){
-                    var anchor = jQuery(document).attr('location').hash; // the anchor in the URL
-                    var index = jQuery('#blog_template_tabs li a').index(jQuery(anchor)); // in tab index of the anchor in the URL
-                    if (index < 0) { index = 0; }
-                    jQuery('#blog_template_tabs').tabs({ 'selected': index }); // select the tab
-                    jQuery( 'html, body' ).animate( { scrollTop: 0 }, 0 ); //Scroll to the top if necessary
-
-                    jQuery('#blog_template_tabs').bind('tabsshow', function(event, ui) { // change the url anchor when we click on a tab
-                        var scrollto = window.pageYOffset;
-                        document.location.hash = jQuery('#blog_template_tabs li a[href="#' + ui.panel.id + '"]').attr('id');
-                        jQuery( 'html, body' ).animate( { scrollTop: scrollto }, 0 );
-                        jQuery('form').attr('action',document.location); //Update the form's location so we return to this tab when we save the form
-                    });
-                });
-            </script>
-            <?php*/
         }
         
         function get_template_dropdown($tag_name, $include_none) {
@@ -116,7 +89,7 @@ if (!class_exists('blog_templates')) {
             
             if ($templates != array()) {
                 echo "<select name=\"$tag_name\">";
-                echo "<option value=\"\">None</option>";
+                echo "<option value=\"none\">None</option>";
                 foreach ($templates as $key=>$value) {
                     echo "<option value=\"$key\">$value</option>";
                 }
@@ -129,7 +102,7 @@ if (!class_exists('blog_templates')) {
         */
         function add_template_dd() {
             global $pagenow;
-            if ($pagenow != 'wpmu-blogs.php') return;
+            if ($pagenow != 'wpmu-blogs.php' && $pagenow != 'ms-sites.php') return;
             
             ?>
             <script type="text/javascript">
@@ -144,111 +117,91 @@ if (!class_exists('blog_templates')) {
             <?php
         }
 
+        /**
+        * Catch the wpmu_new_blog action
+        * 
+        * @param mixed $blog_id
+        * @param mixed $user_id
+        */
+        function wpmu_new_blog($blog_id,$user_id) {
+            $this->set_blog_defaults($blog_id,$user_id);
+        }
+        
+        /**
+        * Checks for a template to use, and if it exists, copies the templated settings to the new blog
+        * 
+        * @param mixed $blog_id
+        * @param mixed $user_id
+        */
         function set_blog_defaults($blog_id, $user_id) {
-            //Check if the user chose a template, and if that template exists
-            if (isset($_POST['blog_template']) && $this->options['templates'][$_POST['blog_template']]) {
-                global $wpdb;
+            global $wpdb;
                 
+            $template = '';
+            if (is_numeric($_POST['blog_template'])) { //If they've chosen a template, use that. For some reason, when PHP gets 0 as a posted var, it doesn't recognize it as is_numeric, so test for that specifically
                 $template = $this->options['templates'][$_POST['blog_template']];
-                
-                /*echo 'Template: ' . $_POST['blog_template'] . '<pre>';
-                print_r($template);
-                echo '</pre>';*/
-                
-                //Begin the transaction
-                $wpdb->query("BEGIN;");
-                
-                switch_to_blog($blog_id); //Switch to the blog that was just created
-                
-                foreach($template['to_copy'] as $value) {
-                    //echo "Case: $value<br/>";
-                    switch ($value) {
-                        case 'settings':
-                            //We can't use the helper functions here, because we need to save some of the settings
+            } elseif ($_POST['blog_template'] == 'none') {
+                return; //The user doesn't want to use a template
+            } elseif (is_numeric($this->options['default'])) { //If they haven't chosen a template, use the default if it exists
+                $template = $this->options['templates'][$this->options['default']];
+            }
+            
+            /*echo "\r\nPosted<pre>";
+            print_r($_POST);
+            echo 'Templates (all):';
+            print_r($this->options['templates']);
+            echo 'Template: ' . $_POST['blog_template'];
+            print_r($template);
+            echo "Blog ID: $blog_id | User ID $user_id";
+            echo '</pre>';
+            die();*/
+            
+            if (empty($template)) return; //No template, lets leave
+            
+            //Begin the transaction
+            $wpdb->query("BEGIN;");
+            
+            
+            switch_to_blog($blog_id); //Switch to the blog that was just created
+            
+            //Get the prefixes, so we don't have to worry about regex, or changes to WP's naming conventions
+            $new_prefix = $wpdb->prefix;
+            
+            //Don't forget to get the template blog's prefix
+            switch_to_blog($template['blog_id']);
+            $template_prefix = $wpdb->prefix;
+            
+            //Now, go back to the new blog that was just created
+            restore_current_blog();
+            
+            foreach($template['to_copy'] as $value) {
+                switch ($value) {
+                    case 'settings':
+                        //We can't use the helper functions here, because we need to save some of the settings
+                        
+                        //Delete the current options, except blog-specific options
+                        $wpdb->query("DELETE FROM $wpdb->options WHERE `option_name` != 'siteurl' AND `option_name` != 'blogname' AND `option_name` != 'admin_email' AND `option_name` != 'home' AND `option_name` != 'upload_path' AND `option_name` != 'db_version' AND `option_name` != 'secret' AND `option_name` != 'fileupload_url' AND `option_name` != 'nonce_salt'");
+                        
+                        if (!$wpdb->last_error) { //No error. Good! Now copy over the old settings
+                            //Switch to the template blog, then grab the settings/plugins/templates values from the template blog
+                            switch_to_blog($template['blog_id']);
                             
-                            //Delete the current options, except blog-specific options
-                            $wpdb->query("DELETE FROM $wpdb->options WHERE `option_name` != 'siteurl' AND `option_name` != 'blogname' AND `option_name` != 'admin_email' AND `option_name` != 'home' AND `option_name` != 'upload_path' AND `option_name` != 'db_version' AND `option_name` != 'secret' AND `option_name` != 'fileupload_url' AND `option_name` != 'nonce_salt'");
-                            
-                            if (!$wpdb->last_error) { //No error. Good! Now copy over the old settings
-                                //Switch to the template blog, then grab the settings/plugins/templates values from the template blog
-                                switch_to_blog($template['blog_id']);
-                                $templated = $wpdb->get_results("SELECT * FROM $wpdb->options WHERE `option_name` != 'siteurl' AND `option_name` != 'blogname' AND `option_name` != 'admin_email' AND `option_name` != 'home' AND `option_name` != 'upload_path' AND `option_name` != 'db_version' AND `option_name` != 'secret' AND `option_name` != 'fileupload_url' AND `option_name` != 'nonce_salt'");
-                                restore_current_blog(); //Switch back to the newly created blog
-                                
-                                //Now, insert the templated settings into the newly created blog
-                                foreach ($templated as $row) {
-                                    //Make sure none of the options are using wp_X_ convention, and if they are, replace the value with the new blog ID
-                                    $row->option_name = preg_replace('/wp_[0-9]*_/i', "wp_{$blog_id}_",$row->option_name);
-                                    $row->option_value = preg_replace('/wp_[0-9]*_/i', "wp_{$blog_id}_",$row->option_value);
-
-                                    //To prevent duplicate entry errors, since we're not deleting ALL of the options, there could be an ID collision
-                                    unset($row->option_id);
-                                    
-                                    //Insert the row
-                                    $wpdb->insert($wpdb->options,(array) $row);
-                                    //Check for errors
-                                    if (!empty($wpdb->last_error)) {
-                                        $error = '<div id="message" class="error"><p>Insertion Error: ' . $wpdb->last_error . ' - The template was not applied</p></div>';
-                                        $wpdb->query("ROLLBACK;");
-                                        
-                                        //We've rolled it back and thrown an error, we're done here
-                                        restore_current_blog();
-                                        wp_die($error);
-                                    }
-                                }
-                            } else {
-                                $error = '<div id="message" class="error"><p>Deletion Error: ' . $wpdb->last_error . ' - The template was not applied</p></div>';
-                                $wpdb->query("ROLLBACK;");
-                                restore_current_blog(); //Switch back to our current blog
-                                wp_die($error);
-                            }       
-                        break;
-                        case 'posts':
-                            $this->clear_table($wpdb->posts);
-                            $this->copy_table($template['blog_id'],"posts");
-                            $this->clear_table($wpdb->postmeta);
-                            $this->copy_table($template['blog_id'],"postmeta");
-                        break;
-                        case 'terms':
-                            $this->clear_table($wpdb->links);
-                            $this->copy_table($template['blog_id'],"links");
-                            
-                            $this->clear_table($wpdb->terms);
-                            $this->copy_table($template['blog_id'],"terms");
-                            
-                            $this->clear_table($wpdb->term_relationships);
-                            $this->copy_table($template['blog_id'],"term_relationships");
-                            
-                            $this->clear_table($wpdb->term_taxonomy);
-                            $this->copy_table($template['blog_id'],"term_taxonomy");
-                        break;
-                        case 'users':
-                            //Copy over the users to this blog
-                            $users = $wpdb->get_results("SELECT * FROM $wpdb->usermeta WHERE meta_key LIKE 'wp\_{$template['blog_id']}\_%'");
-                            if (empty($users)) continue; //If there are no users to copy, just leave. We don't want to leave this blog without any users
-                            
-                            //Delete the auto user from the blog, to prevent duplicates or erroneous users
-                            $wpdb->query("DELETE FROM $wpdb->usermeta WHERE meta_key LIKE 'wp\_$blog_id\_%'");
-                            if (!empty($wpdb->last_error)) {
-                                $error = '<div id="message" class="error"><p>Deletion Error: ' . $wpdb->last_error . ' - The template was not applied</p></div>';
-                                $wpdb->query("ROLLBACK;");
-                                
-                                //We've rolled it back and thrown an error, we're done here
-                                restore_current_blog();
-                                wp_die($error);
-                            }                           
+                            $templated = $wpdb->get_results("SELECT * FROM $wpdb->options WHERE `option_name` != 'siteurl' AND `option_name` != 'blogname' AND `option_name` != 'admin_email' AND `option_name` != 'home' AND `option_name` != 'upload_path' AND `option_name` != 'db_version' AND `option_name` != 'secret' AND `option_name` != 'fileupload_url' AND `option_name` != 'nonce_salt'");
+                            restore_current_blog(); //Switch back to the newly created blog
                             
                             //Now, insert the templated settings into the newly created blog
-                            foreach ($users as $user) {
-                                //###Could add logic here to check if the user email entered via the New Blog form has been added, and if not, add them after the foreach loop...
-                                //echo 'Adding User';
-                                $user->meta_key = preg_replace('/wp_[0-9]*_/i', "wp_{$blog_id}_",$user->meta_key);
-                                unset($user->umeta_id); //Remove the umeta_id field, let it autoincrement
-                                //Insert the user
-                                $wpdb->insert($wpdb->usermeta,(array) $user);
+                            foreach ($templated as $row) {
+                                //Make sure none of the options are using wp_X_ convention, and if they are, replace the value with the new blog ID
+                                $row->option_name = str_replace($template_prefix, $new_prefix,$row->option_name);
+                                $row->option_value = str_replace($template_prefix, $new_prefix,$row->option_value);
+
+                                //To prevent duplicate entry errors, since we're not deleting ALL of the options, there could be an ID collision
+                                unset($row->option_id);
+                                
+                                //Insert the row
+                                $wpdb->insert($wpdb->options,(array) $row);
                                 //Check for errors
                                 if (!empty($wpdb->last_error)) {
-                                    $error = '<div id="message" class="error"><p>Insertion Error: ' . $wpdb->last_error . ' - The template was not applied</p></div>';
+                                    $error = '<div id="message" class="error"><p>Insertion Error: ' . $wpdb->last_error . ' - The template was not applied. (New Blog Templates - While inserting templated settings)</p></div>';
                                     $wpdb->query("ROLLBACK;");
                                     
                                     //We've rolled it back and thrown an error, we're done here
@@ -256,15 +209,105 @@ if (!class_exists('blog_templates')) {
                                     wp_die($error);
                                 }
                             }
-                        break;
+                        } else {
+                            $error = '<div id="message" class="error"><p>Deletion Error: ' . $wpdb->last_error . ' - The template was not applied. (New Blog Templates - While removing auto-generated settings)</p></div>';
+                            $wpdb->query("ROLLBACK;");
+                            restore_current_blog(); //Switch back to our current blog
+                            wp_die($error);
+                        }       
+                    break;
+                    case 'posts':
+                        $this->clear_table($wpdb->posts);
+                        $this->copy_table($template['blog_id'],"posts");
+                        $this->clear_table($wpdb->postmeta);
+                        $this->copy_table($template['blog_id'],"postmeta");
+                    break;
+                    case 'terms':
+                        $this->clear_table($wpdb->links);
+                        $this->copy_table($template['blog_id'],"links");
+                        
+                        $this->clear_table($wpdb->terms);
+                        $this->copy_table($template['blog_id'],"terms");
+                        
+                        $this->clear_table($wpdb->term_relationships);
+                        $this->copy_table($template['blog_id'],"term_relationships");
+                        
+                        $this->clear_table($wpdb->term_taxonomy);
+                        $this->copy_table($template['blog_id'],"term_taxonomy");
+                    break;
+                    case 'users':
+                        //Copy over the users to this blog
+                        $users = $wpdb->get_results("SELECT * FROM $wpdb->usermeta WHERE meta_key LIKE '" . mysql_escape_string($template_prefix) . "%'");
+                        if (empty($users)) continue; //If there are no users to copy, just leave. We don't want to leave this blog without any users
+                        
+                        //Delete the auto user from the blog, to prevent duplicates or erroneous users
+                        $wpdb->query("DELETE FROM $wpdb->usermeta WHERE meta_key LIKE '" . mysql_escape_string($new_prefix) . "%'");
+                        if (!empty($wpdb->last_error)) {
+                            $error = '<div id="message" class="error"><p>Deletion Error: ' . $wpdb->last_error . ' - The template was not applied. (New Blog Templates - While removing auto-generated users)</p></div>';
+                            $wpdb->query("ROLLBACK;");
+                            
+                            //We've rolled it back and thrown an error, we're done here
+                            restore_current_blog();
+                            wp_die($error);
+                        }                           
+                        
+                        //Now, insert the templated settings into the newly created blog
+                        foreach ($users as $user) {
+                            //###Could add logic here to check if the user email entered via the New Blog form has been added, and if not, add them after the foreach loop...
+                            //echo 'Adding User';
+                            $user->meta_key = str_replace($template_prefix, $new_prefix,$user->meta_key);
+                            unset($user->umeta_id); //Remove the umeta_id field, let it autoincrement
+                            //Insert the user
+                            $wpdb->insert($wpdb->usermeta,(array) $user);
+                            //Check for errors
+                            if (!empty($wpdb->last_error)) {
+                                $error = '<div id="message" class="error"><p>Insertion Error: ' . $wpdb->last_error . ' - The template was not applied. (New Blog Templates - While adding templated users)</p></div>';
+                                $wpdb->query("ROLLBACK;");
+                                
+                                //We've rolled it back and thrown an error, we're done here
+                                restore_current_blog();
+                                wp_die($error);
+                            }
+                        }
+                    break;
+                }
+            }
+            
+            //Are there any additional tables we need to copy?
+            /*error_log('Begin Additional Tables code');
+            echo 'Before additional tables code<br/>';*/
+            if (is_array($template['additional_tables'])) {
+                //echo 'is array<br/>';
+                foreach ($template['additional_tables'] as $add) {
+                    $add = mysql_escape_string($add); //Just in case
+                    
+                    $result = $wpdb->get_results("SHOW TABLES LIKE '" . str_replace($template_prefix,$new_prefix,$add) . "'", ARRAY_N); 
+                    if (!empty($result)) { //Is the table present? Clear it, then copy
+                        //echo ("table exists: $add<br/>");
+                        $this->clear_table($add);
+                        //Copy the DB
+                        $this->copy_table($template['blog_id'],str_replace($template_prefix,'',$add));
+                    } else { //The table's not present, add it and copy the data from the old one
+                        //echo ('table doesn\'t exist<br/>');
+                        $wpdb->query("CREATE TABLE " . str_replace($template_prefix,$new_prefix,$add) . " LIKE $add");
+                        $wpdb->query("INSERT " . str_replace($template_prefix,$new_prefix,$add) . " SELECT * FROM $add");
+                        if (!empty($wpdb->last_error)) {
+                            $error = '<div id="message" class="error"><p>Insertion Error: ' . $wpdb->last_error . ' - The template was not applied. (New Blog Templates - With CREATE TABLE query for Additional Tables)</p></div>';
+                            $wpdb->query("ROLLBACK;");
+                            
+                            //We've rolled it back and thrown an error, we're done here
+                            restore_current_blog();
+                            wp_die($error);
+                        }
                     }
                 }
-                
-
-                $wpdb->query("COMMIT;"); //If we get here, everything's fine. Commit the transaction                
-                
-                restore_current_blog(); //Switch back to our current blog            
             }
+            
+            //error_log('Finished Successfully');
+
+            $wpdb->query("COMMIT;"); //If we get here, everything's fine. Commit the transaction                
+            
+            restore_current_blog(); //Switch back to our current blog
         }
         
         /**
@@ -284,7 +327,7 @@ if (!class_exists('blog_templates')) {
             
             //Get the new table structure
             $new_table = (array)$wpdb->get_results("SHOW COLUMNS FROM {$wpdb->$new_table_name}");
-            
+
             $new_fields = array();
             foreach($new_table as $row) {
                 $new_fields[] = $row->Field;
@@ -341,17 +384,22 @@ if (!class_exists('blog_templates')) {
             //Now, insert the templated settings into the newly created blog
             foreach ($templated as $row) {
                 $row = (array)$row;
-                /*echo '<pre>Row: ';
+                /*
+                echo '<pre>Row: ';
                 print_r($row);
-                echo '</pre>';*/
+                echo '</pre>';//*/
                 foreach ($row as $key=>$value) {
                     if (in_array($key,$to_remove))
                         unset($row[$key]);
                 }
+                      /*
+                echo '<pre>Row: ';
+                print_r($row);
+                echo '</pre>';//*/
                 //echo 'Copying a Row<br/>';
                 $wpdb->insert($wpdb->$table,$row);
                 if (!empty($wpdb->last_error)) {
-                    $error = '<div id="message" class="error"><p>Insertion Error: ' . $wpdb->last_error . ' - The template was not applied</p></div>';
+                    $error = '<div id="message" class="error"><p>Insertion Error: ' . $wpdb->last_error . ' - The template was not applied. (New Blog Templates - While copying ' . $table . ')</p></div>';
                     $wpdb->query("ROLLBACK;");
                     
                     //We've rolled it back and thrown an error, we're done here
@@ -372,7 +420,7 @@ if (!class_exists('blog_templates')) {
             $wpdb->query("DELETE FROM $table");
             
             if ($wpdb->last_error) { //No error. Good! Now copy over the terms from the templated blog
-                $error = '<div id="message" class="error"><p>Deletion Error: ' . $wpdb->last_error . ' - The template was not applied</p></div>';
+                $error = '<div id="message" class="error"><p>Deletion Error: ' . $wpdb->last_error . ' - The template was not applied. (New Blog Templates - While clearing ' . $table . ')</p></div>';
                 $wpdb->query("ROLLBACK;");
                 restore_current_blog(); //Switch back to our current blog
                 wp_die($error);
@@ -409,23 +457,26 @@ if (!class_exists('blog_templates')) {
         function admin_menu_link() {
             //If you change this from add_options_page, MAKE SURE you change the filter_plugin_actions function (below) to
             //reflect the page filename (ie - options-general.php) of the page your plugin is under!
-            if (is_site_admin()) {
-                //add_submenu_page( 'wpmu-admin.php', 'Generate Blog Template', 'Generate Blog Template', 'administrator', basename(__FILE__) . '_create', array(&$this,'admin_options_page_create_template'));
+            if (get_bloginfo('version') >= 3)
+                add_submenu_page( 'ms-admin.php', 'Blog Templates', 'Blog Templates', 'administrator', basename(__FILE__), array(&$this,'admin_options_page'));
+            else
                 add_submenu_page( 'wpmu-admin.php', 'Blog Templates', 'Blog Templates', 'administrator', basename(__FILE__), array(&$this,'admin_options_page'));
-                add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), array(&$this, 'filter_plugin_actions'), 10, 2 );
-            }
+            add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), array(&$this, 'filter_plugin_actions'), 10, 2 );
         }
         
         /**
         * @desc Adds the Settings link to the plugin activate/deactivate page
         */
         function filter_plugin_actions($links, $file) {
-           //If your plugin is under a different top-level menu than Settiongs (IE - you changed the function above to something other than add_options_page)
-           //Then you're going to want to change options-general.php below to the name of your top-level page
-           $settings_link = '<a href="wpmu-admin.php?page=' . basename(__FILE__) . '">' . __('Settings') . '</a>';
-           array_unshift( $links, $settings_link ); // add before other links
+            //If your plugin is under a different top-level menu than Settiongs (IE - you changed the function above to something other than add_options_page)
+            //Then you're going to want to change options-general.php below to the name of your top-level page
+            if (get_bloginfo('version') >= 3)
+                $settings_link = '<a href="ms-admin.php?page=' . basename(__FILE__) . '">' . __('Settings') . '</a>';
+            else
+                $settings_link = '<a href="wpmu-admin.php?page=' . basename(__FILE__) . '">' . __('Settings') . '</a>';
+            array_unshift( $links, $settings_link ); // add before other links
 
-           return $links;
+            return $links;
         }
         
         /**
@@ -442,66 +493,103 @@ if (!class_exists('blog_templates')) {
         }
         
         /**
-        * Adds settings/options page
+        * Separated into its own function so we could include it in the init hook
         */
-        function admin_options_page() {
-            $t = $_GET['t'];
+        function admin_options_page_posted() {
+            if (!$_GET['page']=='blog_templates.php') return; //If this isn't the options page, we don't even need to check
+            
+            unset($this->options['templates']['']); //Delete the [] item, this will fix corrupted data
 
-            if($_POST['save']){
-                if (! wp_verify_nonce($_POST['_wpnonce'], 'blog_templates-update-options') ) die('Whoops! There was a problem with the data you posted. Please go back and try again.'); 
-                $this->options['templates'][$t]['name'] = $_POST['template_name'];
-                $this->options['templates'][$t]['to_copy'] = $_POST['to_copy'];
+            $t = (string) $_GET['t'];
+            
+            if($_POST['save_updated_template']){
+                if (! wp_verify_nonce($_POST['_wpnonce'], 'blog_templates-update-options') ) die('Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)'); 
+                $this->options['templates'][$t]['name'] = stripslashes($_POST['template_name']);
+                $this->options['templates'][$t]['to_copy'] = (array)$_POST['to_copy'];
+                $this->options['templates'][$t]['additional_tables'] = $_POST['additional_template_tables'];
                 
                 $this->saveAdminOptions();
                 
                 echo '<div class="updated fade"><p>Success! Your changes were sucessfully saved!</p></div>';
             } elseif ($_POST['save_new_template']) {
                 global $wpdb;
-                if (! wp_verify_nonce($_POST['_wpnonce'], 'blog_templates-update-options') ) die('Whoops! There was a problem with the data you posted. Please go back and try again.'); 
-                $this->options['templates'][] = array('name'=>$_POST['template_name'],'blog_id'=>$wpdb->blogid,'to_copy' => (array)$_POST['to_copy']);
-                
-                //$this->options['templates'][count($this->options['templates'])-1]['wp_options'] = $this->get_wp_options_as_array();
+                if (! wp_verify_nonce($_POST['_wpnonce'], 'blog_templates-update-options') ) die('Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)'); 
+                $this->options['templates'][] = array('name'=>stripslashes($_POST['template_name']),'blog_id'=>$wpdb->blogid,'to_copy' => (array)$_POST['to_copy']);
 
                 $this->saveAdminOptions();
                 
                 echo '<div class="updated fade"><p>Success! Your changes were sucessfully saved!</p></div>';
-            } elseif (isset($_GET['d'])) {
-                $d = $_GET['d'];
-                if (! wp_verify_nonce($_GET['_wpnonce'], 'blog_templates-delete_template') ) die('Whoops! There was a problem with the data you posted. Please go back and try again.'); 
-                unset($this->options['templates'][$d]);
+            } elseif (isset($_POST['remove_default'])) {
+                if (! wp_verify_nonce($_POST['_wpnonce'], 'blog_templates-update-options') ) die('Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)'); 
+                unset($this->options['default']);
+                
+                $this->saveAdminOptions();
+                
+                if (is_numeric($_GET['default']) || is_numeric($_GET['d'])) {
+                    //These querystring vars must have been left over from an earlier link click, remove them
+                    $to_url = remove_query_arg(array('default','d'),$this->currenturl_with_querystring);
+                } else {
+                    $to_url = $this->currenturl_with_querystring;
+                }
+                wp_redirect(add_query_arg(array('a'=>'removed'),$to_url));
+            } elseif (is_numeric($_GET['default'])) {
+                if (! wp_verify_nonce($_GET['_wpnonce'], 'blog_templates-make_default') ) die('Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)'); 
+
+                $this->options['default'] = $_GET['default'];
+
+                $this->saveAdminOptions();
+                
+                echo '<div class="updated fade"><p>Success! The default template was sucessfully updated.</p></div>';
+            } elseif (is_numeric($_GET['d'])) {
+                if (! wp_verify_nonce($_GET['_wpnonce'], 'blog_templates-delete_template') ) die('Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)'); 
+                unset($this->options['templates'][$_GET['d']]);
                 
                 $this->saveAdminOptions();
                 
                 echo '<div class="updated fade"><p>Success! The template was sucessfully deleted.</p></div>';
             }
-            
+        }
+        
+        /**
+        * Adds settings/options page
+        */
+        function admin_options_page() {
+            $t = (string) $_GET['t'];
+
             global $pagenow; 
-            $url = $pagenow . '?page=blog_templates.php';            
+            $url = $pagenow . '?page=blog_templates.php';
 ?>                                   
+
 <div class="wrap">
+<?php
+            if ($_GET['a'] == 'removed') {
+                echo '<div class="updated fade"><p>Success! The default option was successfully turned off.</p></div>';
+            }
+?>
     <form method="post" id="options">
-    <?php wp_nonce_field('blog_templates-update-options'); ?>
-        <?php if (!is_numeric($t)) { ?>
+    <?php wp_nonce_field('blog_templates-update-options'); 
+        if (!is_numeric($t)) { ?>
             <h2>Blog Templates</h2>
             <table width="100%" cellspacing="2" cellpadding="5" class="widefat fixed">
                 <thead>
-                <tr><th>Template Name</th><th>Blog</th><th>Actions</th></tr>
+                <tr><th><?php _e('Template Name',$this->localizationDomain); ?></th><th><?php _e('Blog',$this->localizationDomain); ?></th><th><?php _e('Actions',$this->localizationDomain); ?></th></tr>
                 </thead>
                 <tfoot>
-                <tr><th>Template Name</th><th>Blog</th><th>Actions</th></tr>
+                <tr><th><?php _e('Template Name',$this->localizationDomain); ?></th><th><?php _e('Blog',$this->localizationDomain); ?></th><th><?php _e('Actions',$this->localizationDomain); ?></th></tr>
                 </tfoot>
                 <?php foreach ($this->options['templates'] as $key => $template) { ?>
                 <tr valign="top"> 
                     <td><a href="<?php echo $url . '&t=' . $key ?>"><?php echo $template['name'] ?></a></td>
                     <td><b><?php echo get_blog_option($template['blog_id'],'blogname'); ?></b> <a href="<?php echo get_blog_option($template['blog_id'],'siteurl'); ?>/wp-admin">[Dashboard]</a></td>
-                    <td><a href="<?php echo wp_nonce_url($url . '&d=' . $key,"blog_templates-delete_template")?>">[Delete]</a></td>
+                    <td><?php echo (is_numeric($this->options['default']) && $this->options['default'] == $key)?'<b>(Default)</b>':'<a href="' . wp_nonce_url($url . '&default=' . $key,"blog_templates-make_default") . '">[Make Default]</a>'; ?> 
+                    <a href="<?php echo wp_nonce_url($url . '&d=' . $key,"blog_templates-delete_template")?>">[Delete]</a></td>
                 </tr>
                 <?php } ?>
             </table>
-            <h2>Create New Blog Template</h2>
-            <p>Create a blog template based on the current blog! This allows you (and other admins) to copy all of the current blog's settings and allow you to create other blogs
-            that are almost exact copies of this blog. (Blog name, URL, etc will change, so it's not a 100% copy)</p>
-            <p>Simply fill out the form below and click "Create Blog Template!" to generate the template for later use!</p>
+            <h2><?php _e('Create New Blog Template',$this->localizationDomain); ?></h2>
+            <p><?php _e('Create a blog template based on the current blog! This allows you (and other admins) to copy all of the current blog\'s settings and allow you to create other blogs
+            that are almost exact copies of this blog. (Blog name, URL, etc will change, so it\'s not a 100% copy)',$this->localizationDomain); ?></p>
+            <p><?php _e('Simply fill out the form below and click "Create Blog Template!" to generate the template for later use!',$this->localizationDomain); ?></p>
             <table width="100%" cellspacing="2" cellpadding="5" class="widefat fixed"> 
                 <tr valign="top"> 
                     <th width="33%" scope="row"><?php _e('Template Name:', $this->localizationDomain); ?></th> 
@@ -526,21 +614,41 @@ if (!class_exists('blog_templates')) {
                     </td>
                 </tr>
                 <tr>
-                    <td colspan=2><p>Please note that this will turn the blog you are currently logged in
-                        to - <?php bloginfo('wpurl'); ?> - into a template blog. Any changes you make to this blog will change the template, as well! We recommend creating specific "Template Blogs" for this purpose, so you don't accidentally add new settings, content, or users that you don't want in your template.</p>
-                        <p>This means that if you would like to create a dedicated template blog for this template, please
-                        <a href="http://test.besttrainingcourse.com/wp-admin/wpmu-blogs.php">create a new blog</a> and then visit this page when you are
-                        logged in to the backend of that blog to create the template.</p>
-                    </td>
+                    <th><?php _e('Advanced'); ?></th>
+                    <td><?php _e('After you add this template, an advanced options area will show up on the edit screen (Click on the template name when it appears in the list above). In that advanced area,
+                    you can choose to add full tables to the template, in case you\'re using a plugin that creates its own database tables. Note that this is not required for new Blog Templates to work'); ?></td>
                 </tr>
-            </table>
+                </table>
+                <p>
+                    <?php _e('Please note that this will turn the blog you are currently logged in
+                    to',$this->localizationDomain); ?> - <?php bloginfo('wpurl'); ?> - <?php _e('into a template blog. Any changes you make to this blog will change the
+                    template, as well! We recommend creating specific "Template Blogs" for this purpose, so you don\'t accidentally add new settings, content, or users 
+                    that you don\'t want in your template.',$this->localizationDomain); ?></p>
+                    <p><?php _e('This means that if you would like to create a dedicated template blog for this template, please',$this->localizationDomain); ?>
+                    <a href="<?php
+                    if (get_bloginfo('version') >= 3)
+                        echo admin_url('ms-sites.php');
+                    else
+                        echo admin_url('wpmu-blogs.php');
+                    ?>"><?php _e('create a new blog',$this->localizationDomain); ?></a> <?php _e('and then visit this page when you are
+                    logged in to the backend of that blog to create the template.',$this->localizationDomain); ?>
+                </p>
+                
             <p><div class="submit"><input type="submit" name="save_new_template" class="button-primary" value="Create Blog Template!" /></div></p>
+            <h2><?php _e('Default Template',$this->localizationDomain); ?></h2>
+            <p><?php _e('You can set one of your templates to be the default template. The default template gets automatically applied to any new blog creation, whether it\'s through
+            Wordpress, BuddyPress, or another plugin, as long as they use the internal Wordpress blog creation function. That means if you choose to use a default template,
+            any new blog created will automatically use that template - including blogs that users set up themselves!',$this->localizationDomain); ?></p>
+            <p><?php _e('If you\'ve set a blog as a default blog (if you did, one of the blogs above will say <b>(Default)</b> under the Actions column) and you no longer want to use
+            a default template, simply click the button below to remove the default option. You can always make another template default later by clicking one of the [Make Default]
+            links above. Note: Clicking this button will not delete any templates, it simply turns off the default feature until you choose another default template.',$this->localizationDomain); ?></p>
+            <p><div class="submit"><input type="submit" name="remove_default" class="button-primary" value="<?php _e('Remove Default Option',$this->localizationDomain); ?>" /></div></p>
         <?php
-            } else { 
+            } else {
                 $template = $this->options['templates'][$t];
         ?>
-            <p><a href="<?php echo $url; ?>">&laquo; Back to Blog Templates</a></p>
-            <h2>Edit Blog Template</h2>
+            <p><a href="<?php echo $url; ?>">&laquo; <?php _e('Back to Blog Templates', $this->localizationDomain); ?></a></p>
+            <h2><?php _e('Edit Blog Template', $this->localizationDomain); ?></h2>
             <table width="100%" cellspacing="2" cellpadding="5" class="widefat fixed"> 
                 <tr valign="top"> 
                     <th width="33%"><?php _e('Template Name:', $this->localizationDomain); ?></th> 
@@ -556,12 +664,48 @@ if (!class_exists('blog_templates')) {
                         <span style="padding-right: 10px;"><input type="checkbox" name="to_copy[]" id="users" value="users" <?php echo (in_array('users',$template['to_copy']))?'checked="checked"':''?>><label for="users"><?php _e('Users', $this->localizationDomain); ?></label></span><br/>
                     </td>
                 </tr>
+            </table>
+            <p><div class="submit"><input type="submit" name="save_updated_template" value="<?php _e('Save', $this->localizationDomain); ?> &raquo;" class="button-primary" /></div></p>
+            <h2><?php _e('Advanced Options',$this->localizationDomain); ?></h2>
+            <table width="100%" cellspacing="2" cellpadding="5" class="widefat fixed">
                 <tr>
-                    <th colspan=2><input type="submit" name="save" value="Save &raquo;" /></th>
+                    <td width="33%"><b><?php _e('Additional Tables',$this->localizationDomain); ?></b><br/>
+                    <?php
+                        global $wpdb;
+                        
+                        switch_to_blog($template['blog_id']);
+                            
+                        printf(__('The tables listed here were likely created by plugins you currently have or have had running on this blog. If you want
+                        the data from these tables copied over to your new blogs, add a checkmark next to the table. Note that the only tables displayed here
+                        begin with %s, which is the standard table prefix for this specific blog. Plugins not following this convention will not have
+                        their tables listed here.',$this->localizationDomain),$wpdb->prefix); ?>
+                    </td>
+                    <td>
+                        <?php
+                            
+                            //Grab all non-core tables and display them as options
+                            $results = $wpdb->get_results("SHOW TABLES LIKE '" . str_replace('_','\_',$wpdb->prefix) . "%'", ARRAY_N);
+                            if (!empty($results)) {
+                                foreach($results as $result) {
+                                    if (!in_array(str_replace($wpdb->prefix,'',$result['0']),$wpdb->tables)) {
+                                        echo "<input type='checkbox' name='additional_template_tables[]' value='$result[0]'";
+                                        if (is_array($template['additional_tables']))
+                                            if (in_array($result[0],$template['additional_tables']))
+                                                echo ' checked="CHECKED"';
+                                        echo ">$result[0]</option><br/>";
+                                    }
+                                }
+                            } else {
+                                _e('There are no additional tables to display for this blog',$this->localizationDomain);
+                            }
+                            
+                            restore_current_blog();
+                        ?>
+                    </td>
                 </tr>
-            </table
+            </table>
+            <p><div class="submit"><input type="submit" name="save_updated_template" value="<?php _e('Save', $this->localizationDomain); ?> &raquo;" class="button-primary" /></div></p>
         <?php } ?>
-        </table>
     </form>
 <?php
         }
