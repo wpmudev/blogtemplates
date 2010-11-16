@@ -1,0 +1,11 @@
+Plugin Name: New Blog Templates
+Author: Jason DeVelvis, Ulrich Sossou
+
+Change Log:
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+
+1.2.2 - 11/16/2010
+----------------------------------------------------------------------
+- Bug fix: admin page returning content before display
+- Bug fix: blog template admin email exported to new blogs
