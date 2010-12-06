@@ -135,11 +135,11 @@ if (!class_exists('blog_templates')) {
             global $wpdb;
 
             $template = '';
-            if (is_numeric($_POST['blog_template'])) { //If they've chosen a template, use that. For some reason, when PHP gets 0 as a posted var, it doesn't recognize it as is_numeric, so test for that specifically
+            if ( isset( $_POST['blog_template'] ) && is_numeric( $_POST['blog_template'] ) ) { //If they've chosen a template, use that. For some reason, when PHP gets 0 as a posted var, it doesn't recognize it as is_numeric, so test for that specifically
                 $template = $this->options['templates'][$_POST['blog_template']];
-            } elseif ($_POST['blog_template'] == 'none') {
+            } elseif ( isset( $_POST['blog_template'] ) && $_POST['blog_template'] == 'none' ) {
                 return; //The user doesn't want to use a template
-            } elseif (is_numeric($this->options['default'])) { //If they haven't chosen a template, use the default if it exists
+            } elseif ( isset( $this->options['default'] ) && is_numeric( $this->options['default'] ) ) { //If they haven't chosen a template, use the default if it exists
                 $template = $this->options['templates'][$this->options['default']];
             }
 
@@ -166,14 +166,16 @@ if (!class_exists('blog_templates')) {
                     case 'settings':
                         //We can't use the helper functions here, because we need to save some of the settings
 
+                        $exclude_settings = apply_filters( 'blog_template_exclude_settings', "`option_name` != 'siteurl' AND `option_name` != 'blogname' AND `option_name` != 'admin_email' AND `option_name` != 'new_admin_email' AND `option_name` != 'home' AND `option_name` != 'upload_path' AND `option_name` != 'db_version' AND `option_name` != 'secret' AND `option_name` != 'fileupload_url' AND `option_name` != 'nonce_salt'" );
+
                         //Delete the current options, except blog-specific options
-                        $wpdb->query("DELETE FROM $wpdb->options WHERE `option_name` != 'siteurl' AND `option_name` != 'blogname' AND `option_name` != 'admin_email' AND `option_name` != 'new_admin_email' AND `option_name` != 'home' AND `option_name` != 'upload_path' AND `option_name` != 'db_version' AND `option_name` != 'secret' AND `option_name` != 'fileupload_url' AND `option_name` != 'nonce_salt'");
+                        $wpdb->query("DELETE FROM $wpdb->options WHERE $exclude_settings");
 
                         if (!$wpdb->last_error) { //No error. Good! Now copy over the old settings
                             //Switch to the template blog, then grab the settings/plugins/templates values from the template blog
                             switch_to_blog($template['blog_id']);
 
-                            $templated = $wpdb->get_results("SELECT * FROM $wpdb->options WHERE `option_name` != 'siteurl' AND `option_name` != 'blogname' AND `option_name` != 'admin_email' AND `option_name` != 'new_admin_email' AND `option_name` != 'home' AND `option_name` != 'upload_path' AND `option_name` != 'db_version' AND `option_name` != 'secret' AND `option_name` != 'fileupload_url' AND `option_name` != 'nonce_salt'");
+                            $templated = $wpdb->get_results("SELECT * FROM $wpdb->options WHERE $exclude_settings");
                             restore_current_blog(); //Switch back to the newly created blog
 
                             //Now, insert the templated settings into the newly created blog
@@ -473,7 +475,10 @@ if (!class_exists('blog_templates')) {
         function get_wp_options_as_array() {
             global $wpdb;
             $wp_options = array();
-            $results = $wpdb->get_results("SELECT * FROM $wpdb->options WHERE `option_name` NOT LIKE '_transient%' AND `option_name` != 'siteurl' AND `option_name` != 'blogname' AND `option_name` != 'admin_email' AND `option_name` != 'new_admin_email' AND `option_name` != 'home' AND `option_name` != 'upload_path' AND `option_name` != 'db_version' AND `option_name` != 'secret' AND `option_name` != 'fileupload_url' AND `option_name` != 'nonce_salt'");
+
+            $exclude_settings = apply_filters( 'blog_template_exclude_settings', "`option_name` != 'siteurl' AND `option_name` != 'blogname' AND `option_name` != 'admin_email' AND `option_name` != 'new_admin_email' AND `option_name` != 'home' AND `option_name` != 'upload_path' AND `option_name` != 'db_version' AND `option_name` != 'secret' AND `option_name` != 'fileupload_url' AND `option_name` != 'nonce_salt'" );
+
+            $results = $wpdb->get_results("SELECT * FROM $wpdb->options WHERE `option_name` NOT LIKE '_transient%' AND $exclude_settings");
             foreach ($results as $row) {
                 $wp_options[$row->option_name] = array('blog_id'=>$row->blog_id,'option_value'=>$row->option_value,'autoload'=>$row->autoload);
             }
