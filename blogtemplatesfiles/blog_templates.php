@@ -100,7 +100,9 @@ if (!class_exists('blog_templates')) {
         */
         function add_template_dd() {
             global $pagenow;
-            if ($pagenow != 'wpmu-blogs.php' && $pagenow != 'ms-sites.php') return;
+
+			if( 'wpmu-blogs.php' !== $pagenow || 'ms-sites.php' !== $pagenow || isset( $_GET['action'] ) && $_GET['action'] !== 'list' )
+				return;
 
             ?>
             <script type="text/javascript">
