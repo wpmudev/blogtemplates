@@ -1,8 +1,9 @@
 <?php
 
-if (!class_exists('blog_templates')) {
+if ( ! class_exists( 'blog_templates' ) ) {
+
     class blog_templates {
-        //This is where the class variables go, don't forget to use @var to tell what they're for
+
         /**
         * @var string The options string name for this plugin
         */
@@ -29,18 +30,17 @@ if (!class_exists('blog_templates')) {
         */
         var $options = array();
 
-        //Class Functions
         /**
         * PHP 4 Compatible Constructor
         */
-        function blog_templates(){$this->__construct();}
+        function blog_templates(){
+			$this->__construct();
+		}
 
         /**
         * PHP 5 Constructor
         */
-        function __construct(){
-
-
+        function __construct() {
             //"Constants" setup
             if (defined('WPMU_PLUGIN_DIR') && strpos(__FILE__,WPMU_PLUGIN_DIR) === false) { //We're not in the WPMU Plugin Directory
                 $this->thispluginpath = WP_PLUGIN_DIR . '/' . dirname(plugin_basename(__FILE__)).'/';
@@ -57,12 +57,7 @@ if (!class_exists('blog_templates')) {
             $this->currenturl_with_querystring = (!empty($_SERVER['HTTPS'])) ? "https://".$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'] : "http://".$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'];
 
             //Initialize the options
-            //This is REQUIRED to initialize the options when the plugin is loaded!
             $this->getOptions();
-
-            /*echo '<pre>';
-            print_r($this->options['templates']);
-            echo '</pre>';*/
 
             //Actions
             add_action("admin_menu", array(&$this,"admin_menu_link"));
@@ -73,10 +68,12 @@ if (!class_exists('blog_templates')) {
 
             wp_enqueue_script('jquery');
 
-            //Filters
-            /*
-            add_filter('the_content', array(&$this, 'filter_content'), 0);
-            */
+            // Special features for Multi-Domains
+            add_action( 'add_multi_domain_form_field', array( &$this, 'multi_domain_form_field' ) ); // add field to domain addition form
+            add_action( 'edit_multi_domain_form_field', array( &$this, 'multi_domain_form_field' ) ); // add field to domain edition form
+            add_filter( 'md_update_domain', array( &$this, 'multi_domain_update_domain' ), 10, 2 ); // saves blog template value on domain update
+            add_filter( 'manage_multi_domains_columns', array( &$this, 'manage_multi_domains_columns' ) ); // add column to multi domain table
+            add_action( 'manage_multi_domains_custom_column', array( &$this, 'manage_multi_domains_custom_column' ), 10, 2 ); // populate blog template column in multi domain table
         }
 
         function get_template_dropdown($tag_name, $include_none) {
@@ -101,7 +98,7 @@ if (!class_exists('blog_templates')) {
         function add_template_dd() {
             global $pagenow;
 
-			if( 'wpmu-blogs.php' !== $pagenow || 'ms-sites.php' !== $pagenow || isset( $_GET['action'] ) && $_GET['action'] !== 'list' )
+			if( 'wpmu-blogs.php' !== $pagenow || 'ms-sites.php' !== $pagenow || isset( $_GET['action'] ) && 'editblog' == $_GET['action'] )
 				return;
 
             ?>
@@ -123,8 +120,8 @@ if (!class_exists('blog_templates')) {
         * @param mixed $blog_id
         * @param mixed $user_id
         */
-        function wpmu_new_blog($blog_id,$user_id) {
-            $this->set_blog_defaults($blog_id,$user_id);
+        function wpmu_new_blog( $blog_id,$user_id ) {
+            $this->set_blog_defaults( $blog_id, $user_id );
         }
 
         /**
@@ -133,19 +130,35 @@ if (!class_exists('blog_templates')) {
         * @param mixed $blog_id
         * @param mixed $user_id
         */
-        function set_blog_defaults($blog_id, $user_id) {
-            global $wpdb;
+        function set_blog_defaults( $blog_id, $user_id ) {
+            global $wpdb, $multi_dm;
+
+			/* Start special Multi-Domain feature */
+            if( !empty( $multi_dm ) ) {
+				$bloginfo = get_blog_details( (int) $blog_id, false );
+				foreach( $multi_dm->domains as $multi_domain ) {
+					if( strpos( $bloginfo->domain, $multi_domain['domain_name'] ) )
+						$default = $this->options['templates'][$multi_domain['blog_template']];
+				}
+			}
+			/* End special Multi-Domain feature */
+
+            if( empty( $default ) && isset( $this->options['default'] ) && is_numeric( $this->options['default'] ) ) { // select global default
+				$default = $this->options['templates'][$this->options['default']];
+			}
+
 
             $template = '';
             if ( isset( $_POST['blog_template'] ) && is_numeric( $_POST['blog_template'] ) ) { //If they've chosen a template, use that. For some reason, when PHP gets 0 as a posted var, it doesn't recognize it as is_numeric, so test for that specifically
-                $template = $this->options['templates'][$_POST['blog_template']];
+				$template = $this->options['templates'][$_POST['blog_template']];
             } elseif ( isset( $_POST['blog_template'] ) && $_POST['blog_template'] == 'none' ) {
-                return; //The user doesn't want to use a template
-            } elseif ( isset( $this->options['default'] ) && is_numeric( $this->options['default'] ) ) { //If they haven't chosen a template, use the default if it exists
-                $template = $this->options['templates'][$this->options['default']];
+				return; //The user doesn't want to use a template
+            } elseif ( $default ) { //If they haven't chosen a template, use the default if it exists
+                $template = $default;
             }
 
-            if (empty($template)) return; //No template, lets leave
+            if ( empty( $template ) )
+				return; //No template, lets leave
 
             //Begin the transaction
             $wpdb->query("BEGIN;");
@@ -325,26 +338,15 @@ if (!class_exists('blog_templates')) {
                 $new_fields[] = $row->Field;
             }
 
-            /*echo "SHOW COLUMNS FROM {$wpdb->$new_table_name}" . '<pre>';
-            print_r($new_fields);
-            echo '</pre>';*/
-
             $results = array();
 
             //Now, go through the columns in the old table, and check if there are any that don't show up in the new table
             foreach ($old_table_row as $key=>$value) {
-                //echo "Key: $key -- Value: $value";
-                //echo "<br/>";
                 if (!in_array($key,$new_fields)) { //If the new table doesn't have this field
-                    //echo "In array<br/>";
                     //There's a column that isn't in the new one, make note of that
                     $results[] = $key;
                 }
             }
-
-            /*echo '<pre>';
-            print_r($results);
-            echo '</pre>';*/
 
             //Return the results array, which should contain all of the fields that don't appear in the new table
             return $results;
@@ -352,43 +354,24 @@ if (!class_exists('blog_templates')) {
 
         function copy_table($templated_blog_id, $table) {
             global $wpdb;
-            //echo "copying {$wpdb->$table} from $templated_blog_id<br/>SQL: SELECT * FROM $table<br/>";
-
 
             //Switch to the template blog, then grab the values
             switch_to_blog($templated_blog_id);
             $templated = $wpdb->get_results("SELECT * FROM {$wpdb->$table}");
             restore_current_blog(); //Switch back to the newly created blog
 
-            /*echo '<pre>';
-            print_r($templated);
-            echo '</pre>';*/
-
             if (count($templated))
                 $to_remove = $this->get_fields_to_remove($table, $templated[0]);
-
-            /*echo '<pre>To Remove: ';
-            print_r($to_remove);
-            echo '</pre>';*/
-
-
 
             //Now, insert the templated settings into the newly created blog
             foreach ($templated as $row) {
                 $row = (array)$row;
-                /*
-                echo '<pre>Row: ';
-                print_r($row);
-                echo '</pre>';//*/
+
                 foreach ($row as $key=>$value) {
                     if (in_array($key,$to_remove))
                         unset($row[$key]);
                 }
-                      /*
-                echo '<pre>Row: ';
-                print_r($row);
-                echo '</pre>';//*/
-                //echo 'Copying a Row<br/>';
+
                 $wpdb->insert($wpdb->$table,$row);
                 if (!empty($wpdb->last_error)) {
                     $error = '<div id="message" class="error"><p>Insertion Error: ' . $wpdb->last_error . ' - The template was not applied. (New Blog Templates - While copying ' . $table . ')</p></div>';
@@ -430,10 +413,6 @@ if (!class_exists('blog_templates')) {
                 update_site_option($this->optionsName, $theOptions);
             }
             $this->options = $theOptions;
-
-            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            //There is no return here, because you should use the $this->options variable!!!
-            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         }
 
         /**
@@ -447,8 +426,6 @@ if (!class_exists('blog_templates')) {
         * @desc Adds the options subpanel
         */
         function admin_menu_link() {
-            //If you change this from add_options_page, MAKE SURE you change the filter_plugin_actions function (below) to
-            //reflect the page filename (ie - options-general.php) of the page your plugin is under!
             if (get_bloginfo('version') >= 3)
                 add_submenu_page( 'ms-admin.php', 'Blog Templates', 'Blog Templates', 'administrator', basename(__FILE__), array(&$this,'admin_options_page'));
             else
@@ -460,8 +437,6 @@ if (!class_exists('blog_templates')) {
         * @desc Adds the Settings link to the plugin activate/deactivate page
         */
         function filter_plugin_actions($links, $file) {
-            //If your plugin is under a different top-level menu than Settiongs (IE - you changed the function above to something other than add_options_page)
-            //Then you're going to want to change options-general.php below to the name of your top-level page
             if (get_bloginfo('version') >= 3)
                 $settings_link = '<a href="ms-admin.php?page=' . basename(__FILE__) . '">' . __('Settings') . '</a>';
             else
@@ -503,7 +478,7 @@ if (!class_exists('blog_templates')) {
 					die('Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)');
                 $this->options['templates'][$t]['name'] = stripslashes($_POST['template_name']);
                 $this->options['templates'][$t]['to_copy'] = (array)$_POST['to_copy'];
-                $this->options['templates'][$t]['additional_tables'] = $_POST['additional_template_tables'];
+                $this->options['templates'][$t]['additional_tables'] = isset( $_POST['additional_template_tables'] ) ? $_POST['additional_template_tables'] : array();
 
                 $this->saveAdminOptions();
 
@@ -703,8 +678,60 @@ if (!class_exists('blog_templates')) {
     </form>
 <?php
         }
-    } //End Class
-    //instantiate the class
-    $blog_templates_var = new blog_templates();
-} //End if blog_templates class exists statement
+
+        /**
+        * Adds form field for Multi Domain plugin
+        */
+        function multi_domain_form_field( $domain = '' ) {
+			if( count( $this->options['templates'] ) <= 1 ) // don't display field if there is only one template or none
+				return false;
+			?>
+			<tr>
+				<th scope="row"><label for="blog_template"><?php _e( 'Default Blog Template', $this->localizationDomain ) ?>:</label></th>
+				<td>
+					<select id="blog_template" name="blog_template">
+						<option value="">Default</option>
+						<?php
+						foreach( $this->options['templates'] as $key => $blog_template ) {
+							$selected = isset( $domain['blog_template'] ) ? selected( $key, $domain['blog_template'], false ) : '';
+							echo "<option value='$key'$selected>$blog_template[name]</option>";
+						}
+						?>
+					</select><br />
+					<span class="description"><?php _e( 'Default Blog Template used for this domain.', $this->localizationDomain ) ?></span>
+				</td>
+			</tr>
+			<?php
+		}
+
+		function multi_domain_update_domain( $current_domain, $domain ) {
+			$current_domain['blog_template'] = isset( $domain['blog_template'] ) ? $domain['blog_template'] : '';
+
+			return $current_domain;
+		}
+
+		function manage_multi_domains_columns( $columns ) {
+			$columns['blog_template'] = __( 'Blog Template', $this->localizationDomain );
+			return $columns;
+		}
+
+		function manage_multi_domains_custom_column( $column_name, $domain ) {
+			if( 'blog_template' == $column_name ) {
+				if( !isset( $domain['blog_template'] ) ) {
+					echo 'Default';
+				} elseif( !is_numeric( $domain['blog_template'] ) ) {
+					echo 'Default';
+				} else {
+					$key = $domain['blog_template'];
+					echo $this->options['templates'][$key]['name'];
+				}
+			}
+		}
+
+    } // End Class
+
+    // instantiate the class
+    $blog_templates_var =& new blog_templates();
+
+} // End if blog_templates class exists statement
 ?>
