@@ -98,7 +98,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
         function add_template_dd() {
             global $pagenow;
 
-			if( 'wpmu-blogs.php' !== $pagenow || 'ms-sites.php' !== $pagenow || isset( $_GET['action'] ) && 'editblog' == $_GET['action'] )
+			if( 'ms-sites.php' !== $pagenow || isset( $_GET['action'] ) && 'editblog' == $_GET['action'] )
 				return;
 
             ?>
@@ -106,7 +106,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 jQuery(document).ready(function() {
                     jQuery('.form-table:last tr:last').before('\
                     <tr class="form-field form-required">\
-                        <th style="text-align:center;" scope="row"><?php _e('Template', $this->localizationDomain) ?></th>\
+                        <th scope="row"><?php _e('Template', $this->localizationDomain) ?></th>\
                         <td><?php $this->get_template_dropdown('blog_template',true); ?></td>\
                     </tr>');
                 });
@@ -137,8 +137,10 @@ if ( ! class_exists( 'blog_templates' ) ) {
             if( !empty( $multi_dm ) ) {
 				$bloginfo = get_blog_details( (int) $blog_id, false );
 				foreach( $multi_dm->domains as $multi_domain ) {
-					if( strpos( $bloginfo->domain, $multi_domain['domain_name'] ) )
-						$default = $this->options['templates'][$multi_domain['blog_template']];
+					if( strpos( $bloginfo->domain, $multi_domain['domain_name'] ) ) {
+						if( isset( $multi_domain['blog_template'] ) && !empty( $this->options['templates'][$multi_domain['blog_template']] ) )
+							$default = $this->options['templates'][$multi_domain['blog_template']];
+					}
 				}
 			}
 			/* End special Multi-Domain feature */
