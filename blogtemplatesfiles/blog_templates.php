@@ -80,16 +80,15 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
 
 			// Add the super admin page
-			if( version_compare( $wp_version , '3.0.9', '>' ) )
+			if( version_compare( $wp_version , '3.0.9', '>' ) ) {
 				add_action( 'network_admin_menu', array( &$this, 'network_admin_page' ) );
-			else
+			} else {
 				add_action( 'admin_menu', array( &$this, 'pre_3_1_network_admin_page' ) );
+			}
 
 			// Admin notices and data processing
-			if( version_compare( $wp_version , '3.0.9', '>' ) )
-				add_action( 'network_admin_notices', array( &$this, 'admin_options_page_posted' ) );
-			else
-				add_action( 'admin_notices', array( &$this, 'admin_options_page_posted' ) );
+			add_action( 'network_admin_notices', array( &$this, 'admin_options_page_posted' ) );
+			add_action( 'admin_notices', array( &$this, 'admin_options_page_posted' ) );
 
             // Actions
             add_action('wpmu_new_blog', array(&$this, 'set_blog_defaults'), 999, 2); // Set to 999 so this runs after every other action
@@ -474,7 +473,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
         */
         function network_admin_page() {
 			add_submenu_page( 'settings.php', __( 'Blog Templates', $this->localization_domain ), __( 'Blog Templates', $this->localization_domain ), 'administrator', basename(__FILE__), array(&$this,'admin_options_page'));
-			add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( &$this, 'filter_plugin_actions' ) );
         }
 
         /**
