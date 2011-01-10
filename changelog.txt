@@ -9,6 +9,7 @@ Change Log:
 ----------------------------------------------------------------------
 - Enhancement: 3.1+ compatibility
 - Bug fix: proper internationalization
+- Enhancement: compatibility with Gravity Forms
 
 1.2 - 12/21/2010
 ----------------------------------------------------------------------

@@ -35,6 +35,15 @@ if ( !is_multisite() )
 require_once( 'blogtemplatesfiles/blog_templates.php' );
 
 /**
+ * Exclude Gravity Forms option
+ **/
+function blog_template_exclude_gravity_forms( $and ) {
+	$and .= " AND `option_name` != 'rg_forms_version'";
+	return $and;
+}
+add_filter( 'blog_template_exclude_settings', 'blog_template_exclude_gravity_forms' );
+
+/**
  * Show notification if WPMUDEV Update Notifications plugin is not installed
  **/
 if ( !function_exists( 'wdp_un_check' ) ) {
