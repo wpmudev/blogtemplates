@@ -4,13 +4,15 @@ Plugin Name: New Blog Templates
 Plugin URI: http://premium.wpmudev.org/project/new-blog-template
 Description: Allows the site admin to create new blogs based on templates, to speed up the blog creation process
 Author: Jason DeVelvis, Ulrich Sossou (Incsub)
-Version: 1.2
+Author URI: http://premium.wpmudev.org/
+Version: 1.2.1
 Site Wide Only: true
 Network: true
+Text Domain: blog_templates
 WDP ID: 130
 */
 
-/*  Copyright 2010 Incsub (http://incsub.com)
+/*  Copyright 2010-2011 Incsub (http://incsub.com)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -27,4 +29,18 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-require_once('blogtemplatesfiles/blog_templates.php');
+if ( !is_multisite() )
+	exit( __( 'The Batch Create plugin is only compatible with WordPress Multisite.', 'blog_templates' ) );
+
+/**
+ * Show notification if WPMUDEV Update Notifications plugin is not installed
+ **/
+if ( !function_exists( 'wdp_un_check' ) ) {
+	add_action( 'admin_notices', 'wdp_un_check', 5 );
+	add_action( 'network_admin_notices', 'wdp_un_check', 5 );
+
+	function wdp_un_check() {
+		if ( !class_exists( 'WPMUDEV_Update_Notifications' ) && current_user_can( 'edit_users' ) )
+			echo '<div class="error fade"><p>' . __('Please install the latest version of <a href="http://premium.wpmudev.org/project/update-notifications/" title="Download Now &raquo;">our free Update Notifications plugin</a> which helps you stay up-to-date with the most stable, secure versions of WPMU DEV themes and plugins. <a href="http://premium.wpmudev.org/wpmu-dev/update-notifications-plugin-information/">More information &raquo;</a>', 'wds') . '</a></p></div>';
+	}
+}
