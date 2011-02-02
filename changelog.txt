@@ -5,6 +5,12 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+1.2.2 - 02/02/2011
+----------------------------------------------------------------------
+- New Feature: copy files
+- Enhancement: add field to set blog id when creating a new template
+- Bug fix: js dropdown doesn't seem appear on add new site
+
 1.2.1 - 01/10/2010
 ----------------------------------------------------------------------
 - Enhancement: 3.1+ compatibility
