@@ -272,7 +272,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
                     break;
                     case 'users':
                         //Copy over the users to this blog
-                        $users = $wpdb->get_results("SELECT * FROM $wpdb->usermeta WHERE meta_key LIKE '" . mysql_escape_string($template_prefix) . "%'");
+                        //$users = $wpdb->get_results("SELECT * FROM $wpdb->usermeta WHERE meta_key LIKE '" . mysql_escape_string($template_prefix) . "%'");
+                        $users = $wpdb->get_results("SELECT * FROM $wpdb->usermeta WHERE meta_key REGEXP '^" . mysql_escape_string($template_prefix) . "[^0-9]'");
                         if (empty($users)) continue; //If there are no users to copy, just leave. We don't want to leave this blog without any users
 
                         //Delete the auto user from the blog, to prevent duplicates or erroneous users
