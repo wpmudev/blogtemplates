@@ -227,7 +227,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                             foreach ($templated as $row) {
                                 //Make sure none of the options are using wp_X_ convention, and if they are, replace the value with the new blog ID
                                 $row->option_name = str_replace($template_prefix, $new_prefix,$row->option_name);
-                                $row->option_value = str_replace($template_prefix, $new_prefix,$row->option_value);
+                                if ('sidebars_widgets' != $row->option_name) /* <-- Added this to prevent unserialize() call choking on badly formatted widgets pickled array */ $row->option_value = str_replace($template_prefix, $new_prefix,$row->option_value);
 
                                 //To prevent duplicate entry errors, since we're not deleting ALL of the options, there could be an ID collision
                                 unset($row->option_id);
