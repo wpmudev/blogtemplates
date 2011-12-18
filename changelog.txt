@@ -5,6 +5,19 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+1.4 - 12/18/2011
+----------------------------------------------------------------------
+- Added table processing action.
+- Added row filtering hook.
+- Added postmeta filtering.
+
+1.3 - 10/18/2011
+----------------------------------------------------------------------
+- Applied the Multi-DB compatibility patch.
+- UI improvements.
+- Fix for include "None" parameter.
+- Added filter for automatic template assigning
+
 1.2.6 - 06/01/2011 Vladislav Bailovic
 ----------------------------------------------------------------------
 - Fix for sidebar widgets copying issue.

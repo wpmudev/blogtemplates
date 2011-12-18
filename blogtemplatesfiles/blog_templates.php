@@ -118,7 +118,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             if ($templates != array()) {
                 echo "<select name=\"$tag_name\">";
-                echo "<option value=\"none\">None</option>";
+                echo ($include_none ? "<option value=\"none\">None</option>" : '');
                 foreach ($templates as $key=>$value) {
                     echo "<option value=\"$key\">$value</option>";
                 }
@@ -181,13 +181,13 @@ if ( ! class_exists( 'blog_templates' ) ) {
             $template = '';
             if ( isset( $_POST['blog_template'] ) && is_numeric( $_POST['blog_template'] ) ) { //If they've chosen a template, use that. For some reason, when PHP gets 0 as a posted var, it doesn't recognize it as is_numeric, so test for that specifically
 				$template = $this->options['templates'][$_POST['blog_template']];
-            } elseif ( isset( $_POST['blog_template'] ) && $_POST['blog_template'] == 'none' ) {
-				return; //The user doesn't want to use a template
             } elseif ( $default ) { //If they haven't chosen a template, use the default if it exists
                 $template = $default;
             }
 
-            if ( empty( $template ) )
+            $template = apply_filters('blog_templates-blog_template', $template, $blog_id, $user_id, $this);
+
+            if (!$template || 'none' == $template)
 				return; //No template, lets leave
 
             //Begin the transaction
@@ -366,8 +366,25 @@ if ( ! class_exists( 'blog_templates' ) ) {
                         $this->copy_table($template['blog_id'],str_replace($template_prefix,'',$add));
                     } else { //The table's not present, add it and copy the data from the old one
                         //echo ('table doesn\'t exist<br/>');
-                        $wpdb->query("CREATE TABLE " . str_replace($template_prefix,$new_prefix,$add) . " LIKE $add");
-                        $wpdb->query("INSERT " . str_replace($template_prefix,$new_prefix,$add) . " SELECT * FROM $add");
+/* -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+						// Changed
+						if (class_exists("m_wpdb")) {
+							$conns = $wpdb->dbh_connections;
+							//$multi_db = $conns['global']['name'] . '.';
+							unset($conns['global']);
+							$current = current($conns);
+							$current_db = $current['name'] . '.';
+							$add_table = explode('.', $add);
+							$add_table = $add_table[1];
+						} else {
+							$multi_db = $current_db = '';
+							$add_table = $add;
+						}
+                        $wpdb->query("CREATE TABLE {$current_db}" . str_replace($template_prefix,$new_prefix,$add_table) . " LIKE {$add}");
+                        $wpdb->query("INSERT {$current_db}" . str_replace($template_prefix,$new_prefix,$add_table) . " SELECT * FROM {$add}");
+						// End changed
+/* -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+
                         if (!empty($wpdb->last_error)) {
 							$error = '<div id="message" class="error"><p>' . sprintf( __( 'Insertion Error: %s - The template was not applied. (New Blog Templates - With CREATE TABLE query for Additional Tables)', $this->localization_domain ), $wpdb->last_error ) . '</p></div>';
                             $wpdb->query("ROLLBACK;");
@@ -436,6 +453,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
         */
         function copy_table( $templated_blog_id, $table ) {
             global $wpdb;
+			
+			do_action('blog_templates-copying_table', $table, $templated_blog_id);
 
             //Switch to the template blog, then grab the values
             switch_to_blog($templated_blog_id);
@@ -453,6 +472,9 @@ if ( ! class_exists( 'blog_templates' ) ) {
                     if (in_array($key,$to_remove))
                         unset($row[$key]);
                 }
+				
+				$process = apply_filters('blog_templates-process_row', $row, $table);
+				if (!$process) continue; 
 
                 $wpdb->insert($wpdb->$table,$row);
                 if (!empty($wpdb->last_error)) {
@@ -701,7 +723,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
 							'files'    => __( 'Files', $this->localization_domain )
 						);
 						foreach ( $options_to_copy as $key => $value ) {
-							echo "<span style='padding-right: 10px;'><input type='checkbox' name='to_copy[]' id='settings' value='$key'><label for='settings'>$value</label></span><br/>";
+							echo "<span style='padding-right: 10px;'><input type='checkbox' name='to_copy[]' id='nbt-{$key}' value='$key'><label for='nbt-{$key}'>$value</label></span><br/>";
 						}
 						?>
                     </td>
@@ -744,7 +766,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
 						);
 						foreach ( $options_to_copy as $key => $value ) {
 							$checked = in_array( $key, $template['to_copy'] ) ? ' checked="checked"' : '';
-							echo "<span style='padding-right: 10px;'><input type='checkbox' name='to_copy[]' id='settings' value='$key'$checked><label for='settings'>$value</label></span><br/>";
+							echo "<span style='padding-right: 10px;'><input type='checkbox' name='to_copy[]' id='nbt-{$key}' value='$key'$checked><label for='nbt-{$key}'>$value</label></span><br/>";
 						}
 						?>
                     </td>
@@ -766,21 +788,39 @@ if ( ! class_exists( 'blog_templates' ) ) {
                         <?php
 
                             //Grab all non-core tables and display them as options
-                            $results = $wpdb->get_results("SHOW TABLES LIKE '" . str_replace('_','\_',$wpdb->prefix) . "%'", ARRAY_N);
+
+/* -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+							// Changed
+							$pfx = class_exists("m_wpdb") ? $wpdb->prefix : str_replace('_','\_',$wpdb->prefix);
+                            //$results = $wpdb->get_results("SHOW TABLES LIKE '" . str_replace('_','\_',$wpdb->prefix) . "%'", ARRAY_N);
+                            $results = $wpdb->get_results("SHOW TABLES LIKE '{$pfx}%'", ARRAY_N);
+
                             if (!empty($results)) {
                                 foreach($results as $result) {
                                     if (!in_array(str_replace($wpdb->prefix,'',$result['0']),$wpdb->tables)) {
-                                        echo "<input type='checkbox' name='additional_template_tables[]' value='$result[0]'";
+
+										if (class_exists("m_wpdb")) {
+											$db = $wpdb->analyze_query("SHOW TABLES LIKE '{$pfx}%'");
+											$dataset = $db['dataset'];
+											$current_db = $wpdb->dbh_connections[$dataset];
+											$val = $current_db['name'] . '.' . $result[0];
+										} else {
+											$val =  $result[0];
+										}
+                                        //echo "<input type='checkbox' name='additional_template_tables[]' value='$result[0]'";
+                                        echo "<input type='checkbox' name='additional_template_tables[]' value='{$val}'";
                                         if ( isset( $template['additional_tables'] ) && is_array( $template['additional_tables'] ) )
-                                            if ( in_array( $result[0], $template['additional_tables'] ) )
+                                            //if ( in_array( $result[0], $template['additional_tables'] ) )
+                                            if ( in_array( $val, $template['additional_tables'] ) )
                                                 echo ' checked="CHECKED"';
-                                        echo ">$result[0]</option><br/>";
+                                        echo " id='nbt-{$val}'><label for='nbt-{$val}'>{$result[0]}</label><br/>";
                                     }
                                 }
                             } else {
                                 _e('There are no additional tables to display for this blog',$this->localization_domain);
                             }
-
+							// End changed
+/* -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
                             restore_current_blog();
                         ?>
                     </td>

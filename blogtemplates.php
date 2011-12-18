@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/new-blog-template
 Description: Allows the site admin to create new blogs based on templates, to speed up the blog creation process
 Author: Jason DeVelvis, Ulrich Sossou (Incsub)
 Author URI: http://premium.wpmudev.org/
-Version: 1.2.6
+Version: 1.4
 Network: true
 Text Domain: blog_templates
 WDP ID: 130
@@ -32,16 +32,7 @@ if ( !is_multisite() )
 	exit( __( 'The New Blog Template plugin is only compatible with WordPress Multisite.', 'blog_templates' ) );
 
 require_once( 'blogtemplatesfiles/blog_templates.php' );
-
-/**
- * Exclude Gravity Forms option AND Formidable Pro (thank you, wecreateyou/Stephanie).
- **/
-function blog_template_exclude_gravity_forms( $and ) {
-	//$and .= " AND `option_name` != 'rg_forms_version'";
-	$and .= " AND `option_name` NOT IN ('rg_forms_version','frm_db_version','frmpro_db_version')";
-	return $and;
-}
-add_filter( 'blog_template_exclude_settings', 'blog_template_exclude_gravity_forms' );
+require_once( 'blogtemplatesfiles/filters.php' );
 
 /**
  * Show notification if WPMUDEV Update Notifications plugin is not installed
