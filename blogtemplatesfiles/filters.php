@@ -13,7 +13,7 @@ function blog_template_exclude_gravity_forms( $and ) {
 	$and .= " AND `option_name` NOT IN ('rg_forms_version','frm_db_version','frmpro_db_version')";
 	return $and;
 }
-add_filter( 'blog_template_exclude_settings', 'blog_template_exclude_gravity_forms' );
+add_filter('blog_template_exclude_settings', 'blog_template_exclude_gravity_forms');
 
 
 
@@ -33,3 +33,14 @@ function blog_template_check_postmeta ($tbl) {
 	if ("postmeta" == $tbl) add_filter('blog_templates-process_row', 'blog_template_contact_form7_postmeta', 10, 2);
 }
 add_action('blog_templates-copying_table', 'blog_template_check_postmeta');
+
+
+
+/**
+ * Exclude EPanel temporary folder paths.
+ */
+function blog_template_exclude_epanel_temp_path ($and) {
+	$and .= " AND `option_name` != 'et_images_temp_folder'";
+	return $and;
+}
+add_filter('blog_template_exclude_settings', 'blog_template_exclude_epanel_temp_path');

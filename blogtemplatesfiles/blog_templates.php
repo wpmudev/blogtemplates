@@ -484,10 +484,11 @@ if ( ! class_exists( 'blog_templates' ) ) {
                         unset($row[$key]);
                 }
 				
-				$process = apply_filters('blog_templates-process_row', $row, $table);
+				$process = apply_filters('blog_templates-process_row', $row, $table, $templated_blog_id);
 				if (!$process) continue; 
 
-                $wpdb->insert($wpdb->$table,$row);
+                //$wpdb->insert($wpdb->$table, $row);
+                $wpdb->insert($wpdb->$table, $process);
                 if (!empty($wpdb->last_error)) {
 					$error = '<div id="message" class="error"><p>' . sprintf( __( 'Insertion Error: %1$s - The template was not applied. (New Blog Templates - While copying %2$s)', $this->localization_domain ), $wpdb->last_error, $table ) . '</p></div>';
                     $wpdb->query("ROLLBACK;");
