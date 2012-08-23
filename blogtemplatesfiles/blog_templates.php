@@ -242,6 +242,12 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
                                 //To prevent duplicate entry errors, since we're not deleting ALL of the options, there could be an ID collision
                                 unset($row->option_id);
+                                // For template blogs with deprecated DB schema (WP3.4+)
+                                if (!(defined('NBT_TIGHT_ROW_DUPLICATION') && NBT_TIGHT_ROW_DUPLICATION)) unset($row->blog_id);
+
+                                // Add further processing for options row
+                                $row = apply_filters('blog_templates-copy-options_row', $row, $template, $blog_id, $user_id);
+                                if (!$row) continue; // Prevent empty row insertion
 
                                 //Insert the row
                                 $wpdb->insert($wpdb->options,(array) $row);
@@ -255,6 +261,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
 									wp_die($error);
                                 }
                             }
+                            do_action('blog_templates-copy-options', $template);
                         } else {
 							$error = '<div id="message" class="error"><p>' . sprintf( __( 'Deletion Error: %s - The template was not applied. (New Blog Templates - While removing auto-generated settings)', $this->localization_domain ), $wpdb->last_error ) . '</p></div>';
 							$wpdb->query("ROLLBACK;");
@@ -265,21 +272,28 @@ if ( ! class_exists( 'blog_templates' ) ) {
                     case 'posts':
                         $this->clear_table($wpdb->posts);
                         $this->copy_table($template['blog_id'],"posts");
+                        do_action('blog_templates-copy-posts', $template, $blog_id, $user_id);
+
                         $this->clear_table($wpdb->postmeta);
                         $this->copy_table($template['blog_id'],"postmeta");
+                        do_action('blog_templates-copy-postmeta', $template, $blog_id, $user_id);
                     break;
                     case 'terms':
                         $this->clear_table($wpdb->links);
                         $this->copy_table($template['blog_id'],"links");
+                        do_action('blog_templates-copy-links', $template, $blog_id, $user_id);
 
                         $this->clear_table($wpdb->terms);
                         $this->copy_table($template['blog_id'],"terms");
+                        do_action('blog_templates-copy-terms', $template, $blog_id, $user_id);
 
                         $this->clear_table($wpdb->term_relationships);
                         $this->copy_table($template['blog_id'],"term_relationships");
+                        do_action('blog_templates-copy-term_relationships', $template, $blog_id, $user_id);
 
                         $this->clear_table($wpdb->term_taxonomy);
                         $this->copy_table($template['blog_id'],"term_taxonomy");
+                        do_action('blog_templates-copy-term_taxonomy', $template, $blog_id, $user_id);
                     break;
                     case 'users':
                         //Copy over the users to this blog
@@ -290,7 +304,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                         //Delete the auto user from the blog, to prevent duplicates or erroneous users
                         $wpdb->query("DELETE FROM $wpdb->usermeta WHERE meta_key LIKE '" . mysql_escape_string($new_prefix) . "%'");
                         if (!empty($wpdb->last_error)) {
-							$error = '<div id="message" class="error"><p>' . sprintf( __( 'Deletion Error: %s - The template was not applied. (New Blog Templates - While removing auto-generated users)', $this->localization_domain ), $wpdb->last_error ) . '</p></div>';
+                            $error = '<div id="message" class="error"><p>' . sprintf( __( 'Deletion Error: %s - The template was not applied. (New Blog Templates - While removing auto-generated users)', $this->localization_domain ), $wpdb->last_error ) . '</p></div>';
                             $wpdb->query("ROLLBACK;");
 
                             //We've rolled it back and thrown an error, we're done here
@@ -304,11 +318,16 @@ if ( ! class_exists( 'blog_templates' ) ) {
                             //echo 'Adding User';
                             $user->meta_key = str_replace($template_prefix, $new_prefix,$user->meta_key);
                             unset($user->umeta_id); //Remove the umeta_id field, let it autoincrement
+
+                            // Further user entry processing
+                            $user = apply_filters('blog_templates-copy-user_entry', $user, $template, $blog_id, $user_id);
+                            if (!$user) continue; // Skip empty user objects
+
                             //Insert the user
                             $wpdb->insert($wpdb->usermeta,(array) $user);
                             //Check for errors
                             if (!empty($wpdb->last_error)) {
-								$error = '<div id="message" class="error"><p>' . sprintf( __( 'Insertion Error: %s - The template was not applied. (New Blog Templates - While inserting templated users)', $this->localization_domain ), $wpdb->last_error ) . '</p></div>';
+                                $error = '<div id="message" class="error"><p>' . sprintf( __( 'Insertion Error: %s - The template was not applied. (New Blog Templates - While inserting templated users)', $this->localization_domain ), $wpdb->last_error ) . '</p></div>';
                                 $wpdb->query("ROLLBACK;");
 
                                 //We've rolled it back and thrown an error, we're done here
@@ -316,12 +335,16 @@ if ( ! class_exists( 'blog_templates' ) ) {
                                 wp_die($error);
                             }
                         }
+                        do_action('blog_templates-copy-users', $template, $blog_id, $user_id);
                     break;
                     case 'files':
                     global $wp_filesystem;
 
 						$dir_to_copy = ABSPATH . 'wp-content/blogs.dir/' . $template['blog_id'] . '/files';
-						$dir_to_copy_into = ABSPATH .'wp-content/blogs.dir/' . $blog_id . '/files';
+                        $dir_to_copy = apply_filters('blog_templates-copy-source_directory', $dir_to_copy, $template, $blog_id, $user_id);
+                        
+                        $dir_to_copy_into = ABSPATH .'wp-content/blogs.dir/' . $blog_id . '/files';
+                        $dir_to_copy_into = apply_filters('blog_templates-copy-target_directory', $dir_to_copy_into, $template, $blog_id, $user_id);
 
 						if ( is_dir( $dir_to_copy ) ) {
 
@@ -411,6 +434,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
             //error_log('Finished Successfully');
 
             $wpdb->query("COMMIT;"); //If we get here, everything's fine. Commit the transaction
+
+            do_action("blog_templates-copy-after_copying", $template, $blog_id, $user_id);
 
             restore_current_blog(); //Switch back to our current blog
         }
@@ -509,6 +534,9 @@ if ( ! class_exists( 'blog_templates' ) ) {
         */
         function clear_table( $table ) {
             global $wpdb;
+
+            do_action('blog_templates-clearing_table', $table);
+
             //Delete the current categories
             $wpdb->query("DELETE FROM $table");
 
@@ -748,7 +776,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
 							'files'    => __( 'Files', $this->localization_domain )
 						);
 						foreach ( $options_to_copy as $key => $value ) {
-							echo "<span style='padding-right: 10px;'><input type='checkbox' name='to_copy[]' id='nbt-{$key}' value='$key'><label for='nbt-{$key}'>$value</label></span><br/>";
+							echo "<span style='padding-right: 10px;'><input type='checkbox' name='to_copy[]' id='nbt-{$key}' value='$key'>&nbsp;<label for='nbt-{$key}'>$value</label></span><br/>";
 						}
 						?>
                     </td>
@@ -858,7 +886,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
 						);
 						foreach ( $options_to_copy as $key => $value ) {
 							$checked = in_array( $key, $template['to_copy'] ) ? ' checked="checked"' : '';
-							echo "<span style='padding-right: 10px;'><input type='checkbox' name='to_copy[]' id='nbt-{$key}' value='$key'$checked><label for='nbt-{$key}'>$value</label></span><br/>";
+							echo "<span style='padding-right: 10px;'><input type='checkbox' name='to_copy[]' id='nbt-{$key}' value='$key'$checked>&nbsp;<label for='nbt-{$key}'>$value</label></span><br/>";
 						}
 						?>
                     </td>
@@ -905,7 +933,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                                             //if ( in_array( $result[0], $template['additional_tables'] ) )
                                             if ( in_array( $val, $template['additional_tables'] ) )
                                                 echo ' checked="CHECKED"';
-                                        echo " id='nbt-{$val}'><label for='nbt-{$val}'>{$result[0]}</label><br/>";
+                                        echo " id='nbt-{$val}'>&nbsp;<label for='nbt-{$val}'>{$result[0]}</label><br/>";
                                     }
                                 }
                             } else {

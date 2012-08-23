@@ -5,6 +5,13 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+1.6.2 - 2012-08-23
+----------------------------------------------------------------------
+- Added blog ID reset (thanks, Moha!) with optional fallback switch.
+- Added more behavior altering hooks.
+- Added optional (switchatble) auto-filters category.
+- Added optional authorship transfer filter.
+
 1.6.1 - 2012-07-11
 ----------------------------------------------------------------------
 - Added exclusion filter for paths copying.
