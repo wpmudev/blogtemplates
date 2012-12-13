@@ -4,6 +4,52 @@
  */
 
  
+/**
+ * Ensure we're the last thing to run on blog creation.
+ */
+function blog_template_ensure_last_place () {
+	global $wp_filter, $blog_templates;
+	if (!$wp_filter || !$blog_templates) return false;
+
+	$tag = 'wpmu_new_blog';
+	$method = 'set_blog_defaults';
+	$action_order = false;
+
+	$bt_callback = array($blog_templates, $method);
+	if (!is_callable($bt_callback)) return false;
+
+	if (has_action($tag, $bt_callback)) { 
+		// This is all provided it's even bound
+		$actions = !empty($wp_filter[$tag]) ? $wp_filter[$tag] : false;
+		if (!$actions) return false;
+
+		$highest = max(array_keys($actions));
+		if (!$idx = _wp_filter_build_unique_id($tag, $bt_callback, false)) return false; // Taken from core (`has_filter()`)
+
+		foreach ($actions as $priority => $callbacks) {
+			if (!isset($actions[$priority][$idx])) continue;
+			$action_order = $priority;
+			break;
+		}
+
+		if ($action_order >= $highest) return true; // We're the on the bottom, all good.
+
+		// If we reached here, this is not good - we need to re-bind to highest position
+		remove_action($tag, $bt_callback, $action_order, 6);
+		$action_order = $highest + 10;
+	} else {
+		// No action bound, let's do our thing
+		$action_order = defined('NBT_APPLY_TEMPLATE_ACTION_ORDER') && NBT_APPLY_TEMPLATE_ACTION_ORDER ? NBT_APPLY_TEMPLATE_ACTION_ORDER : 9999;
+		$action_order = apply_filters('blog_templates-actions-action_order', $action_order);
+	}
+
+	add_action($tag, $bt_callback, $action_order, 6);
+	return true;
+}
+if (defined('NBT_ENSURE_LAST_PLACE') && NBT_ENSURE_LAST_PLACE) add_action('init', 'blog_template_ensure_last_place', 99);
+
+
+
 /* ----- Default filters ----- */
 
 

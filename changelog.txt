@@ -5,6 +5,12 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+1.6.3 - 2012-12-13
+----------------------------------------------------------------------
+- User existence check and re-addition if necessary.
+- Making sure the template applying action runs last.
+- Verifying options existence before checking their values.
+
 1.6.2 - 2012-08-23
 ----------------------------------------------------------------------
 - Added blog ID reset (thanks, Moha!) with optional fallback switch.
