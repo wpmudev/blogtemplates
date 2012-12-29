@@ -301,11 +301,11 @@ if ( ! class_exists( 'blog_templates' ) ) {
                     break;
                     case 'users':
                         //Copy over the users to this blog
-                        $users = $wpdb->get_results("SELECT * FROM $wpdb->usermeta WHERE meta_key REGEXP '^" . mysql_escape_string($template_prefix) . "[^0-9]'");
+                        $users = $wpdb->get_results("SELECT * FROM $wpdb->usermeta WHERE user_id != {$user_id} AND meta_key REGEXP '^" . mysql_escape_string($template_prefix) . "[^0-9]'");
                         if (empty($users)) continue; //If there are no users to copy, just leave. We don't want to leave this blog without any users
 
                         //Delete the auto user from the blog, to prevent duplicates or erroneous users
-                        $wpdb->query("DELETE FROM $wpdb->usermeta WHERE meta_key LIKE '" . mysql_escape_string($new_prefix) . "%'");
+                        $wpdb->query("DELETE FROM $wpdb->usermeta WHERE user_id != {$user_id} AND meta_key LIKE '" . mysql_escape_string($new_prefix) . "%'");
                         if (!empty($wpdb->last_error)) {
                             $error = '<div id="message" class="error"><p>' . sprintf( __( 'Deletion Error: %s - The template was not applied. (New Blog Templates - While removing auto-generated users)', $this->localization_domain ), $wpdb->last_error ) . '</p></div>';
                             $wpdb->query("ROLLBACK;");
@@ -320,6 +320,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                         foreach ($users as $user) {
                             // Check if the user ID from email entered via the New Blog form has been added, and if not, add them after the foreach loop...
                             if (!$postprocess_add_new_user_action && $user->user_id != $user_id) $postprocess_add_new_user_action = true;
+                            if ($user->user_id == $user_id) continue;
 
                             // Carry on...
                             $user->meta_key = str_replace($template_prefix, $new_prefix,$user->meta_key);
@@ -349,10 +350,10 @@ if ( ! class_exists( 'blog_templates' ) ) {
                     case 'files':
                         global $wp_filesystem;
 
-						$dir_to_copy = ABSPATH . 'wp-content/blogs.dir/' . $template['blog_id'] . '/files';
+						$dir_to_copy = $this->_get_files_fs_path($template['blog_id']); //ABSPATH . 'wp-content/blogs.dir/' . $template['blog_id'] . '/files';
                         $dir_to_copy = apply_filters('blog_templates-copy-source_directory', $dir_to_copy, $template, $blog_id, $user_id);
                         
-                        $dir_to_copy_into = ABSPATH .'wp-content/blogs.dir/' . $blog_id . '/files';
+                        $dir_to_copy_into = $this->_get_files_fs_path($blog_id); //ABSPATH .'wp-content/blogs.dir/' . $blog_id . '/files';
                         $dir_to_copy_into = apply_filters('blog_templates-copy-target_directory', $dir_to_copy_into, $template, $blog_id, $user_id);
 
 						if ( is_dir( $dir_to_copy ) ) {
@@ -423,7 +424,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
 							$multi_db = $current_db = '';
 							$add_table = $add;
 						}
-                        $wpdb->query("CREATE TABLE {$current_db}" . str_replace($template_prefix,$new_prefix,$add_table) . " LIKE {$add}");
+                        $wpdb->query("CREATE TABLE IF NOT EXISTS {$current_db}" . str_replace($template_prefix,$new_prefix,$add_table) . " LIKE {$add}");
                         $wpdb->query("INSERT {$current_db}" . str_replace($template_prefix,$new_prefix,$add_table) . " SELECT * FROM {$add}");
 						// End changed
 /* -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
@@ -993,6 +994,23 @@ if ( ! class_exists( 'blog_templates' ) ) {
             if (empty($this->options)) return $default;
             if (empty($this->options[$key])) return $default;
             return $this->options[$key];
+        }
+
+        /**
+         * Proper blog filesystem path finding.
+         * @param  int $blog_id Blog ID to check
+         * @return string Filesystem path
+         */
+        private function _get_files_fs_path ($blog_id) {
+            if (!is_numeric($blog_id)) return false;
+            if (defined('NBT_LEGACY_PATH_RESOLUTION') && NBT_LEGACY_PATH_RESOLUTION) return ABSPATH .'wp-content/blogs.dir/' . $blog_id . '/files';
+            switch_to_blog($blog_id);
+            $info = wp_upload_dir();
+            restore_current_blog();
+            return !empty($info['basedir']) 
+                ? $info['basedir'] 
+                : false
+            ;
         }
 
         /**

@@ -5,6 +5,12 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+1.6.4 - 2012-12-29
+----------------------------------------------------------------------
+- Update for file paths resolution, with optional legacy fallback.
+- Fix for user capabilities post filtering check.
+- Multisite Privacy settings conditional switch respecting.
+
 1.6.3 - 2012-12-13
 ----------------------------------------------------------------------
 - User existence check and re-addition if necessary.

@@ -134,7 +134,7 @@ add_filter('blog_template_exclude_settings', 'blog_template_exclude_epanel_temp_
  */
 function blog_template_add_user_as_admin ($template, $blog_id, $user_id) {
 	if (is_super_admin($user_id)) return false;
-	if (!in_array('users', $template['to_copy'])) return false; // Only apply this if we're trumping over users
+	if (!in_array('users', $template['to_copy'])) return false; // Only apply this if we're trumping over users	
 	return add_user_to_blog($blog_id, $user_id, 'administrator');
 }
 add_action('blog_templates-copy-after_copying', 'blog_template_add_user_as_admin', 10, 3);
@@ -157,4 +157,20 @@ if (defined('NBT_REASSIGN_POST_AUTHORS_TO_USER') && NBT_REASSIGN_POST_AUTHORS_TO
 		$wpdb->query("UPDATE {$wpdb->posts} SET post_author={$new_author}");
 	}
 	add_action('blog_templates-copy-posts', 'blog_template_reassign_post_authors', 10, 3);
+}
+
+
+// Play nice with Multisite Privacy, if requested so
+if (defined('NBT_TO_MULTISITE_PRIVACY_ALLOW_SIGNUP_OVERRIDE') && NBT_TO_MULTISITE_PRIVACY_ALLOW_SIGNUP_OVERRIDE) {
+	/**
+	 * Keeps user-selected Multisite Privacy settings entered on registration time.
+	 * Propagate template settings on admin blog creation time.
+	 */
+	function blog_template_exclude_multisite_privacy_settings ($and) {
+		$user = wp_get_current_user();
+		if (is_super_admin($user->ID)) return $and;
+		$and .= " AND `option_name` NOT IN ('spo_settings', 'blog_public')";
+		return $and;
+	}
+	add_filter('blog_template_exclude_settings', 'blog_template_exclude_multisite_privacy_settings');
 }
