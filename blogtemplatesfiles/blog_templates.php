@@ -228,6 +228,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
             //Now, go back to the new blog that was just created
             restore_current_blog();
 
+
+
             foreach ( $template['to_copy'] as $value ) {
                 switch ( $value ) {
                     case 'settings':
@@ -258,10 +260,12 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
                                 // Add further processing for options row
                                 $row = apply_filters('blog_templates-copy-options_row', $row, $template, $blog_id, $user_id);
+                                
                                 if (!$row) continue; // Prevent empty row insertion
 
                                 //Insert the row
                                 $wpdb->insert($wpdb->options,(array) $row);
+
                                 //Check for errors
                                 if (!empty($wpdb->last_error)) {
 									$error = '<div id="message" class="error"><p>' . sprintf( __( 'Insertion Error: %s - The template was not applied. (New Blog Templates - While inserting templated settings)', $this->localization_domain ), $wpdb->last_error ) . '</p></div>';
@@ -272,6 +276,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
 									wp_die($error);
                                 }
                             }
+
+                            
                             do_action('blog_templates-copy-options', $template);
                         } else {
 							$error = '<div id="message" class="error"><p>' . sprintf( __( 'Deletion Error: %s - The template was not applied. (New Blog Templates - While removing auto-generated settings)', $this->localization_domain ), $wpdb->last_error ) . '</p></div>';
@@ -450,7 +456,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
             }
 
             //error_log('Finished Successfully');
-
             $wpdb->query("COMMIT;"); //If we get here, everything's fine. Commit the transaction
 
             // We need now to change the attachments URLs
@@ -473,9 +478,13 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             $this->set_attachments_urls( $attachment_guids );
 
+            // Now we need to update the blog status because of a conflict with Multisite Privacy Plugin
+            update_blog_status( $blog_id, 'public', get_blog_status( $template['blog_id'], 'public' ) ); 
+
             do_action("blog_templates-copy-after_copying", $template, $blog_id, $user_id);
 
             restore_current_blog(); //Switch back to our current blog
+
         }
 
         /**
