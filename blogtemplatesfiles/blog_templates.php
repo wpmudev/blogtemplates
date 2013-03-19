@@ -208,8 +208,11 @@ if ( ! class_exists( 'blog_templates' ) ) {
             //Begin the transaction
             $wpdb->query("BEGIN;");
 
-
             switch_to_blog($blog_id); //Switch to the blog that was just created
+
+            // Attachments URL for the new blog
+            $new_content_url = get_bloginfo('wpurl');
+
 
             //Get the prefixes, so we don't have to worry about regex, or changes to WP's naming conventions
             $new_prefix = $wpdb->prefix;
@@ -217,6 +220,10 @@ if ( ! class_exists( 'blog_templates' ) ) {
             //Don't forget to get the template blog's prefix
             switch_to_blog($template['blog_id']);
             $template_prefix = $wpdb->prefix;
+
+            // Attachments URL for the template blogç
+            $template_attachments = get_posts( array( 'post_type' => 'attachment' ) );
+            $template_content_url = get_bloginfo('wpurl');
 
             //Now, go back to the new blog that was just created
             restore_current_blog();
@@ -281,6 +288,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                         $this->clear_table($wpdb->postmeta);
                         $this->copy_table($template['blog_id'],"postmeta");
                         do_action('blog_templates-copy-postmeta', $template, $blog_id, $user_id);
+
                     break;
                     case 'terms':
                         $this->clear_table($wpdb->links);
@@ -371,7 +379,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
 									define('FS_CHMOD_DIR', 0755 );
 								if ( ! defined('FS_CHMOD_FILE') )
 									define('FS_CHMOD_FILE', 0644 );
-
+                                
 								copy_dir( $dir_to_copy, $dir_to_copy_into );
 
 								unset( $wp_filesystem );
@@ -444,6 +452,26 @@ if ( ! class_exists( 'blog_templates' ) ) {
             //error_log('Finished Successfully');
 
             $wpdb->query("COMMIT;"); //If we get here, everything's fine. Commit the transaction
+
+            // We need now to change the attachments URLs
+            $attachment_guids = array();
+            foreach ( $template_attachments as $attachment ) {
+                $new_url = str_replace( 
+                    $template_content_url, 
+                    $new_content_url, 
+                    dirname($attachment->guid) 
+                );
+                $new_url = str_replace(
+                    'sites/' . $template['blog_id'],
+                    'sites/' . $blog_id,
+                    $new_url
+                );
+
+                // We get an array with key = old_url and value = new_url
+                $attachment_guids[ dirname( $attachment->guid ) ] = $new_url;
+            }
+
+            $this->set_attachments_urls( $attachment_guids );
 
             do_action("blog_templates-copy-after_copying", $template, $blog_id, $user_id);
 
@@ -556,6 +584,30 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 restore_current_blog(); //Switch back to our current blog
                 wp_die($error);
             }
+        }
+
+
+        /**
+         * Changes the base URL for all attachments
+         * 
+         * @since 1.6.5
+         */
+        function set_attachments_urls( $attachment_guids ) {
+            global $wpdb;
+
+            $queries = array();
+            foreach ( $attachment_guids as $old_guid => $new_guid ) {
+                $queries[] = $wpdb->prepare( "UPDATE $wpdb->posts SET guid = REPLACE( guid, '%s', '%s' ) WHERE post_type = 'attachment'",
+                    $old_guid,
+                    $new_guid
+                );
+            }
+
+            if ( count( $queries ) > 0 ) {
+                $queries = implode( ';', $queries );
+                $wpdb -> query( $queries );
+            }
+
         }
 
         /**
