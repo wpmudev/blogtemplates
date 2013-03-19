@@ -479,7 +479,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
             $this->set_attachments_urls( $attachment_guids );
 
             // Now we need to update the blog status because of a conflict with Multisite Privacy Plugin
-            update_blog_status( $blog_id, 'public', get_blog_status( $template['blog_id'], 'public' ) ); 
+            if ( isset( $template['copy_status'] ) && $template['copy_status'] &&  is_plugin_active( 'sitewide-privacy-options/sitewide-privacy-options.php' ) )
+                update_blog_status( $blog_id, 'public', get_blog_status( $template['blog_id'], 'public' ) ); 
 
             do_action("blog_templates-copy-after_copying", $template, $blog_id, $user_id);
 
@@ -723,6 +724,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 $this->options['templates'][$t]['description'] = stripslashes(strip_tags($_POST['template_description']));
                 $this->options['templates'][$t]['to_copy'] = (array)$_POST['to_copy'];
                 $this->options['templates'][$t]['additional_tables'] = isset( $_POST['additional_template_tables'] ) ? $_POST['additional_template_tables'] : array();
+                $this->options['templates'][$t]['copy_status'] = isset( $_POST['copy_status'] ) ? true : false;
 
                 $this->save_admin_options();
 
@@ -738,7 +740,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
 					'name' => (!empty($_POST['template_name']) ? stripslashes( $_POST['template_name'] ) : ''),
 					'description' => (!empty($_POST['template_description']) ? stripslashes(strip_tags($_POST['template_description'])) : ''),
 					'blog_id' => (int)$_POST['copy_blog_id'],
-					'to_copy' => (!empty($_POST['to_copy']) ? (array)$_POST['to_copy'] : array())
+                    'to_copy' => (!empty($_POST['to_copy']) ? (array)$_POST['to_copy'] : array()),
+					'copy_status' => isset( $_POST['copy_status'] ) ? true : false
 				);
 
                 $this->save_admin_options();
@@ -852,6 +855,18 @@ if ( ! class_exists( 'blog_templates' ) ) {
 						?>
                     </td>
                 </tr>
+                <?php if ( is_plugin_active( 'sitewide-privacy-options/sitewide-privacy-options.php' ) ): ?>
+                    <tr valign="top">
+                        <th width="33%"><?php _e( 'Copy Status?', $this->localization_domain ); ?></th>
+                        <td>
+                            <?php $checked = ( empty( $template['copy_status'] ) ) ? '' : 'checked'; ?>
+                            <span style='padding-right: 10px;'>
+                                <input type='checkbox' name='copy_status' id='nbt-copy-status' <?php echo $checked; ?>>
+                                &nbsp;<label for='nbt-copy-status'><?php _e( 'Check if you want also to copy the blog status (Public or not)', $this->localization_domain ); ?></label>
+                            </span><br/>
+                        </td>
+                    </tr>
+                <?php endif; ?>
                 <tr>
                     <th><?php _e('Advanced', $this->localization_domain); ?></th>
                     <td><?php _e('After you add this template, an advanced options area will show up on the edit screen (Click on the template name when it appears in the list above). In that advanced area, you can choose to add full tables to the template, in case you\'re using a plugin that creates its own database tables. Note that this is not required for new Blog Templates to work', $this->localization_domain); ?></td>
@@ -963,6 +978,18 @@ if ( ! class_exists( 'blog_templates' ) ) {
 						?>
                     </td>
                 </tr>
+                <?php if ( is_plugin_active( 'sitewide-privacy-options/sitewide-privacy-options.php' ) ): ?>
+                    <tr valign="top">
+                        <th width="33%"><?php _e( 'Copy Status?', $this->localization_domain ); ?></th>
+                        <td>
+                            <?php $checked = ( empty( $template['copy_status'] ) ) ? '' : 'checked'; ?>
+                            <span style='padding-right: 10px;'>
+                                <input type='checkbox' name='copy_status' id='nbt-copy-status' <?php echo $checked; ?>>
+                                &nbsp;<label for='nbt-copy-status'><?php _e( 'Check if you want also to copy the blog status (Public or not)', $this->localization_domain ); ?></label>
+                            </span><br/>
+                        </td>
+                    </tr>
+                <?php endif; ?>
             </table>
             <p><div class="submit"><input type="submit" name="save_updated_template" value="<?php _e('Save', $this->localization_domain); ?> &raquo;" class="button-primary" /></div></p>
             <h2><?php _e('Advanced Options',$this->localization_domain); ?></h2>
