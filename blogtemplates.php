@@ -31,8 +31,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 if ( !is_multisite() )
 	exit( __( 'The New Blog Template plugin is only compatible with WordPress Multisite.', 'blog_templates' ) );
 
-require_once( 'blogtemplatesfiles/blog_templates.php' );
 require_once( 'blogtemplatesfiles/filters.php' );
+require_once( 'blogtemplatesfiles/blog_templates.php' );
+
 
 /**
  * Show notification if WPMUDEV Update Notifications plugin is not installed

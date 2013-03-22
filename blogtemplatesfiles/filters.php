@@ -143,21 +143,16 @@ add_action('blog_templates-copy-after_copying', 'blog_template_add_user_as_admin
 /* ----- Optional (switchable) filters ----- */
 
 
-if (defined('NBT_REASSIGN_POST_AUTHORS_TO_USER') && NBT_REASSIGN_POST_AUTHORS_TO_USER) {
-	/**
-	 * Optionally transfer post ownership to the new or predefined user ID.
-	 */
-	function blog_template_reassign_post_authors ($template, $blog_id, $user_id) {
-		$new_author = false;
-		if ('current_user' == NBT_REASSIGN_POST_AUTHORS_TO_USER) $new_author = $user_id;
-		else if (is_numeric(NBT_REASSIGN_POST_AUTHORS_TO_USER)) $new_author = NBT_REASSIGN_POST_AUTHORS_TO_USER;
-		if (!$new_author) return false;
-
+/**
+ * Optionally transfer post ownership to the new or predefined user ID.
+ */
+function blog_template_reassign_post_authors ( $template, $blog_id, $user_id ) {
+	if ( ! in_array( 'users', $template['to_copy'] ) ) {
 		global $wpdb;
-		$wpdb->query("UPDATE {$wpdb->posts} SET post_author={$new_author}");
+		$wpdb->query($wpdb->prepare( "UPDATE {$wpdb->posts} SET post_author=%d", $user_id ) );
 	}
-	add_action('blog_templates-copy-posts', 'blog_template_reassign_post_authors', 10, 3);
 }
+add_action('blog_templates-copy-posts', 'blog_template_reassign_post_authors', 10, 3);
 
 
 // Play nice with Multisite Privacy, if requested so

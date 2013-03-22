@@ -227,9 +227,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             //Now, go back to the new blog that was just created
             restore_current_blog();
-
-
-
             foreach ( $template['to_copy'] as $value ) {
                 switch ( $value ) {
                     case 'settings':
@@ -241,6 +238,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                         $wpdb->query("DELETE FROM $wpdb->options WHERE $exclude_settings");
 
                         if (!$wpdb->last_error) { //No error. Good! Now copy over the old settings
+
                             //Switch to the template blog, then grab the settings/plugins/templates values from the template blog
                             switch_to_blog($template['blog_id']);
 
@@ -276,8 +274,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
 									wp_die($error);
                                 }
                             }
-
-                            
                             do_action('blog_templates-copy-options', $template);
                         } else {
 							$error = '<div id="message" class="error"><p>' . sprintf( __( 'Deletion Error: %s - The template was not applied. (New Blog Templates - While removing auto-generated settings)', $this->localization_domain ), $wpdb->last_error ) . '</p></div>';
@@ -366,37 +362,40 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
 						$dir_to_copy = $this->_get_files_fs_path($template['blog_id']); //ABSPATH . 'wp-content/blogs.dir/' . $template['blog_id'] . '/files';
                         $dir_to_copy = apply_filters('blog_templates-copy-source_directory', $dir_to_copy, $template, $blog_id, $user_id);
-                        
+
                         $dir_to_copy_into = $this->_get_files_fs_path($blog_id); //ABSPATH .'wp-content/blogs.dir/' . $blog_id . '/files';
                         $dir_to_copy_into = apply_filters('blog_templates-copy-target_directory', $dir_to_copy_into, $template, $blog_id, $user_id);
 
 						if ( is_dir( $dir_to_copy ) ) {
-
 							if ( wp_mkdir_p( $dir_to_copy_into ) ) {
 
 								require_once( ABSPATH . 'wp-admin/includes/class-wp-filesystem-base.php' );
 								require_once( ABSPATH . 'wp-admin/includes/class-wp-filesystem-direct.php' );
+								
+                                if ( is_object( $wp_filesystem ) )
+                                    $orig_filesystem = wp_clone( $wp_filesystem );
+                                else
+                                    $orig_filesystem = $wp_filesystem;
 
-								if( isset( $wp_filesystem ) )
-									$orig_filesystem = wp_clone( $wp_filesystem );
 								$wp_filesystem = new WP_Filesystem_Direct( false );
 
 								if ( ! defined('FS_CHMOD_DIR') )
 									define('FS_CHMOD_DIR', 0755 );
 								if ( ! defined('FS_CHMOD_FILE') )
 									define('FS_CHMOD_FILE', 0644 );
-                                
-								copy_dir( $dir_to_copy, $dir_to_copy_into );
+
+								$result = copy_dir( $dir_to_copy, $dir_to_copy_into );
 
 								unset( $wp_filesystem );
-								if( isset( $orig_filesystem ) )
-									$wp_filesystem = wp_clone( $orig_filesystem );
+								
+                                if ( is_object( $orig_filesystem ) )
+                                    $wp_filesystem = wp_clone( $orig_filesystem );
+                                else
+                                    $wp_filesystem = $orig_filesystem;
 
 								if ( @file_exists( $dir_to_copy_into . '/sitemap.xml' ) )
 									@unlink( $dir_to_copy_into . '/sitemap.xml' );
-
 							} else {
-
 								$error = '<div id="message" class="error"><p>' . sprintf( __( 'File System Error: Unable to create directory %s. (New Blog Templates - While copying files)', $this->localization_domain ), $dir_to_copy_into ) . '</p></div>';
 								$wpdb->query( 'ROLLBACK;' );
 								restore_current_blog();
@@ -454,7 +453,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
                     }
                 }
             }
-
             //error_log('Finished Successfully');
             $wpdb->query("COMMIT;"); //If we get here, everything's fine. Commit the transaction
 
@@ -471,13 +469,13 @@ if ( ! class_exists( 'blog_templates' ) ) {
                     'sites/' . $blog_id,
                     $new_url
                 );
-
+            
                 // We get an array with key = old_url and value = new_url
                 $attachment_guids[ dirname( $attachment->guid ) ] = $new_url;
             }
-
+            
             $this->set_attachments_urls( $attachment_guids );
-
+            
             // Now we need to update the blog status because of a conflict with Multisite Privacy Plugin
             if ( isset( $template['copy_status'] ) && $template['copy_status'] &&  is_plugin_active( 'sitewide-privacy-options/sitewide-privacy-options.php' ) )
                 update_blog_status( $blog_id, 'public', get_blog_status( $template['blog_id'], 'public' ) ); 
@@ -797,6 +795,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             global $pagenow;
             $url = $pagenow . '?page=blog_templates.php';
+
 ?>
 
 <div class="wrap">
