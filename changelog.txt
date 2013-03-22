@@ -9,6 +9,7 @@ Change Log:
 ----------------------------------------------------------------------
 - Fixed bug when copying users.
 - Added new option to copy menus.
+- Fixed notice when saving templates without any option selected.
 
 1.6.5 - 2012-03-19
 ----------------------------------------------------------------------
