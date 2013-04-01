@@ -593,6 +593,10 @@ if ( ! class_exists( 'blog_templates' ) ) {
             switch_to_blog( $templated_blog_id );
             // Getting template menus and locations
             $menus = wp_get_nav_menus();
+
+            if ( empty( $menus ) || ! is_array( $menus ) )
+                return false;
+
             $menu_locations = get_nav_menu_locations();
             $flipped_menu_locations = array_flip( $menu_locations );
             restore_current_blog();
