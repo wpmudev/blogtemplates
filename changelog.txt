@@ -5,6 +5,12 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+1.6.7 - 2012-04-09
+----------------------------------------------------------------------
+- Possible issues with other plugins that use the old IDs of the
+menus solved.
+- Sometimes the menus were not well assigned on the menu selector.
+
 1.6.7 - 2012-04-01
 ----------------------------------------------------------------------
 - Fixed notice when copying menus. In some cases an array was not being

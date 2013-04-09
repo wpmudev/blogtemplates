@@ -575,7 +575,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
             }
         }
 
-        /**
+
+         /**
          * Copy the templated menu and locations
          * 
          * @since 1.6.6
@@ -585,121 +586,63 @@ if ( ! class_exists( 'blog_templates' ) ) {
          *
          */
         function copy_menu( $templated_blog_id, $new_blog_id ) {
-
             global $wpdb;
 
             do_action( 'blog_templates-copying_menu', $templated_blog_id, $new_blog_id);
 
             switch_to_blog( $templated_blog_id );
-            // Getting template menus and locations
-            $menus = wp_get_nav_menus();
-
-            if ( empty( $menus ) || ! is_array( $menus ) )
-                return false;
+            $templated_posts_table = $wpdb->posts;
+            $templated_postmeta_table = $wpdb->postmeta;
+            $templated_term_relationships_table = $wpdb->term_relationships;
 
             $menu_locations = get_nav_menu_locations();
-            $flipped_menu_locations = array_flip( $menu_locations );
             restore_current_blog();
 
             switch_to_blog( $new_blog_id );
-            // Initializing new blog locations and menus
-            $new_blog_locations = get_nav_menu_locations();
-            foreach ( $menu_locations as $location ) {
-                $new_blog_locations[ $location ] = 0;
-            }
+            $new_posts_table = $wpdb->posts;
+            $new_postmeta_table = $wpdb->postmeta;
+            $new_term_relationships_table = $wpdb->term_relationships;
 
-            $new_blog_menus = wp_get_nav_menus();
-            foreach ( $new_blog_menus as $new_menu ) {
-                wp_delete_nav_menu( $new_menu->term_id );
-            }
+            $new_blog_locations = $menu_locations;
+
             restore_current_blog();
+            
+            $menus = $wpdb->get_col(
+                "SELECT ID FROM $templated_posts_table
+                WHERE post_type = 'nav_menu_item'"
+            );
 
-            foreach ( $menus as $menu ) {
-                // Get menu items
-                switch_to_blog( $templated_blog_id );
-                $items = wp_get_nav_menu_items( $menu->term_id );
-                restore_current_blog();
+            if ( ! empty( $menus ) ) {
 
-                switch_to_blog( $new_blog_id );
-                // Creating new menu
-                $new_menu_id = wp_create_nav_menu( $menu->name );
-
-                // Is this menu set in any location?
-                if ( $new_menu_id && in_array( $menu->term_id, $menu_locations ) ) {
-                    $location = $flipped_menu_locations[ $menu->term_id ];
-                    // We save the location with the new menu ID
-                    $new_blog_locations[ $location ] = $new_menu_id;
-                }
-
-                // We need an array to make a relationship between a parent and a child
-                $parents = array();
-
-                if ( $new_menu_id && ! empty( $items ) ) {
-                    $position = 1;
-                    foreach  ( $items as $item ) {
-
-                        $classes = implode( ' ', $item->classes );
-
-                        $args = array(
-                            'menu-item-db-id' => $item->db_id,
-                            'menu-item-object-id' => $item->object_id,
-                            'menu-item-object' => $item->object,
-                            'menu-item-parent-id' => 0,
-                            'menu-item-position' => $position,
-                            'menu-item-type' => $item->type,
-                            'menu-item-title' => $item->title,
-                            'menu-item-url' => $item->url,
-                            'menu-item-description' => $item->description,
-                            'menu-item-attr-title' => $item->attr_title,
-                            'menu-item-classes' => $classes,
-                            'menu-item-target' => $item->target,
-                            'menu-item-xfn' => $item->xfn,
-                            'menu-item-status' => 'publish',
-                        );
-
-                        // Copying the items
-                        $new_item_db_id = wp_update_nav_menu_item( $new_menu_id, 0, $args );
-                        $parents[ $item->db_id ] = $new_item_db_id;
-
-                        // For older versions of WP, terms relationships must be done manually
-                        $results = $wpdb->get_var( 
-                            $wpdb->prepare( "SELECT object_id WHERE object_id = %d AND term_taxonomy_id = %d",
-                                $new_item_db_id,
-                                $new_menu_id
-                            ) 
-                        );
-
-                        if ( empty( $results ) ) {
-                            $wpdb->insert(
-                                $wpdb->term_relationships,
-                                array(
-                                    'object_id' => $new_item_db_id,
-                                    'term_taxonomy_id' => $new_menu_id
-                                ),
-                                array(
-                                    '%d',
-                                    '%d'
-                                )
-                            );
-                        }
-
-                        // If the item had a parent, we search for it and update the item
-                        if( $item->menu_item_parent && isset( $parents[ $item->menu_item_parent ] ) ) {
-                            $args['menu-item-parent-id'] = $parents[ $item->menu_item_parent ];
-                            wp_update_nav_menu_item( $new_menu_id, $new_item_db_id, $args );
-                        }
-
-                        // Increasing the menu position
-                        $position++;
-                    }
-                }
-
-                // Updating the menu locations
+                // Duplicating the menu locations
                 set_theme_mod( 'nav_menu_locations', $new_blog_locations );
-                
-                restore_current_blog();                
+
+                // Duplicating every menu item
+                // We cannot use nav-menu functions as we need
+                // to keep all the old IDs
+                $menus = '(' . implode( ',', $menus ) . ')';
+                $wpdb->query(
+                    "INSERT IGNORE INTO $new_posts_table
+                    SELECT * FROM $templated_posts_table
+                    WHERE ID IN $menus"
+                );
+
+                $wpdb->query(
+                    "INSERT IGNORE INTO $new_postmeta_table
+                    SELECT * FROM $templated_postmeta_table
+                    WHERE post_id IN $menus"
+                );
+
+                $wpdb->query(
+                    "INSERT IGNORE INTO $new_term_relationships_table
+                    SELECT * FROM $templated_term_relationships_table
+                    WHERE object_id IN $menus"
+                );
+
+
             }
         }
+       
 
         /**
         * Deletes everything from a table
