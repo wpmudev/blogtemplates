@@ -1096,10 +1096,13 @@ if ( ! class_exists( 'blog_templates' ) ) {
 /* -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
                             // Changed
                             $pfx = class_exists("m_wpdb") ? $wpdb->prefix : str_replace('_','\_',$wpdb->prefix);
+                            
+
                             //$results = $wpdb->get_results("SHOW TABLES LIKE '" . str_replace('_','\_',$wpdb->prefix) . "%'", ARRAY_N);
                             $results = $wpdb->get_results("SHOW TABLES LIKE '{$pfx}%'", ARRAY_N);
 
                             if (!empty($results)) {
+
                                 foreach($results as $result) {
                                     if (!in_array(str_replace($wpdb->prefix,'',$result['0']),$wpdb->tables)) {
 
@@ -1110,6 +1113,12 @@ if ( ! class_exists( 'blog_templates' ) ) {
                                             $val = $current_db['name'] . '.' . $result[0];
                                         } else {
                                             $val =  $result[0];
+                                        }
+                                        if ( stripslashes_deep( $pfx ) == $wpdb->base_prefix ) {
+                                            // If we are on the main blog, we'll have to avoid those tables from other blogs
+                                            $pattern = '/^' . stripslashes_deep( $pfx ) . '[0-9]/';
+                                            if ( preg_match( $pattern, $result[0] ) )
+                                                continue;
                                         }
                                         //echo "<input type='checkbox' name='additional_template_tables[]' value='$result[0]'";
                                         echo "<input type='checkbox' name='additional_template_tables[]' value='{$val}'";
