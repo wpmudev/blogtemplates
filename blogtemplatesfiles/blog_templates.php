@@ -119,16 +119,18 @@ if ( ! class_exists( 'blog_templates' ) ) {
         * @since 1.0
         */
         function get_template_dropdown( $tag_name, $include_none ) {
+
             $templates = array();
             foreach ($this->options['templates'] as $key=>$template) {
                 $templates[$key] = $template['name'];
             }
 
+
             if ($templates != array()) {
                 echo "<select name=\"$tag_name\">";
                 echo ($include_none ? "<option value=\"none\">None</option>" : '');
                 foreach ($templates as $key=>$value) {
-                    echo "<option value=\"$key\">$value</option>";
+                    echo "<option value=\"$key\">" . esc_attr( $value ) . "</option>";
                 }
                 echo '</select>';
             }
@@ -141,7 +143,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
         */
         function add_template_dd() {
             global $pagenow;
-            
             if( ! in_array( $pagenow, array( 'ms-sites.php', 'site-new.php' ) ) || isset( $_GET['action'] ) && 'editblog' == $_GET['action'] )
                 return;
 
