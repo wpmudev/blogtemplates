@@ -1,28 +1,33 @@
 Plugin Name: New Blog Templates
-Author: Jason DeVelvis, Ulrich Sossou
+Author: Jason DeVelvis, Ulrich Sossou, Ignacio Cruz
 
 Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
-1.6.7 - 2012-04-09
+1.6.9 - 2013-04-26
+----------------------------------------------------------------------
+- Filtering other blogs tables when the main blog is templated.
+- Escaping characters for the blog templates selection box
+
+1.6.8 - 2013-04-09
 ----------------------------------------------------------------------
 - Possible issues with other plugins that use the old IDs of the
 menus solved.
 - Sometimes the menus were not well assigned on the menu selector.
 
-1.6.7 - 2012-04-01
+1.6.7 - 2013-04-01
 ----------------------------------------------------------------------
 - Fixed notice when copying menus. In some cases an array was not being
 returned when using wp_get_nav_menus() function
 
-1.6.6 - 2012-03-22
+1.6.6 - 2013-03-22
 ----------------------------------------------------------------------
 - Fixed bug when copying users.
 - Added new option to copy menus.
 - Fixed notice when saving templates without any option selected.
 
-1.6.5 - 2012-03-19
+1.6.5 - 2013-03-19
 ----------------------------------------------------------------------
 - Set correct attachments URLs when creating a new blog.
 - Added new option to inherint blog status.
