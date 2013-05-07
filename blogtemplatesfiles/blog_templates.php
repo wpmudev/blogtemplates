@@ -229,6 +229,10 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             //Now, go back to the new blog that was just created
             restore_current_blog();
+
+            // In case we are not copying posts, we'll have to reset the terms count to 0
+            $copying_posts = in_array( 'posts', $template['to_copy'] );
+
             foreach ( $template['to_copy'] as $value ) {
                 switch ( $value ) {
                     case 'settings':
@@ -310,6 +314,12 @@ if ( ! class_exists( 'blog_templates' ) ) {
                         $this->clear_table($wpdb->term_taxonomy);
                         $this->copy_table($template['blog_id'],"term_taxonomy");
                         do_action('blog_templates-copy-term_taxonomy', $template, $blog_id, $user_id);
+
+                        if ( ! $copying_posts ) {
+                            // The new blog will not have any post
+                            // So we have to set the terms count to 0
+                            $this->reset_terms_counts( $template['blog_id'] );
+                        }
                     break;
                     case 'users':
                         //Copy over the users to this blog
@@ -1285,6 +1295,17 @@ if ( ! class_exists( 'blog_templates' ) ) {
             $meta = $meta ? $meta : array();
             $meta['blog_template'] = @$_POST['blog_template'];
             return $meta;
+        }
+
+        /**
+         * Reset the terms counts to 0
+         * 
+         * @param Integer $blog_id 
+         */
+        function reset_terms_counts( $blog_id ) {
+            
+            global $wpdb;
+            $result = $wpdb->query( "UPDATE $wpdb->term_taxonomy SET count = 0" );
         }
 
     } // End Class
