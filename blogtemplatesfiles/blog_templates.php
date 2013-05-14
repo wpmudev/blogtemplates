@@ -1030,6 +1030,12 @@ if ( ! class_exists( 'blog_templates' ) ) {
                     <?php _e('As theme screenshot selection with titles and description', $this->localization_domain); ?>
                 </label>
             </p>
+            <p>
+                <label for="registration-templates-appearance-previewer">
+                    <input type="radio" <?php checked( 'previewer' == $appearance_template ); ?> name="registration-templates-appearance" id="registration-templates-appearance-previewer" value="previewer" />
+                    <?php _e('As a theme previewer', $this->localization_domain); ?>
+                </label>
+            </p>
             <p><div class="submit"><input type="submit" name="save_options" class="button-primary" value="<?php esc_attr_e(__('Save Options', $this->localization_domain));?>" /></div></p>
             
             <h2><?php _e('Default Template',$this->localization_domain); ?></h2>
@@ -1278,7 +1284,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             
             $tpl_file_suffix = $this->options['registration-templates-appearance'] ? '-' . $this->options['registration-templates-appearance'] : '';
             $tpl_file = "blog_templates-registration{$tpl_file_suffix}.php";
-            
+
             // Setup theme file
             $theme_file = locate_template(array($tpl_file));
             $theme_file = $theme_file ? $theme_file : $this->thispluginpath . 'template/' . $tpl_file;
