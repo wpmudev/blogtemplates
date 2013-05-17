@@ -35,6 +35,7 @@ require_once( 'blogtemplatesfiles/filters.php' );
 require_once( 'blogtemplatesfiles/blog_templates.php' );
 
 
+
 /**
  * Show notification if WPMUDEV Update Notifications plugin is not installed
  **/
