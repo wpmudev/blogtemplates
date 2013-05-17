@@ -116,7 +116,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
              * From 1.7.1 version we are not allowing to template the main site
              * This will alert the user to remove that template
              */
-            add_action( 'network_admin_notices', array( &$this, 'alert_main_site_templated' ) );
+            add_action( 'all_admin_notices', array( &$this, 'alert_main_site_templated' ) );
         }
 
         function alert_main_site_templated() {
@@ -127,7 +127,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                         $main_site_templated = true;
                 }
 
-                if ( $main_site_templated ) {
+                if ( $main_site_templated && is_super_admin() ) {
                     $settings_url = add_query_arg( 'page', basename(__FILE__), network_admin_url( 'settings.php' ) );
                     ?>
                         <div class="error">
