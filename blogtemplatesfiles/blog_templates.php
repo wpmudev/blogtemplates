@@ -73,6 +73,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 load_muplugin_textdomain( $this->localization_domain, '/blogtemplatesfiles/languages/' );
             }
 
+            add_action( 'init', array( &$this, 'maybe_upgrade' ) );
+
             $this->currenturl_with_querystring = is_ssl() ? 'https://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] : 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
 
             // Initialize the options
@@ -117,6 +119,28 @@ if ( ! class_exists( 'blog_templates' ) ) {
              * This will alert the user to remove that template
              */
             add_action( 'all_admin_notices', array( &$this, 'alert_main_site_templated' ) );
+
+
+        }
+
+        function maybe_upgrade() {
+
+            // Split posts option into posts and pages options
+            $current_version = get_site_option( 'nbt_plugin_version', false );
+            if ( ! $current_version || version_compare( $current_version, NBT_PLUGIN_VERSION ) == -1 ) {
+                $new_options = $this->options;
+                foreach ( $this->options['templates'] as $key => $template ) {
+                    $to_copy = $template['to_copy'];
+                    if ( in_array( 'posts', $to_copy ) )
+                        $new_options['templates'][ $key ]['to_copy'][] = 'pages';
+                }
+                $this->options = $new_options;
+                $this->save_admin_options();
+                update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );
+            }
+            
+
+
         }
 
         function alert_main_site_templated() {
@@ -257,6 +281,12 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             // In case we are not copying posts, we'll have to reset the terms count to 0
             $copying_posts = in_array( 'posts', $template['to_copy'] );
+            $copying_pages = in_array( 'pages', $template['to_copy'] );
+
+            if ( $copying_posts || $copying_pages ) {
+                $this->clear_table($wpdb->posts);
+                $this->clear_table($wpdb->postmeta);
+            }
 
             foreach ( $template['to_copy'] as $value ) {
                 switch ( $value ) {
@@ -314,14 +344,19 @@ if ( ! class_exists( 'blog_templates' ) ) {
                         }
                     break;
                     case 'posts':
-                        $this->clear_table($wpdb->posts);
-                        $this->copy_table($template['blog_id'],"posts");
+                        $this->copy_posts_table($template['blog_id'],"posts");
                         do_action('blog_templates-copy-posts', $template, $blog_id, $user_id);
 
-                        $this->clear_table($wpdb->postmeta);
-                        $this->copy_table($template['blog_id'],"postmeta");
+                        $this->copy_posts_table($template['blog_id'],"postmeta");
                         do_action('blog_templates-copy-postmeta', $template, $blog_id, $user_id);
 
+                    break;
+                    case 'pages':
+                        $this->copy_posts_table($template['blog_id'],"pages");
+                        do_action('blog_templates-copy-pages', $template, $blog_id, $user_id);
+
+                        $this->copy_posts_table($template['blog_id'],"pagemeta");
+                        do_action('blog_templates-copy-pagemeta', $template, $blog_id, $user_id);
                     break;
                     case 'terms':
                         $this->clear_table($wpdb->links);
@@ -589,6 +624,72 @@ if ( ! class_exists( 'blog_templates' ) ) {
             //Switch to the template blog, then grab the values
             switch_to_blog($templated_blog_id);
             $templated = $wpdb->get_results("SELECT * FROM {$wpdb->$table}");
+            restore_current_blog(); //Switch back to the newly created blog
+
+            if (count($templated))
+                $to_remove = $this->get_fields_to_remove($table, $templated[0]);
+
+            //Now, insert the templated settings into the newly created blog
+            foreach ($templated as $row) {
+                $row = (array)$row;
+
+                foreach ($row as $key=>$value) {
+                    if (in_array($key,$to_remove))
+                        unset($row[$key]);
+                }
+                
+                $process = apply_filters('blog_templates-process_row', $row, $table, $templated_blog_id);
+                if (!$process) continue; 
+
+                //$wpdb->insert($wpdb->$table, $row);
+                $wpdb->insert($wpdb->$table, $process);
+                if (!empty($wpdb->last_error)) {
+                    $error = '<div id="message" class="error"><p>' . sprintf( __( 'Insertion Error: %1$s - The template was not applied. (New Blog Templates - While copying %2$s)', $this->localization_domain ), $wpdb->last_error, $table ) . '</p></div>';
+                    $wpdb->query("ROLLBACK;");
+
+                    //We've rolled it back and thrown an error, we're done here
+                    restore_current_blog();
+                    wp_die($error);
+                }
+            }
+        }
+
+        /**
+        * Copy the templated blog posts table. Bit different from the
+        * previous one, it can make difference between
+        * posts and pages
+        *
+        * @param int $templated_blog_id The ID of the blog to copy
+        * @param string $type post, page, postmeta or pagemeta
+        *
+        * @since 1.0
+        */
+        function copy_posts_table( $templated_blog_id, $type ) {
+            global $wpdb;
+
+            switch( $type ) {
+                case 'posts': $table = 'posts'; break;
+                case 'postmeta': $table = 'postmeta'; break;
+                case 'pages': $table = 'posts'; break;
+                case 'pagemeta': $table = 'postmeta'; break;
+            }
+            
+            do_action('blog_templates-copying_table', $table, $templated_blog_id);
+
+            //Switch to the template blog, then grab the values
+            switch_to_blog($templated_blog_id);
+            $query = "SELECT t1.* FROM {$wpdb->$table} ";
+
+            if ( 'posts' == $type )
+                $query .= "t1 WHERE t1.post_type != 'page'";
+            elseif ( 'postmeta' == $type )
+                $query .= "t2 INNER JOIN $wpdb->postmeta t1 ON t2.ID = t1.post_id WHERE t2.post_type != 'page'";
+            elseif ( 'pages' == $type )
+                $query .= "t1 WHERE t1.post_type = 'page'";
+            elseif ( 'pagemeta' == $type )
+                $query .= "t2 INNER JOIN $wpdb->postmeta t1 ON t2.ID = t1.post_id WHERE t2.post_type = 'page'";
+
+            $templated = $wpdb->get_results( $query );
             restore_current_blog(); //Switch back to the newly created blog
 
             if (count($templated))
@@ -963,7 +1064,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
                         <?php
                         $options_to_copy = array(
                             'settings' => __( 'Wordpress Settings, Current Theme, and Active Plugins', $this->localization_domain ),
-                            'posts'    => __( 'Posts and Pages', $this->localization_domain ),
+                            'posts'    => __( 'Posts', $this->localization_domain ),
+                            'pages'    => __( 'Pages', $this->localization_domain ),
                             'terms'    => __( 'Categories, Tags, and Links', $this->localization_domain ),
                             'users'    => __( 'Users', $this->localization_domain ),
                             'menus'    => __( 'Menus', $this->localization_domain ),
@@ -1096,7 +1198,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
                         <?php
                         $options_to_copy = array(
                             'settings' => __( 'Wordpress Settings, Current Theme, and Active Plugins', $this->localization_domain ),
-                            'posts'    => __( 'Posts and Pages', $this->localization_domain ),
+                            'posts'    => __( 'Posts', $this->localization_domain ),
+                            'pages'    => __( 'Pages', $this->localization_domain ),
                             'terms'    => __( 'Categories, Tags, and Links', $this->localization_domain ),
                             'users'    => __( 'Users', $this->localization_domain ),
                             'menus'    => __( 'Menus', $this->localization_domain ),
