@@ -127,7 +127,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             // Split posts option into posts and pages options
             $current_version = get_site_option( 'nbt_plugin_version', false );
-            if ( ! $current_version || version_compare( $current_version, NBT_PLUGIN_VERSION ) == -1 ) {
+
+            if ( ! $current_version || version_compare( $current_version, '1.7.2' ) == -1 ) {
                 $new_options = $this->options;
                 foreach ( $this->options['templates'] as $key => $template ) {
                     $to_copy = $template['to_copy'];
@@ -136,7 +137,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 }
                 $this->options = $new_options;
                 $this->save_admin_options();
-                update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );
+                update_site_option( 'nbt_plugin_version', '1.7.2' );
             }
             
 
@@ -678,16 +679,16 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             //Switch to the template blog, then grab the values
             switch_to_blog($templated_blog_id);
-            $query = "SELECT t1.* FROM {$wpdb->$table} ";
+            $query = "SELECT t1.* FROM {$wpdb->$table} t1 ";
 
             if ( 'posts' == $type )
-                $query .= "t1 WHERE t1.post_type != 'page'";
+                $query .= "WHERE t1.post_type != 'page'";
             elseif ( 'postmeta' == $type )
-                $query .= "t2 INNER JOIN $wpdb->postmeta t1 ON t2.ID = t1.post_id WHERE t2.post_type != 'page'";
+                $query .= "INNER JOIN $wpdb->posts t2 ON t1.post_id = t2.ID WHERE t2.post_type != 'page'";
             elseif ( 'pages' == $type )
-                $query .= "t1 WHERE t1.post_type = 'page'";
+                $query .= "WHERE t1.post_type = 'page'";
             elseif ( 'pagemeta' == $type )
-                $query .= "t2 INNER JOIN $wpdb->postmeta t1 ON t2.ID = t1.post_id WHERE t2.post_type = 'page'";
+                $query .= "INNER JOIN $wpdb->posts t2 ON t1.post_id = t2.ID WHERE t2.post_type = 'page'";
 
             $templated = $wpdb->get_results( $query );
             restore_current_blog(); //Switch back to the newly created blog
