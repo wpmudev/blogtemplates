@@ -35,6 +35,9 @@ if ( !is_multisite() )
 require_once( 'blogtemplatesfiles/filters.php' );
 require_once( 'blogtemplatesfiles/blog_templates.php' );
 
+if ( is_network_admin() )
+	require_once( 'blogtemplatesfiles/templates_table.php' );
+
 
 
 /**
