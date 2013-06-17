@@ -25,7 +25,7 @@
 				<input type="radio" name="blog_template" value="<?php echo $tkey;?>" style="display: none" />
 			</a>
 			<div class="blog_template-description">
-				<?php echo nl2br(strip_tags($template['description'])); ?>
+				<?php echo nl2br($template['description']); ?>
 			</div>
 		</div>
 	<?php } ?>
