@@ -137,9 +137,15 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             if( ! $current_version || version_compare( $current_version, '1.7.6' ) == -1 ) {
                 $new_options = $this->options;
+                
                 foreach ( $this->options['templates'] as $key => $template ) {
                     $new_options['templates'][ $key ]['block_posts_pages'] = false;
                 }
+
+                foreach ( $this->options['templates'] as $key => $template ) {
+                    $new_options['templates'][ $key ]['posts_categories'] = array( 'all-categories' );
+                }
+
                 $this->options = $new_options;
                 $this->save_admin_options();
                 update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );
