@@ -36,7 +36,7 @@ class NBT_Templates_Table extends WP_List_Table {
         $url = $pagenow;
         $url = add_query_arg(
             array(
-                'page' => 'blog_templates.php',
+                'page' => 'blog_templates_settings',
                 't' => $item['t_id']
             ),
             $pagenow
@@ -44,7 +44,7 @@ class NBT_Templates_Table extends WP_List_Table {
 
         $url_delete = add_query_arg(
             array(
-                'page' => 'blog_templates.php',
+                'page' => 'blog_templates_settings',
                 'd' => $item['t_id']
             ),
             $pagenow
@@ -53,7 +53,7 @@ class NBT_Templates_Table extends WP_List_Table {
 
         $url_default = add_query_arg(
             array(
-                'page' => 'blog_templates.php',
+                'page' => 'blog_templates_settings',
                 'default' => $item['t_id']
             ),
             $pagenow
@@ -62,7 +62,7 @@ class NBT_Templates_Table extends WP_List_Table {
 
         $url_remove_default = add_query_arg(
             array(
-                'page' => 'blog_templates.php',
+                'page' => 'blog_templates_settings',
                 'remove_default' => $item['t_id']
             ),
             $pagenow

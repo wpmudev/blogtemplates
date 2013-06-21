@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/new-blog-template
 Description: Allows the site admin to create new blogs based on templates, to speed up the blog creation process
 Author: Jason DeVelvis, Ulrich Sossou (Incsub), Ignacio Cruz (Incsub)
 Author URI: http://premium.wpmudev.org/
-Version: 1.7.5
+Version: 1.7.6
 Network: true
 Text Domain: blog_templates
 WDP ID: 130
@@ -28,15 +28,19 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-define( 'NBT_PLUGIN_VERSION', '1.7.5' );
+define( 'NBT_PLUGIN_VERSION', '1.7.6' );
 if ( !is_multisite() )
 	exit( __( 'The New Blog Template plugin is only compatible with WordPress Multisite.', 'blog_templates' ) );
 
-require_once( 'blogtemplatesfiles/filters.php' );
-require_once( 'blogtemplatesfiles/blog_templates.php' );
+define( 'NBT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/filters.php' );
+require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/blog_templates_admin_pages.php' );
+require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/blog_templates.php' );
+require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/blog_templates_lock_posts.php' );
+
 
 if ( is_network_admin() )
-	require_once( 'blogtemplatesfiles/templates_table.php' );
+	require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/templates_table.php' );
 
 
 
@@ -52,6 +56,8 @@ if ( !function_exists( 'wdp_un_check' ) ) {
 			echo '<div class="error fade"><p>' . __('Please install the latest version of <a href="http://premium.wpmudev.org/project/update-notifications/" title="Download Now &raquo;">our free Update Notifications plugin</a> which helps you stay up-to-date with the most stable, secure versions of WPMU DEV themes and plugins. <a href="http://premium.wpmudev.org/wpmu-dev/update-notifications-plugin-information/">More information &raquo;</a>', 'wds') . '</a></p></div>';
 	}
 }
+
+
 
 
 
