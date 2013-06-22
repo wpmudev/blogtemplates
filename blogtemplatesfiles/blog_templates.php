@@ -140,10 +140,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 
                 foreach ( $this->options['templates'] as $key => $template ) {
                     $new_options['templates'][ $key ]['block_posts_pages'] = false;
-                }
-
-                foreach ( $this->options['templates'] as $key => $template ) {
-                    $new_options['templates'][ $key ]['posts_categories'] = array( 'all-categories' );
+                    $new_options['templates'][ $key ]['post_category'] = array( 'all-categories' );
                 }
 
                 $this->options = $new_options;
