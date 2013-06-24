@@ -9,7 +9,7 @@
 <?php if (defined('BP_VERSION') && 'bp-default' == get_blog_option(bp_get_root_blog_id(), 'stylesheet')) echo '<br style="clear:both" />'; ?>
 <div id="blog_template-selection">
 	<div class="blog_template-option">
-		<label for="blog_template"><?php _e('Select a template', 'blog_templates') ?></label>
+		<h3><?php _e('Select a template', 'blog_templates') ?></h3>
 	<?php 
 	foreach ($templates as $tkey => $template) { 
 		switch_to_blog($template['blog_id']);
@@ -19,14 +19,14 @@
 		$default = @$this->options['default'] == $tkey ? "blog_template-default_item" : "";
 	?>
 		<div class="blog_template-item">
-			<strong><?php echo strip_tags($template['name']);?></strong><br />
+			<h4><?php echo strip_tags($template['name']);?></h4><br />
 			<a href="#<?php echo $tplid; ?>" class="blog_template-item_selector <?php echo $default; ?>">
 				<img src="<?php echo $img;?>" />
 				<input type="radio" name="blog_template" value="<?php echo $tkey;?>" style="display: none" />
 			</a>
-			<div class="blog_template-description">
+			<p class="blog_template-description">
 				<?php echo nl2br($template['description']); ?>
-			</div>
+			</p>
 		</div>
 	<?php } ?>
 	</div>
@@ -35,14 +35,24 @@
 .blog_template-option {
 	overflow: hidden;
 }
+.blog_template-item img {
+	max-width:100%;
+}
 .blog_template-item {
+	width:45%;
+	margin-right:10%;
+	margin-bottom:25px;
+	box-sizing:border-box;
 	float: left;
 	padding: 12px;
-	border: 3px solid transparent;
+	border: 2px solid transparent;
 	background: transparent;
 }
+.blog_template-item:nth-child(odd) {
+	margin-right:0px;
+}
 .blog_template-selected {
-	border: 3px solid #ccc;
+	border: 2px solid #ccc;
 	background: #eee;
 }
 #blog_template-selection {

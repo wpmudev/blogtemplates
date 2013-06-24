@@ -1,6 +1,6 @@
 <div id="blog_template-selection">
 	<div class="blog_template-option">
-		<label for="blog_template"><?php _e('Select a template', 'blog_templates') ?></label>
+		<h3><?php _e('Select a template', 'blog_templates') ?></h3>
 	<?php 
 	foreach ($templates as $tkey => $template) { 
 		switch_to_blog($template['blog_id']);
