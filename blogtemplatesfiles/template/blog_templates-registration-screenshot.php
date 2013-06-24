@@ -40,6 +40,9 @@
 	border: 3px solid #ccc;
 	background: #eee;
 }
+#blog_template-selection {
+	clear:both;
+}
 </style>
 <script type="text/javascript">
 (function ($) {

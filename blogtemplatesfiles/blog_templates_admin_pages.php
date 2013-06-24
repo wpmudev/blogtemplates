@@ -27,6 +27,8 @@ class blog_templates_admin_pages {
 
     var $page_id;
 
+    var $updated_message = '';
+
 
 	function __construct() {
 		global $wp_version;
@@ -42,8 +44,7 @@ class blog_templates_admin_pages {
         }
 
         // Admin notices and data processing
-        add_action( 'network_admin_notices', array($this, 'admin_options_page_posted' ) );
-        add_action( 'admin_notices', array($this, 'admin_options_page_posted' ) );
+        add_action( 'admin_init', array($this, 'admin_options_page_posted' ) );
 
         add_action( 'admin_enqueue_scripts', array( $this, 'add_javascript' ) );
 	}
@@ -77,8 +78,6 @@ class blog_templates_admin_pages {
     	if ( get_current_screen()->id == $this->page_id . '-network' ) {
     		wp_enqueue_script( 'nbt-settings-js', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/js/nbt-settings.js', array( 'jquery' ) );
     		wp_enqueue_style( 'nbt-settings-css', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/css/settings.css' );
-    		wp_enqueue_style( 'wp-pointer' );
-			wp_enqueue_script( 'wp-pointer' );
     	}
     }
 
@@ -146,39 +145,10 @@ class blog_templates_admin_pages {
 			                <?php $this->render_row( __( 'Template Description:', $this->localization_domain ), ob_get_clean() ); ?>
 
 			                <?php 
-			                    ob_start(); 
-			                    $options_to_copy = array(
-			                        'settings' => __( 'Wordpress Settings, Current Theme, and Active Plugins', $this->localization_domain ),
-			                        'posts'    => __( 'Posts <strong>(Once the template is created you will be able to select between categories)</strong>', $this->localization_domain ),
-			                        'pages'    => __( 'Pages', $this->localization_domain ),
-			                        'terms'    => __( 'Categories, Tags, and Links', $this->localization_domain ),
-			                        'users'    => __( 'Users', $this->localization_domain ),
-			                        'menus'    => __( 'Menus', $this->localization_domain ),
-			                        'files'    => __( 'Files', $this->localization_domain )
-			                        
-			                    );
-			                    foreach ( $options_to_copy as $key => $value ) {
-			                        echo "<input type='checkbox' name='to_copy[]' id='nbt-{$key}' value='$key'>&nbsp;<label for='nbt-{$key}'>$value</label><br/>";
-			                    }
+			                	ob_start();
+			                    echo '<strong>' . __( 'After you add this template, a set of options will show up on the edit screen.', $this->localization_domain ) . '</strong>';
 			                ?>
-			                <?php $this->render_row( __( 'What To Copy To New Blog?', $this->localization_domain ), ob_get_clean() ); ?>
-
-			                
-			                <?php if ( is_plugin_active( 'sitewide-privacy-options/sitewide-privacy-options.php' ) ): ?>
-			                    <?php ob_start(); ?>
-			                        <input type='checkbox' name='copy_status' id='nbt-copy-status'>
-			                        <label for='nbt-copy-status'><?php _e( 'Check if you want also to copy the blog status (Public or not)', $this->localization_domain ); ?></label>
-			                    <?php $this->render_row( __( 'Copy Status?', $this->localization_domain ), ob_get_clean() ); ?>
-			                <?php endif; ?>
-
-		                    <?php ob_start(); ?>
-		                        <input type='checkbox' name='block_posts_pages' id='nbt-block-posts-pages'>
-		                        <label for='nbt-block-posts-pages'><?php _e( 'Check if you want to block for edition (even for the blog administrator) the posts/pages created by the template by default', $this->localization_domain ); ?></label>
-		                    <?php $this->render_row( __( 'Block Posts/Pages', $this->localization_domain ), ob_get_clean() ); ?>
-
-			                <?php ob_start(); ?>
-			                    <p><?php _e('After you add this template, an advanced options area will show up on the edit screen (Click on the template name when it appears in the list above). In that advanced area, you can choose to add full tables to the template, in case you\'re using a plugin that creates its own database tables. Note that this is not required for new Blog Templates to work', $this->localization_domain); ?></p>
-			                <?php $this->render_row( __( 'Advanced', $this->localization_domain ), ob_get_clean() ); ?>
+			                <?php $this->render_row( __( 'More options', $this->localization_domain ), ob_get_clean() ); ?>
 			                
 			            </table>
 			            <p><?php _e('Please note that this will turn the blog you selected into a template blog. Any changes you make to this blog will change the template, as well! We recommend creating specific "Template Blogs" for this purpose, so you don\'t accidentally add new settings, content, or users that you don\'t want in your template.',$this->localization_domain); ?></p>
@@ -204,57 +174,35 @@ class blog_templates_admin_pages {
 			            <?php $appearance_template = $this->_get_config_option('registration-templates-appearance'); ?>
 			            <p>
 			                <label for="registration-templates-appearance-select">
-			                    <input type="radio"
-			                        <?php echo (
-			                            empty($appearance_template) ? 'checked="checked"' : ''
-			                        ); ?>
-			                        name="registration-templates-appearance" id="registration-templates-appearance-select" value="" 
-			                    />
+			                    <input type="radio" <?php checked( empty( $appearance_template ) ); ?> name="registration-templates-appearance" id="registration-templates-appearance-select" value=""/>
 			                    <?php _e('As simple selection box', $this->localization_domain); ?>
 			                </label>
 			            </p>
 			            <p>
 			                <label for="registration-templates-appearance-description">
-			                    <input type="radio"
-			                        <?php echo (
-			                            'description' == $appearance_template ? 'checked="checked"' : ''
-			                        ); ?>
-			                        name="registration-templates-appearance" id="registration-templates-appearance-description" value="description" 
-			                    />
+			                    <input type="radio" <?php checked( $appearance_template, 'description' ); ?> name="registration-templates-appearance" id="registration-templates-appearance-description" value="description"/>
 			                    <?php _e('As radio-box selection with descriptions', $this->localization_domain); ?>
 			                </label>
 			            </p>
 			            <p>
 			                <label for="registration-templates-appearance-screenshot">
-			                    <input type="radio"
-			                        <?php echo (
-			                            'screenshot' == $appearance_template ? 'checked="checked"' : ''
-			                        ); ?>
-			                        name="registration-templates-appearance" id="registration-templates-appearance-screenshot" value="screenshot" 
-			                    />
+			                    <input type="radio" <?php checked( $appearance_template, 'screenshot' ); ?> name="registration-templates-appearance" id="registration-templates-appearance-screenshot" value="screenshot" />
 			                    <?php _e('As theme screenshot selection', $this->localization_domain); ?>
 			                </label>
 			            </p>
 			            <p>
 			                <label for="registration-templates-appearance-screenshot_plus">
-			                    <input type="radio"
-			                        <?php echo (
-			                            'screenshot_plus' == $appearance_template ? 'checked="checked"' : ''
-			                        ); ?>
-			                        name="registration-templates-appearance" id="registration-templates-appearance-screenshot_plus" value="screenshot_plus" 
-			                    />
+			                    <input type="radio" <?php checked( $appearance_template, 'screenshot_plus' ); ?> name="registration-templates-appearance" id="registration-templates-appearance-screenshot_plus" value="screenshot_plus" />
 			                    <?php _e('As theme screenshot selection with titles and description', $this->localization_domain); ?>
 			                </label>
 			            </p>
-			            <?php
-			            /* Will be on next releases
 			            <p>
 			                <label for="registration-templates-appearance-previewer">
 			                    <input type="radio" <?php checked( 'previewer' == $appearance_template ); ?> name="registration-templates-appearance" id="registration-templates-appearance-previewer" value="previewer" />
 			                    <?php _e('As a theme previewer', $this->localization_domain); ?>
 			                </label>
-			            </p>*/
-			            ?>
+			            </p>
+
 			            <p><div class="submit"><input type="submit" name="save_options" class="button-primary" value="<?php esc_attr_e(__('Save Options', $this->localization_domain));?>" /></div></p>
 			            
 			        <?php
@@ -284,7 +232,6 @@ class blog_templates_admin_pages {
 			                        'files'    => __( 'Files', $this->localization_domain )
 			                        
 			                    );
-
 
 			                    foreach ( $options_to_copy as $key => $value ) : ?>
 			                            <input type="checkbox" name="to_copy[]" id="nbt-<?php echo $key; ?>" value="<?php echo $key; ?>" <?php checked( in_array( $key, $template['to_copy'] ) ); ?>> <label for='nbt-<?php echo $key; ?>' id="nbt-label-<?php echo $key; ?>"><?php echo $value; ?></label><br/>
@@ -446,14 +393,27 @@ class blog_templates_admin_pages {
          * @since 1.0
          */
         function admin_options_page_posted() {
-            if ( !isset( $_GET['page'] ) || $_GET['page'] !== $this->menu_slug )
+            if ( ! isset( $_GET['page'] ) || $_GET['page'] !== $this->menu_slug )
                 return;
 
             unset( $this->options['templates'][''] ); //Delete the [] item, this will fix corrupted data
 
             $t = isset( $_GET['t'] ) ? (string) $_GET['t'] : '';
 
+            if (isset($_POST['save_options'])) {
+                if (! wp_verify_nonce($_POST['_nbtnonce'], 'blog_templates-update-options') )
+                    wp_die( __( 'Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)', $this->localization_domain ) );
+                $this->options['show-registration-templates'] = isset($_POST['show-registration-templates']) ? (int)$_POST['show-registration-templates'] : 0;
+                $this->options['registration-templates-appearance'] = isset($_POST['registration-templates-appearance']) ? $_POST['registration-templates-appearance'] : '';
+                $this->save_admin_options(); 
+
+                $this->updated_message =  __( 'Options saved.', $this->localization_domain );
+                add_action( 'network_admin_notices', array( &$this, 'show_admin_notice' ) );
+                return;
+            }
+
             if( !empty( $_POST['save_updated_template'] ) ) {
+
                 if (! wp_verify_nonce($_POST['_nbtnonce'], 'blog_templates-update-options') )
                     die( __( 'Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)', $this->localization_domain ) );
 
@@ -488,68 +448,79 @@ class blog_templates_admin_pages {
 
                 $this->save_admin_options();
 
-                echo '<div class="updated fade"><p>Success! Your changes were sucessfully saved!</p></div>';
+                $this->updated_message =  __( 'Success! Your changes were sucessfully saved!', $this->localization_domain );
+                add_action( 'network_admin_notices', array( &$this, 'show_admin_notice' ) );
+
             } elseif( !empty( $_POST['save_new_template'] ) ) {
                 if ( ! wp_verify_nonce( $_POST['_nbtnonce'], 'blog_templates-update-options' ) )
-                    die( __( 'Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)', $this->localization_domain ) );
+                    wp_die( __( 'Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)', $this->localization_domain ) );
 
                 if ( ! get_blog_details( (int) $_POST['copy_blog_id'] ) )
-                    die( __( 'Whoops! The blog ID you posted is incorrect. Please go back and try again. (Generated by New Blog Templates)', $this->localization_domain ) );
+                    wp_die( __( 'Whoops! The blog ID you posted is incorrect. Please go back and try again. (Generated by New Blog Templates)', $this->localization_domain ) );
 
                 if ( is_main_site( (int) $_POST['copy_blog_id'] ) )
-                    die( __( 'Whoops! The blog ID you posted is incorrect. You cannot template the main site. Please go back and try again. (Generated by New Blog Templates)', $this->localization_domain ) );
+                    wp_die( __( 'Whoops! The blog ID you posted is incorrect. You cannot template the main site. Please go back and try again. (Generated by New Blog Templates)', $this->localization_domain ) );
 
                 $this->options['templates'][] = array(
-                    'name' => (!empty($_POST['template_name']) ? stripslashes( $_POST['template_name'] ) : ''),
+                    'name' => (!empty($_POST['template_name']) ? stripslashes( $_POST['template_name'] ) : __( 'A template', $this->localization_domain ) ),
                     'description' => (!empty($_POST['template_description']) ? stripslashes( preg_replace('~<\s*\bscript\b[^>]*>(.*?)<\s*\/\s*script\s*>~is', '', $_POST['template_description'] ) ) : ''),
                     'blog_id' => (int)$_POST['copy_blog_id'],
-                    'to_copy' => (!empty($_POST['to_copy']) ? (array)$_POST['to_copy'] : array()),
-                    'copy_status' => isset( $_POST['copy_status'] ) ? true : false,
-                    'block_posts_pages' => isset( $_POST['block_posts_pages'] ) ? true : false
+                    'to_copy' => array(),
+                    'post_category' => array( 'all-categories' ),
+                    'copy_status' => false,
+                    'block_posts_pages' => false
                 );
 
                 $this->save_admin_options();
 
-                echo '<div class="updated fade"><p>' . __( 'Success! Your changes were sucessfully saved!', $this->localization_domain ) . '</p></div>';
+                end( $this->options['templates'] );
+                $template_id = key( $this->options['templates'] );
+                $to_url = add_query_arg(
+                	array(
+                		'page' => $this->menu_slug,
+                		't' => $template_id
+                	),
+                	network_admin_url( 'settings.php' )
+                );
+                wp_redirect( $to_url );
+
             } elseif( isset( $_GET['remove_default'] ) ) {
                 if ( ! wp_verify_nonce($_GET['_wpnonce'], 'blog_templates-remove_default') )
-                    die( __( 'Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)', $this->localization_domain ) );
+                    wp_die( __( 'Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)', $this->localization_domain ) );
                 unset($this->options['default']);
 
                 $this->save_admin_options();
 
-                if ( ( isset( $_GET['default'] ) && is_numeric( $_GET['default'] ) ) || ( isset( $_GET['d'] ) && is_numeric( $_GET['d'] ) ) ) {
-                    //These querystring vars must have been left over from an earlier link click, remove them
-                    $to_url = remove_query_arg(array('default','d'),$this->currenturl_with_querystring);
-                } else {
-                    $to_url = $this->currenturl_with_querystring;
-                }
-                echo '<div class="updated fade"><p>' . __( 'Success! The default option was successfully turned off.', $this->localization_domain ) . '</p></div>';
+                $this->updated_message = __( 'Success! The default option was successfully turned off.', $this->localization_domain );
+                add_action( 'network_admin_notices', array( &$this, 'show_admin_notice' ) );
             } elseif ( isset( $_GET['default'] ) && is_numeric( $_GET['default'] ) ) {
                 if (! wp_verify_nonce($_GET['_wpnonce'], 'blog_templates-make_default') )
-                    die( __( 'Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)', $this->localization_domain ) );
+                    wp_die( __( 'Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)', $this->localization_domain ) );
 
                 $this->options['default'] = (int)$_GET['default'];
 
                 $this->save_admin_options();
 
-                echo '<div class="updated fade"><p>' . __( 'Success! The default template was sucessfully updated.', $this->localization_domain ) . '</p></div>';
+                $this->updated_message =  __( 'Success! The default template was sucessfully updated.', $this->localization_domain );
+                add_action( 'network_admin_notices', array( &$this, 'show_admin_notice' ) );
             } elseif ( isset( $_GET['d'] ) && is_numeric( $_GET['d'] ) ) {
                 if (! wp_verify_nonce($_GET['_wpnonce'], 'blog_templates-delete_template') )
-                    die( __( 'Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)', $this->localization_domain ) );
+                    wp_die( __( 'Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)', $this->localization_domain ) );
                 unset($this->options['templates'][$_GET['d']]);
 
                 $this->save_admin_options();
 
-                echo '<div class="updated fade"><p>' . __( 'Success! The template was sucessfully deleted.', $this->localization_domain ) . '</p></div>';
-            } else if (isset($_POST['save_options'])) {
-                if (! wp_verify_nonce($_POST['_nbtnonce'], 'blog_templates-update-options') )
-                    die( __( 'Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)', $this->localization_domain ) );
-                $this->options['show-registration-templates'] = isset($_POST['show-registration-templates']) ? (int)$_POST['show-registration-templates'] : 0;
-                $this->options['registration-templates-appearance'] = isset($_POST['registration-templates-appearance']) ? $_POST['registration-templates-appearance'] : '';
-                $this->save_admin_options(); 
-
+                $this->updated_message =  __( 'Success! The template was sucessfully deleted.', $this->localization_domain );
+                add_action( 'network_admin_notices', array( &$this, 'show_admin_notice' ) );
             }
+        }
+
+        public function show_admin_notice() {
+        	?>
+				<div class="updated">
+					<p><?php echo $this->updated_message; ?></p>
+				</div>
+        	<?php
         }
 
 }

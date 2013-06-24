@@ -351,7 +351,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
                         }
                     break;
                     case 'posts':
-                        $this->copy_posts_table($template['blog_id'],"posts");
+                        $categories = in_array( 'all-categories', $template['post_category'] ) ? false : $template['post_category'];
+                        $this->copy_posts_table( $template['blog_id'], 'posts', $categories );
                         do_action('blog_templates-copy-posts', $template, $blog_id, $user_id);
 
                         $this->copy_posts_table($template['blog_id'],"postmeta");
@@ -678,7 +679,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
         *
         * @since 1.0
         */
-        function copy_posts_table( $templated_blog_id, $type ) {
+        function copy_posts_table( $templated_blog_id, $type, $categories = false ) {
             global $wpdb;
 
             switch( $type ) {
@@ -696,14 +697,27 @@ if ( ! class_exists( 'blog_templates' ) ) {
             switch_to_blog($templated_blog_id);
             $query = "SELECT t1.* FROM {$wpdb->$table} t1 ";
 
-            if ( 'posts' == $type )
+            if ( 'posts' == $type ) {
+                if ( is_array( $categories ) && count( $categories ) > 0 ) 
+                    $query .= " INNER JOIN $wpdb->term_relationships t2 ON t2.object_id = t1.ID ";
+
                 $query .= "WHERE t1.post_type != 'page'";
-            elseif ( 'postmeta' == $type )
+
+                if ( is_array( $categories ) && count( $categories ) > 0 ) {
+                    $categories_list = '(' . implode( ',', $categories ) . ')';
+                    $query .= " AND t2.term_taxonomy_id IN $categories_list GROUP BY t1.ID";
+                }
+
+            }
+            elseif ( 'postmeta' == $type ) {
                 $query .= "INNER JOIN $wpdb->posts t2 ON t1.post_id = t2.ID WHERE t2.post_type != 'page'";
-            elseif ( 'pages' == $type )
+            }
+            elseif ( 'pages' == $type ) {
                 $query .= "WHERE t1.post_type = 'page'";
-            elseif ( 'pagemeta' == $type )
+            }
+            elseif ( 'pagemeta' == $type ) {
                 $query .= "INNER JOIN $wpdb->posts t2 ON t1.post_id = t2.ID WHERE t2.post_type = 'page'";
+            }
 
             $templated = $wpdb->get_results( $query );
             restore_current_blog(); //Switch back to the newly created blog
