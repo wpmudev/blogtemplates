@@ -17,11 +17,12 @@
 				<div class="theme-previewer-overlay">
 
 					<span class="template-name"><?php echo $tplid; ?></span> <button class="view-demo-button" data-blog-url="<?php echo $blog_url;?>"><?php _e( 'View demo', 'blog_templates' ); ?></button><br/><br/>
-					<button class="select-theme-button" data-theme-key="<?php echo $tkey;?>"><?php _e( 'Use this Theme', 'blog_templates' ); ?></button>
+					<button class="select-theme-button" data-theme-key="<?php echo $tkey;?>"><?php echo $this->options['previewer_button_text']; ?></button>
 				</div>
 			</a>
 		</div>
 	<?php } ?>
+	<div style="clear:both;"></div>
 	</div>
 </div>
 <style>

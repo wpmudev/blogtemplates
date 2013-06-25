@@ -25,6 +25,7 @@
 				</a>
 			</div>
 		<?php } ?>
+		<div style="clear:both;"></div>
 	</div>
 </div>
 <style type="text/css">

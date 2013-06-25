@@ -1,5 +1,10 @@
 jQuery(document).ready(function($) {
 
+	var previewer_selected = $('input[name=registration-templates-appearance]:checked').val() == 'previewer';
+	if ( ! previewer_selected ) {
+		$( '#previewer-button-text' ).hide();
+	}
+	
 
 	var all_checks = $('#categorychecklist input[type=checkbox]').slice(1);
 	$('#poststuff').hide();
@@ -30,7 +35,10 @@ jQuery(document).ready(function($) {
 		}
 	});
 
-	function nbt_open_settings_tooltips() {
-
-	}
+	$('input[name=registration-templates-appearance]').change(function(e) {
+		if ( $(this).val() == 'previewer' )
+			$( '#previewer-button-text' ).slideDown();
+		else
+			$( '#previewer-button-text' ).slideUp();
+	});
 });

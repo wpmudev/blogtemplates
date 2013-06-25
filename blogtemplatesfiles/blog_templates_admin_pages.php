@@ -69,7 +69,8 @@ class blog_templates_admin_pages {
     		'templates' => array(),
     		'show-registration-templates' => false,
     		'registration-templates-appearance' => '',
-    		'default' => ''
+    		'default' => '',
+    		'previewer_button_text' => __( 'Select this theme', $this->localization_domain )
     	);
     }
 
@@ -200,7 +201,13 @@ class blog_templates_admin_pages {
 			                <label for="registration-templates-appearance-previewer">
 			                    <input type="radio" <?php checked( 'previewer' == $appearance_template ); ?> name="registration-templates-appearance" id="registration-templates-appearance-previewer" value="previewer" />
 			                    <?php _e('As a theme previewer', $this->localization_domain); ?>
-			                </label>
+			                </label><br/>
+			                <div id="previewer-button-text">
+				                <label style="margin-left:20px;margin-top:10px" for="registration-templates-appearance-previewer-button-text">
+				                	<?php _e( '"Select this Theme" button text', $this->localization_domain); ?>
+				                    <input type="text" name="registration-templates-button-text" id="registration-templates-appearance-previewer-button-text" value="<?php echo $this->options['previewer_button_text']; ?>" />
+				                </label>
+				            </div>
 			            </p>
 
 			            <p><div class="submit"><input type="submit" name="save_options" class="button-primary" value="<?php esc_attr_e(__('Save Options', $this->localization_domain));?>" /></div></p>

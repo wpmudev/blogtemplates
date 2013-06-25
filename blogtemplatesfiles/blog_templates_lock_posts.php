@@ -25,6 +25,56 @@ class NBT_Lock_Posts {
 		// Lock the posts good.
 		add_filter('user_has_cap', array($this, 'kill_edit_cap'), 10, 3);
 
+		add_action('add_meta_boxes', array($this, 'add_meta_box'));
+
+		add_action( 'save_post', array( &$this, 'update' ) );
+
+	}
+
+	function add_meta_box () {
+		if ( ! is_super_admin() ) 
+			return;
+
+		foreach ( $this->_lock_types as $type ) {
+			add_meta_box( 'postlock', __( 'Post Status', 'blog_templates' ), array( $this, 'meta_box_output' ), $type, 'advanced', 'high' );
+		}
+	}
+
+	/**
+	 * Post status metabox
+	 *
+	 */
+	function meta_box_output( $post ) {
+		if ( ! is_super_admin() )
+			return;
+
+		$post_lock_status = get_post_meta( $post->ID, 'nbt_block_post', true );
+
+		if( empty( $post_lock_status ) )
+			$post_lock_status = false;
+		?>
+		<div id="nbtpostlockstatus">
+			<label class="hidden" for="excerpt">Post Status</label>
+			<select name="nbt_post_lock_status">
+				<option value="locked" <?php selected( $post_lock_status === true ) ?>><?php _e( 'Locked', 'blog_templates' ) ?></option>
+				<option value="unlocked" <?php selected( $post_lock_status === false ) ?>><?php _e( 'Unlocked', 'blog_templates' ) ?></option>
+			</select>
+			<p><?php _e( 'Locked posts cannot be edited by anyone other than Super admins.', 'blog_templates' ); ?></p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Update post status
+	 *
+	 */
+	function update( $post_id ) {
+		if ( ! empty( $_POST['nbt_post_lock_status'] ) && is_super_admin() ) {
+			if ( 'locked' == $_POST['nbt_post_lock_status'] )
+				update_post_meta( $post_id, 'nbt_block_post', true );
+			else
+				update_post_meta( $post_id, 'nbt_block_post', false );
+		}
 	}
 
 	/**
@@ -46,7 +96,7 @@ class NBT_Lock_Posts {
 		$post_lock_status = (get_post_meta($post_id, 'nbt_block_post', true));
 
 		if ( $post_lock_status )
-			$post->post_title .= __( ' - Locked by Super Admin ' );
+			$post->post_title .= __( ' - Locked by Super Admin ', 'blog_templates' );
 
 		return $post_lock_status ? (is_super_admin() ? $all : false) : $all;
 	}
