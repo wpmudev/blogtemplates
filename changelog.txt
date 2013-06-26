@@ -5,6 +5,14 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+1.8 - 2013-06-26
+----------------------------------------------------------------------
+- Improved styling on Settings Page
+- More user friendly settings page
+- Copy posts by categories
+- Block posts/pages created by default (even for administrators).
+- A theme previewer
+
 1.7.5 - 2013-06-17
 ----------------------------------------------------------------------
 - Theme screenshot selection was stripping tags to the description
