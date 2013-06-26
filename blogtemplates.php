@@ -35,6 +35,7 @@ if ( !is_multisite() )
 define( 'NBT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'NBT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/filters.php' );
+require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/model.php' );
 require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/blog_templates_admin_pages.php' );
 require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/blog_templates.php' );
 require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/blog_templates_lock_posts.php' );

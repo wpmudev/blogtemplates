@@ -123,7 +123,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             // Split posts option into posts and pages options
             $current_version = get_site_option( 'nbt_plugin_version', false );
 
-            if ( ! $current_version || version_compare( $current_version, '1.7.2' ) == -1 ) {
+            if ( $current_version && version_compare( $current_version, '1.7.2' ) == -1 ) {
                 $new_options = $this->options;
                 foreach ( $this->options['templates'] as $key => $template ) {
                     $to_copy = $template['to_copy'];
@@ -132,12 +132,11 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 }
                 $this->options = $new_options;
                 $this->save_admin_options();
-                update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );
             }
 
-            if( ! $current_version || version_compare( $current_version, '1.7.6' ) == -1 ) {
+            if( $current_version && version_compare( $current_version, '1.7.6' ) == -1 ) {
                 $new_options = $this->options;
-                
+
                 foreach ( $this->options['templates'] as $key => $template ) {
                     $new_options['templates'][ $key ]['block_posts_pages'] = false;
                     $new_options['templates'][ $key ]['post_category'] = array( 'all-categories' );
@@ -145,8 +144,15 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
                 $this->options = $new_options;
                 $this->save_admin_options();
-                update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );
+                
             }
+
+            if ( $current_version && version_compare( $current_version, '1.7.9' ) == -1 ) {
+                $model = blog_templates_model::get_instance();
+                $model->create_tables();
+            }
+
+            update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );                
 
         }
 

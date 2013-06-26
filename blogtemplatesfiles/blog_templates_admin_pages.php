@@ -115,7 +115,6 @@ class blog_templates_admin_pages {
 
 	    global $pagenow;
 	    $url = $pagenow . '?page=' . $this->menu_slug;
-
 			?>
 
 			<div class="wrap">
