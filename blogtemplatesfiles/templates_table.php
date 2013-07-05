@@ -7,26 +7,21 @@ if( ! class_exists( 'WP_List_Table' ) )
 class NBT_Templates_Table extends WP_List_Table {
 
     var $localization_domain = 'blog_templates';
-    var $templates;
-    var $default_template = false;
 
-    function __construct( $options ){
-               
+    function __construct(){  
         parent::__construct( 
             array(
                 'singular'  => 'template',
                 'plural'    => 'templates',
             ) 
         );
-        $this->templates = isset( $options['templates'] ) ? $options['templates'] : array();
-        $this->default_template = isset( $options['default'] ) ? absint( $options['default'] ) : false;        
     }
 
 
-    function column_default($item, $column_name){
+    function column_default( $item, $column_name ){
         switch($column_name){
             default:
-                return $item[ $column_name ];
+                return $item->$column_name;
         }
     }
 
@@ -37,7 +32,7 @@ class NBT_Templates_Table extends WP_List_Table {
         $url = add_query_arg(
             array(
                 'page' => 'blog_templates_settings',
-                't' => $item['t_id']
+                't' => $item->ID
             ),
             $pagenow
         );
@@ -45,7 +40,7 @@ class NBT_Templates_Table extends WP_List_Table {
         $url_delete = add_query_arg(
             array(
                 'page' => 'blog_templates_settings',
-                'd' => $item['t_id']
+                'd' => $item->ID
             ),
             $pagenow
         );
@@ -54,7 +49,7 @@ class NBT_Templates_Table extends WP_List_Table {
         $url_default = add_query_arg(
             array(
                 'page' => 'blog_templates_settings',
-                'default' => $item['t_id']
+                'default' => $item->ID
             ),
             $pagenow
         );
@@ -63,7 +58,7 @@ class NBT_Templates_Table extends WP_List_Table {
         $url_remove_default = add_query_arg(
             array(
                 'page' => 'blog_templates_settings',
-                'remove_default' => $item['t_id']
+                'remove_default' => $item->ID
             ),
             $pagenow
         );
@@ -74,7 +69,7 @@ class NBT_Templates_Table extends WP_List_Table {
             'delete'    => sprintf( __( '<a href="%s">Delete</a>', $this->localization_domain ), $url_delete ),
         );
 
-        if ( $this->default_template === absint( $item['t_id'] ) ) {
+        if ( $item->is_default ) {
             $actions['remove_default'] = sprintf( __( '<a href="%s">Remove default</a>', $this->localization_domain ), $url_remove_default );
             $default = ' <strong>' . __( '(Default)', $this->localization_domain ) . '</strong>';
         }
@@ -83,11 +78,11 @@ class NBT_Templates_Table extends WP_List_Table {
             $default = '';
         }
 
-        return '<a href="' . $url . '">' . $item['name'] . '</a>' . $default . $this->row_actions( $actions );
+        return '<a href="' . $url . '">' . $item->name . '</a>' . $default . $this->row_actions( $actions );
     }
 
     function column_blog( $item ) {
-        switch_to_blog( $item['blog_id'] );
+        switch_to_blog( $item->blog_id );
         $name = get_bloginfo( 'name' );
         $url = admin_url();
         restore_current_blog();
@@ -111,21 +106,13 @@ class NBT_Templates_Table extends WP_List_Table {
 
         $this->_column_headers = array($columns, $hidden, $sortable);
 
-        $data = $this->templates;
+        $model = blog_templates_model::get_instance();
+        $this->items = $model->get_templates();
 
         $current_page = $this->get_pagenum();
-        $total_items = count( $data );
+        $total_items = count( $this->items );
 
-         $this->items = array(); 
-        foreach ( $data as $key => $value ) {
-            $this->items[$key] = $value;
-            $this->items[$key]['t_id'] = $key;
-        }
         $this->items = array_slice( $this->items, ( ( $current_page - 1 ) * $per_page ), $per_page );
-
-       
-
-        
 
         $this->set_pagination_args( 
             array(

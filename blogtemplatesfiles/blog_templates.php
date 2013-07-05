@@ -147,9 +147,10 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 
             }
 
-            if ( $current_version && version_compare( $current_version, '1.7.9' ) == -1 ) {
+            if ( $current_version && version_compare( $current_version, '1.9' ) == -1 ) {
                 $model = blog_templates_model::get_instance();
                 $model->create_tables();
+                blog_templates_upgrade_19();
             }
 
             update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );                
@@ -883,7 +884,11 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 $theOptions = array('templates'=>array());
                 update_site_option($this->options_name, $theOptions);
             }
+
+            $model = blog_templates_model::get_instance();
+            
             $this->options = $theOptions;
+            $this->options['templates'] = $model->get_templates();
         }
 
         /**
