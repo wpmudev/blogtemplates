@@ -163,9 +163,9 @@ class blog_templates_model {
 		public function get_template( $id ) {
 			global $wpdb;
 
-			$template = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->templates_table WHERE ID = %d", $id ) );
+			$template = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->templates_table WHERE ID = %d", $id ), ARRAY_A );
 
-			$template->options = maybe_unserialize( $template->options );
+			$template = array_merge( maybe_unserialize( $template['options'] ), $template );
 
 			return $template;
 		}
@@ -173,19 +173,20 @@ class blog_templates_model {
 		public function get_templates() {
 			global $wpdb;
 
-			$results = $wpdb->get_results( "SELECT * FROM $this->templates_table" );
+			$results = $wpdb->get_results( "SELECT * FROM $this->templates_table", ARRAY_A );
 
 			if ( ! empty( $results ) ) {
 				$final_results = array();
 				foreach ( $results as $template ) {
-					$final_results[$template->ID] = $template;
-					$final_results[$template->ID]->options = maybe_unserialize( $template->options );
+					$final_results[$template['ID']] = $template;
+					$final_results[$template['ID']] = array_merge( maybe_unserialize( $template['options'] ), $final_results[$template['ID']] );
 				}
 				return $final_results;
 			}
 			else {
 				return array();
 			}
+
 		}
 
 		public function set_default_template( $id ) {
@@ -193,7 +194,7 @@ class blog_templates_model {
 
 			$this->remove_default_template();
 
-			$wpdb->update(
+			return $wpdb->update(
 				$this->templates_table,
 				array( 'is_default' => 1 ),
 				array( 'ID' => $id ),

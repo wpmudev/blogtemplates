@@ -184,7 +184,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
         function get_template_dropdown( $tag_name, $include_none ) {
 
             $templates = array();
-            foreach ($this->options['templates'] as $key=>$template) {
+            foreach ($this->options['templates'] as $key => $template) {
                 if ( ! is_main_site( absint( $template['blog_id'] ) ) )
                     $templates[$key] = $template['name'];
             }
@@ -267,7 +267,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             }
             $template = apply_filters('blog_templates-blog_template', $template, $blog_id, $user_id, $this);
 
-            if (!$template || 'none' == $template)
+            if ( ! $template || 'none' == $template )
                 return; //No template, lets leave
 
             //Begin the transaction

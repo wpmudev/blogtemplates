@@ -21,7 +21,7 @@ class NBT_Templates_Table extends WP_List_Table {
     function column_default( $item, $column_name ){
         switch($column_name){
             default:
-                return $item->$column_name;
+                return $item[ $column_name ];
         }
     }
 
@@ -32,7 +32,7 @@ class NBT_Templates_Table extends WP_List_Table {
         $url = add_query_arg(
             array(
                 'page' => 'blog_templates_settings',
-                't' => $item->ID
+                't' => $item['ID']
             ),
             $pagenow
         );
@@ -40,7 +40,7 @@ class NBT_Templates_Table extends WP_List_Table {
         $url_delete = add_query_arg(
             array(
                 'page' => 'blog_templates_settings',
-                'd' => $item->ID
+                'd' => $item['ID']
             ),
             $pagenow
         );
@@ -49,7 +49,7 @@ class NBT_Templates_Table extends WP_List_Table {
         $url_default = add_query_arg(
             array(
                 'page' => 'blog_templates_settings',
-                'default' => $item->ID
+                'default' => $item['ID']
             ),
             $pagenow
         );
@@ -58,7 +58,7 @@ class NBT_Templates_Table extends WP_List_Table {
         $url_remove_default = add_query_arg(
             array(
                 'page' => 'blog_templates_settings',
-                'remove_default' => $item->ID
+                'remove_default' => $item['ID']
             ),
             $pagenow
         );
@@ -69,7 +69,7 @@ class NBT_Templates_Table extends WP_List_Table {
             'delete'    => sprintf( __( '<a href="%s">Delete</a>', $this->localization_domain ), $url_delete ),
         );
 
-        if ( $item->is_default ) {
+        if ( $item['is_default'] ) {
             $actions['remove_default'] = sprintf( __( '<a href="%s">Remove default</a>', $this->localization_domain ), $url_remove_default );
             $default = ' <strong>' . __( '(Default)', $this->localization_domain ) . '</strong>';
         }
@@ -78,11 +78,11 @@ class NBT_Templates_Table extends WP_List_Table {
             $default = '';
         }
 
-        return '<a href="' . $url . '">' . $item->name . '</a>' . $default . $this->row_actions( $actions );
+        return '<a href="' . $url . '">' . $item['name'] . '</a>' . $default . $this->row_actions( $actions );
     }
 
     function column_blog( $item ) {
-        switch_to_blog( $item->blog_id );
+        switch_to_blog( $item['blog_id'] );
         $name = get_bloginfo( 'name' );
         $url = admin_url();
         restore_current_blog();

@@ -220,11 +220,11 @@ class blog_templates_admin_pages {
 			            <h2><?php _e('Edit Blog Template', $this->localization_domain); ?></h2>
 			             <table class="form-table">
 			                <?php ob_start(); ?>
-			                    <input name="template_name" type="text" id="template_name" class="regular-text" value="<?php esc_attr_e( $template->name );?>"/>
+			                    <input name="template_name" type="text" id="template_name" class="regular-text" value="<?php esc_attr_e( $template['name'] );?>"/>
 			                <?php $this->render_row( __( 'Template Name:', $this->localization_domain ), ob_get_clean() ); ?>
 
 			                <?php ob_start(); ?>
-			                    <textarea class="widefat" name="template_description" id="template_description" cols="45" rows="5"><?php echo esc_textarea( $template->description );?></textarea>
+			                    <textarea class="widefat" name="template_description" id="template_description" cols="45" rows="5"><?php echo esc_textarea( $template['description'] );?></textarea>
 			                <?php $this->render_row( __( 'Template Description', $this->localization_domain ), ob_get_clean() ); ?>
 
 			                <?php 
@@ -241,7 +241,7 @@ class blog_templates_admin_pages {
 			                    );
 
 			                    foreach ( $options_to_copy as $key => $value ) : ?>
-			                            <input type="checkbox" name="to_copy[]" id="nbt-<?php echo $key; ?>" value="<?php echo $key; ?>" <?php checked( in_array( $key, $template->options['to_copy'] ) ); ?>> <label for='nbt-<?php echo $key; ?>' id="nbt-label-<?php echo $key; ?>"><?php echo $value; ?></label><br/>
+			                            <input type="checkbox" name="to_copy[]" id="nbt-<?php echo $key; ?>" value="<?php echo $key; ?>" <?php checked( in_array( $key, $template['to_copy'] ) ); ?>> <label for='nbt-<?php echo $key; ?>' id="nbt-label-<?php echo $key; ?>"><?php echo $value; ?></label><br/>
 			                            <?php if ( 'posts' === $key ) :   ?>
 			                            		<div id="poststuff" style="width:280px;margin-left:25px">
 				                            		<div id="categorydiv" class="postbox ">
@@ -251,9 +251,9 @@ class blog_templates_admin_pages {
 
 																<div id="category-all" class="tabs-panel">
 																	<ul id="categorychecklist" data-wp-lists="list:category" class="categorychecklist form-no-clear">
-																		<li id="all-categories"><label class="selectit"><input value="all-categories" type="checkbox" <?php checked( in_array( 'all-categories', $template->options['post_category'] ) ); ?> name="post_category[]" id="in-all-categories"> <strong><?php _e( 'All categories', $this->localization_domain ); ?></strong></label></li>
-																		<?php switch_to_blog( $template->blog_id ); ?>
-																		<?php wp_terms_checklist( 0, array( 'selected_cats' => $template->options['post_category'] ) ); ?>
+																		<li id="all-categories"><label class="selectit"><input value="all-categories" type="checkbox" <?php checked( in_array( 'all-categories', $template['post_category'] ) ); ?> name="post_category[]" id="in-all-categories"> <strong><?php _e( 'All categories', $this->localization_domain ); ?></strong></label></li>
+																		<?php switch_to_blog( $template['blog_id'] ); ?>
+																		<?php wp_terms_checklist( 0, array( 'selected_cats' => $template['post_category'] ) ); ?>
 																		<?php restore_current_blog(); ?>
 																	</ul>
 																</div>
@@ -269,13 +269,13 @@ class blog_templates_admin_pages {
 			                
 			                <?php if ( is_plugin_active( 'sitewide-privacy-options/sitewide-privacy-options.php' ) ): ?>
 			                    <?php ob_start(); ?>
-			                        <input type='checkbox' name='copy_status' id='nbt-copy-status' <?php checked( ! empty( $template->options['copy_status'] ) ); ?>>
+			                        <input type='checkbox' name='copy_status' id='nbt-copy-status' <?php checked( ! empty( $template['copy_status'] ) ); ?>>
 			                        <label for='nbt-copy-status'><?php _e( 'Check if you want also to copy the blog status (Public or not)', $this->localization_domain ); ?></label>
 			                    <?php $this->render_row( __( 'Copy Status?', $this->localization_domain ), ob_get_clean() ); ?>
 			                <?php endif; ?>
 
 			                <?php ob_start(); ?>
-		                        <input type='checkbox' name='block_posts_pages' id='nbt-block-posts-pages' <?php checked( $template->options['block_posts_pages'] ); ?>>
+		                        <input type='checkbox' name='block_posts_pages' id='nbt-block-posts-pages' <?php checked( $template['block_posts_pages'] ); ?>>
 		                        <label for='nbt-block-posts-pages'><?php _e( 'Check if you want to block for edition (even for the blog administrator) the posts/pages created by the template by default', $this->localization_domain ); ?></label>
 		                    <?php $this->render_row( __( 'Block Posts/Pages', $this->localization_domain ), ob_get_clean() ); ?>
 			                
@@ -287,7 +287,7 @@ class blog_templates_admin_pages {
 			            <?php
 			                global $wpdb;
 
-			                switch_to_blog($template->blog_id);
+			                switch_to_blog($template['blog_id']);
 			            ?>
 			            <h2><?php _e('Advanced Options',$this->localization_domain); ?></h2>
 			                        
@@ -324,9 +324,9 @@ class blog_templates_admin_pages {
 			                            }
 			                            //echo "<input type='checkbox' name='additional_template_tables[]' value='$result[0]'";
 			                            echo "<input type='checkbox' name='additional_template_tables[]' value='{$val}'";
-			                            if ( isset( $template->options['additional_tables'] ) && is_array( $template->options['additional_tables'] ) )
-			                                //if ( in_array( $result[0], $template['additional_tables'] ) )
-			                                if ( in_array( $val, $template->options['additional_tables'] ) )
+			                            if ( isset( $template['additional_tables'] ) && is_array( $template['additional_tables'] ) )
+			                                //if ( in_array( $result[0], $template['additional_tables']'] ) )
+			                                if ( in_array( $val, $template['additional_tables'] ) )
 			                                    echo ' checked="CHECKED"';
 			                            echo " id='nbt-{$val}'>&nbsp;<label for='nbt-{$val}'>{$result[0]}</label><br/>";
 			                        }
@@ -507,6 +507,9 @@ class blog_templates_admin_pages {
                	
                	$model->remove_default_template();
 
+               	$this->options['default'] = '';
+               	$this->save_admin_options();
+
                 $this->updated_message = __( 'The default template was successfully turned off.', $this->localization_domain );
                 add_action( 'network_admin_notices', array( &$this, 'show_admin_notice' ) );
 
@@ -515,7 +518,12 @@ class blog_templates_admin_pages {
                 if (! wp_verify_nonce($_GET['_wpnonce'], 'blog_templates-make_default') )
                     wp_die( __( 'Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)', $this->localization_domain ) );
 
-				$model->set_default_template( absint( $_GET['default'] ) );
+				$default_updated = $model->set_default_template( absint( $_GET['default'] ) );
+
+				if ( $default_updated ) {
+					$this->options['default'] = $_GET['default'];
+	               	$this->save_admin_options();
+	            }
 
                 $this->updated_message =  __( 'The default template was sucessfully updated.', $this->localization_domain );
                 add_action( 'network_admin_notices', array( &$this, 'show_admin_notice' ) );
