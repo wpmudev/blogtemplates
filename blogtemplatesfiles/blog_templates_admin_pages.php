@@ -1,5 +1,36 @@
 <?php
 
+function nbt_get_sites_search() {
+	global $wpdb, $current_site;
+	var_dump($_REQUEST);
+	if ( ! empty( $_POST['term'] ) ) 
+		$term = $_REQUEST['term'];
+	else
+		echo json_encode( array() );
+//
+	//$s = isset( $_REQUEST['term'] ) ? stripslashes( trim( $_REQUEST[ 'term' ] ) ) : '';
+	//$wild = '';
+	//if ( false !== strpos($s, '*') ) {
+	//	$wild = '%';
+	//	$s = trim($s, '*');
+	//}
+//
+	//$like_s = esc_sql( like_escape( $s ) );
+	//$query = "SELECT * FROM {$wpdb->blogs} WHERE site_id = '{$wpdb->siteid}' ";
+//
+	//if ( $like_s != trim('/', $current_site->path) )
+	//	$blog_s = $current_site->path . $like_s . $wild . '/';
+	//else
+	//	$blog_s = $like_s;
+//
+	//$query .= " AND  ( {$wpdb->blogs}.path LIKE '$blog_s' ) LIMIT 10";
+$query = "AAAA";
+	echo json_encode( array( 0 => $query ) );
+
+	die();
+}
+add_action( 'wp_ajax_nbt_get_sites_search', 'nbt_get_sites_search' );
+
 class blog_templates_admin_pages {
 
 	/**
@@ -36,6 +67,8 @@ class blog_templates_admin_pages {
 		// Initialize the options
         $this->get_options();
 
+        
+
 		// Add the super admin page
         if( version_compare( $wp_version , '3.0.9', '>' ) ) {
             add_action( 'network_admin_menu', array( $this, 'network_admin_page' ) );
@@ -47,6 +80,13 @@ class blog_templates_admin_pages {
         add_action( 'admin_init', array($this, 'admin_options_page_posted' ) );
 
         add_action( 'admin_enqueue_scripts', array( $this, 'add_javascript' ) );
+
+       
+	}
+
+	public function get_sites_search() {
+		var_dump($_POST);
+		die();
 	}
 
 	/**
@@ -79,6 +119,15 @@ class blog_templates_admin_pages {
     	if ( get_current_screen()->id == $this->page_id . '-network' ) {
     		wp_enqueue_script( 'nbt-settings-js', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/js/nbt-settings.js', array( 'jquery' ) );
     		wp_enqueue_style( 'nbt-settings-css', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/css/settings.css' );
+
+    		wp_enqueue_script( 'jquery-ui-autocomplete' );
+
+    		wp_enqueue_style( 'nbt-jquery-ui-styles', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/css/jquery-ui.css' );
+
+			$params = array(
+				'ajaxurl' => admin_url( 'admin-ajax.php' )
+			);
+			wp_localize_script( 'nbt-settings-js', 'export_to_text_js', $params );
     	}
     }
 
@@ -138,6 +187,11 @@ class blog_templates_admin_pages {
 
 			                <?php ob_start(); ?>
 			                    <input name="copy_blog_id" type="text" id="copy_blog_id" class="small-text"/>
+			                    <div class="ui-widget">
+				                    <label for="search_for_blog"> <?php _e( 'Or search by a blog name', $this->localization_domain ); ?> 
+										<input type="text" id="search_for_blog" class="medium-text">
+				                    </label>
+				                </div>
 			                <?php $this->render_row( __( 'Blog ID:', $this->localization_domain ), ob_get_clean() ); ?>
 
 			                <?php ob_start(); ?>

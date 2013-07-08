@@ -41,4 +41,37 @@ jQuery(document).ready(function($) {
 		else
 			$( '#previewer-button-text' ).slideUp();
 	});
+
+
+	var nbt_cache = {};
+	$( "#search_for_blog" ).autocomplete({
+	  minLength: 2,
+	  source: function( request, response ) {
+	    var term = request.term;
+	    if ( term in nbt_cache ) {
+	      response( nbt_cache[ term ] );
+	      return;
+	    }
+		
+		var data = {
+			action: 'nbt_get_sites_search',
+			term: request.term
+		};
+		
+		//$.post( export_to_text_js.ajaxurl, data, function( data, status, xhr ) {
+	    //	console.log(data);
+		//	//nbt_cache[ term ] = data;
+		//	//response( data );
+	    //});
+	    
+
+	    $.getJSON( export_to_text_js.ajaxurl, data ).done( function( data, status, xhr ) {
+	    	console.log(data);
+			//nbt_cache[ term ] = data;
+			//response( data );
+	    });
+	  }
+	});
+
+
 });
