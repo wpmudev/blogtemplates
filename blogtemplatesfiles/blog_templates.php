@@ -364,6 +364,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
                         $this->copy_posts_table($template['blog_id'],"postmeta");
                         do_action('blog_templates-copy-postmeta', $template, $blog_id, $user_id);
+
                     break;
                     case 'pages':
                         $this->copy_posts_table($template['blog_id'],"pages");
@@ -371,6 +372,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
                         $this->copy_posts_table($template['blog_id'],"pagemeta");
                         do_action('blog_templates-copy-pagemeta', $template, $blog_id, $user_id);
+
                     break;
                     case 'terms':
                         $this->clear_table($wpdb->links);
