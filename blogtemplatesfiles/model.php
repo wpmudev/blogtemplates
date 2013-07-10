@@ -98,10 +98,10 @@ class blog_templates_model {
 			global $wpdb;
 
 			$sql = "CREATE TABLE $this->categories_relationships_table (
-				ID bigint(20) unsigned NOT NULL auto_increment,
 				cat_id bigint(20) unsigned NOT NULL,
 				template_id bigint(20) unsigned NOT NULL,
-				PRIMARY KEY  (ID)
+				PRIMARY KEY  (cat_id,template_id),
+				KEY cat_id (cat_id)
 			      ) $this->db_charset_collate;";
 
 			dbDelta($sql);
@@ -139,7 +139,8 @@ class blog_templates_model {
 				'additional_tables' => $additional_tables,
 				'copy_status' => $copy_status,
 				'block_posts_pages' => $block_posts_pages,
-				'post_category' => $post_category
+				'post_category' => $post_category,
+				'screenshot' => ! empty( $screenshot ) ? $screenshot : false
 			) );
 
 			$wpdb->update( 
@@ -226,7 +227,7 @@ class blog_templates_model {
 		public function get_template_category( $cat_id ) {
 			global $wpdb;
 
-			$results = $wpdb->get_row( $wpdb->prepare( "SELECT name, description FROM $this->categories_table WHERE ID = %d", $cat_id ), ARRAY_A );
+			$results = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->categories_table WHERE ID = %d", $cat_id ), ARRAY_A );
 
 			if ( empty( $results ) )
 				return false;
@@ -237,7 +238,9 @@ class blog_templates_model {
 		public function get_templates_categories() {
 			global $wpdb;
 
-			return $wpdb->get_results( "SELECT * FROM $this->categories_table", ARRAY_A );
+			$results = $wpdb->get_results( "SELECT * FROM $this->categories_table", ARRAY_A );
+
+			return $results;
 		}
 
 		public function delete_template_category( $cat_id ) {
@@ -299,9 +302,9 @@ class blog_templates_model {
 		public function get_template_categories( $id ) {
 			global $wpdb;
 
-			return $wpdb->get_results(
+			$results =  $wpdb->get_results(
 				$wpdb->prepare(
-					"SELECT * 
+					"SELECT rel.cat_id ID, cat.name, cat.description, cat.is_default 
 					FROM  `wp_nbt_templates_categories` cat
 					INNER JOIN wp_nbt_categories_relationships_table rel ON rel.cat_id = cat.ID
 					WHERE rel.template_id = %d",
@@ -309,6 +312,40 @@ class blog_templates_model {
 				),
 				ARRAY_A
 			);
+
+			if ( empty( $results ) ) {
+				$def_cat_id = $this->get_default_category_id();
+                $category = $this->get_template_category( $def_cat_id );
+                $results = array( $category );
+			}
+			
+			return $results;
+		}
+
+		public function update_template_categories( $tid, $cats ) {
+			global $wpdb;
+
+			$wpdb->query( $wpdb->prepare( "DELETE FROM $this->categories_relationships_table WHERE template_id = %d", $tid ) );
+
+			foreach ( $cats as $cat ) {
+				$query = $wpdb->prepare(
+					"INSERT INTO $this->categories_relationships_table (cat_id,template_id) VALUES (%d,%d)",
+					$cat,
+					$tid
+				);
+				$wpdb->query( $query );
+			}
+		}
+
+		public function exist_relation( $tid, $cat_id ) {
+			global $wpdb;
+
+			$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->categories_relationships_table WHERE template_id = %d AND cat_id = %d", $tid, $cat_id ) );
+
+			if ( ! empty( $result ) )
+				return true;
+
+			return false;
 		}
 }
 

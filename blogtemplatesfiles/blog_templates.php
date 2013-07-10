@@ -76,6 +76,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             if ( is_network_admin() ) {
                 new blog_templates_main_menu();
                 new blog_templates_categories_menu();
+                new blog_templates_settings_menu();
             }
 
             $model = blog_templates_model::get_instance();
@@ -156,6 +157,11 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 $model = blog_templates_model::get_instance();
                 $model->create_tables();
                 blog_templates_upgrade_19();
+            }
+
+            if ( ! $current_version ) {
+                $model = blog_templates_model::get_instance();
+                $model->create_tables();
             }
 
             update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );                

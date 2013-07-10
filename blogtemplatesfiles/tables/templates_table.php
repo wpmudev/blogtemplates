@@ -31,7 +31,7 @@ class NBT_Templates_Table extends WP_List_Table {
         $url = $pagenow;
         $url = add_query_arg(
             array(
-                'page' => 'blog_templates_settings',
+                'page' => 'blog_templates_main',
                 't' => $item['ID']
             ),
             $pagenow
@@ -39,7 +39,7 @@ class NBT_Templates_Table extends WP_List_Table {
 
         $url_delete = add_query_arg(
             array(
-                'page' => 'blog_templates_settings',
+                'page' => 'blog_templates_main',
                 'd' => $item['ID']
             ),
             $pagenow
@@ -48,7 +48,7 @@ class NBT_Templates_Table extends WP_List_Table {
 
         $url_default = add_query_arg(
             array(
-                'page' => 'blog_templates_settings',
+                'page' => 'blog_templates_main',
                 'default' => $item['ID']
             ),
             $pagenow
@@ -57,7 +57,7 @@ class NBT_Templates_Table extends WP_List_Table {
 
         $url_remove_default = add_query_arg(
             array(
-                'page' => 'blog_templates_settings',
+                'page' => 'blog_templates_main',
                 'remove_default' => $item['ID']
             ),
             $pagenow
@@ -89,11 +89,22 @@ class NBT_Templates_Table extends WP_List_Table {
         return $name . ' <a href="' . $url . '">Go to Dashboard</a>';
     }
 
+    function column_screenshot( $item ) {
+
+        if ( empty( $item['screenshot'] ) )
+            $img = nbt_get_default_screenshot_url($item['blog_id']);
+        else
+            $img = $item['screenshot'];
+        
+        return '<img style="max-width:25%;" src="' . $img . '"/>';
+    }
+
     function get_columns(){
         $columns = array(
             'name'          => __( 'Template Name', $this->localization_domain ),
             'blog'          => __( 'Blog', $this->localization_domain ),
             'categories'    => __( 'Categories', $this->localization_domain ),
+            'screenshot'    => __( 'Screenshot', $this->localization_domain ),
         );
         return $columns;
     }
@@ -120,17 +131,11 @@ class NBT_Templates_Table extends WP_List_Table {
             $new_row = $row;
             $categories_tmp = $model->get_template_categories( $row['ID'] );
 
-            if ( empty( $categories_tmp ) ) {
-                $def_cat_id = $model->get_default_category_id();
-                $category = $model->get_template_category( $def_cat_id );
-                $categories = array( $category['name'] );
+            $categories = array();
+            foreach ( $categories_tmp as $row ) {
+                $categories[] = $row['name'];
             }
-            else {
-                $categories = array();
-                foreach ( $categories_tmp as $row ) {
-                    $categories[] = $row['name'];
-                }
-            }
+
             $new_row['categories'] = implode( ', ', $categories );
 
             $new_data[] = $new_row;

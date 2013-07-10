@@ -17,6 +17,8 @@ function blog_templates_upgrade_19() {
 		$description = $tmp_template['description'];
 		unset( $tmp_template['description'] );
 
+		$tmp_template['screenshot'] = false;
+
 		$template_id = $model->add_template( $blog_id, $name, $description, $tmp_template );
 
 		if ( $default === $key )

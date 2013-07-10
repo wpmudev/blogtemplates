@@ -39,6 +39,7 @@ require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/model.php' );
 require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/upgrade.php' );
 require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/admin/main_menu.php' );
 require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/admin/categories_menu.php' );
+require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/admin/settings_menu.php' );
 require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/blog_templates.php' );
 require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/blog_templates_lock_posts.php' );
 
@@ -49,6 +50,12 @@ if ( is_network_admin() ) {
 }
 
 
+function nbt_get_default_screenshot_url( $blog_id ) {
+	switch_to_blog($blog_id);
+	$img = untrailingslashit(dirname(get_stylesheet_uri())) . '/screenshot.png';
+	restore_current_blog();	
+	return $img;
+}
 
 /**
  * Show notification if WPMUDEV Update Notifications plugin is not installed

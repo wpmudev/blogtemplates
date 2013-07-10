@@ -67,7 +67,7 @@ class blog_templates_main_menu {
     */
     var $options = array();
 
-    var $menu_slug = 'blog_templates_settings';
+    var $menu_slug = 'blog_templates_main';
 
     var $page_id;
 
@@ -119,7 +119,8 @@ class blog_templates_main_menu {
     		'show-registration-templates' => false,
     		'registration-templates-appearance' => '',
     		'default' => '',
-    		'previewer_button_text' => __( 'Select this theme', $this->localization_domain )
+    		'previewer_button_text' => __( 'Select this theme', $this->localization_domain ),
+    		'categories_selection' => false
     	);
     }
 
@@ -146,7 +147,7 @@ class blog_templates_main_menu {
      * @since 1.2.1
      */
     function network_admin_page() {
-        $this->page_id = add_menu_page( __( 'Blog Templates', $this->localization_domain ), __( 'Blog Templates', $this->localization_domain ), 'manage_network', $this->menu_slug, array($this,'admin_options_page'));
+        $this->page_id = add_menu_page( __( 'Templates', $this->localization_domain ), __( 'Templates', $this->localization_domain ), 'manage_network', $this->menu_slug, array($this,'admin_options_page'));
     }
 
     /**
@@ -156,9 +157,9 @@ class blog_templates_main_menu {
      */
     function pre_3_1_network_admin_page() {
         if ( get_bloginfo('version') >= 3 )
-            add_menu_page( __( 'Blog Templates', $this->localization_domain ), __( 'Blog Templates', $this->localization_domain ), 'manage_network', $this->menu_slug, array($this,'admin_options_page'));
+            add_menu_page( __( 'Templates', $this->localization_domain ), __( 'Templates', $this->localization_domain ), 'manage_network', $this->menu_slug, array($this,'admin_options_page'));
         else
-            add_menu_page( __( 'Blog Templates', $this->localization_domain ), __( 'Blog Templates', $this->localization_domain ), 'manage_network', $this->menu_slug, array($this,'admin_options_page'));
+            add_menu_page( __( 'Templates', $this->localization_domain ), __( 'Templates', $this->localization_domain ), 'manage_network', $this->menu_slug, array($this,'admin_options_page'));
         add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, 'filter_plugin_actions' ) );
     }
 
@@ -176,7 +177,7 @@ class blog_templates_main_menu {
 			?>
 
 			<div class="wrap">
-			    <form method="post" id="options">
+			    <form method="post" id="options" enctype="multipart/form-data">
 			        <?php wp_nonce_field('blog_templates-update-options', '_nbtnonce'); 
 			        
 			        if ( ! is_numeric( $t ) ) { ?>
@@ -221,59 +222,6 @@ class blog_templates_main_menu {
 
 			            <p><div class="submit"><input type="submit" name="save_new_template" class="button-primary" value="Create Blog Template!" /></div></p>
 			            
-			            <h2><?php _e('Options', $this->localization_domain); ?></h2>
-			            <p>
-			                <label for="show-registration-templates">
-			                    <?php _e('Show templates selection on registration:', $this->localization_domain); ?>
-			                    <input type="checkbox"
-			                        <?php echo (
-			                            !empty($this->options['show-registration-templates']) ? 'checked="checked"' : ''
-			                        ); ?>
-			                        name="show-registration-templates" id="show-registration-templates" value="1" 
-			                    />
-			                </label>
-			            </p>
-			            <p>
-			                <?php _e('Selecting this option will allow your new users to choose between templates when they sign up for a site.', $this->localization_domain); ?>
-			            </p>
-			            <?php $appearance_template = $this->_get_config_option('registration-templates-appearance'); ?>
-			            <p>
-			                <label for="registration-templates-appearance-select">
-			                    <input type="radio" <?php checked( empty( $appearance_template ) ); ?> name="registration-templates-appearance" id="registration-templates-appearance-select" value=""/>
-			                    <?php _e('As simple selection box', $this->localization_domain); ?>
-			                </label>
-			            </p>
-			            <p>
-			                <label for="registration-templates-appearance-description">
-			                    <input type="radio" <?php checked( $appearance_template, 'description' ); ?> name="registration-templates-appearance" id="registration-templates-appearance-description" value="description"/>
-			                    <?php _e('As radio-box selection with descriptions', $this->localization_domain); ?>
-			                </label>
-			            </p>
-			            <p>
-			                <label for="registration-templates-appearance-screenshot">
-			                    <input type="radio" <?php checked( $appearance_template, 'screenshot' ); ?> name="registration-templates-appearance" id="registration-templates-appearance-screenshot" value="screenshot" />
-			                    <?php _e('As theme screenshot selection', $this->localization_domain); ?>
-			                </label>
-			            </p>
-			            <p>
-			                <label for="registration-templates-appearance-screenshot_plus">
-			                    <input type="radio" <?php checked( $appearance_template, 'screenshot_plus' ); ?> name="registration-templates-appearance" id="registration-templates-appearance-screenshot_plus" value="screenshot_plus" />
-			                    <?php _e('As theme screenshot selection with titles and description', $this->localization_domain); ?>
-			                </label>
-			            </p>
-			            <p>
-			                <label for="registration-templates-appearance-previewer">
-			                    <input type="radio" <?php checked( 'previewer' == $appearance_template ); ?> name="registration-templates-appearance" id="registration-templates-appearance-previewer" value="previewer" />
-			                    <?php _e('As a theme previewer', $this->localization_domain); ?>
-			                </label><br/>
-			                <div id="previewer-button-text">
-				                <label style="margin-left:20px;margin-top:10px" for="registration-templates-appearance-previewer-button-text">
-				                	<?php _e( '"Select this Theme" button text', $this->localization_domain); ?>
-				                    <input type="text" name="registration-templates-button-text" id="registration-templates-appearance-previewer-button-text" value="<?php echo $this->options['previewer_button_text']; ?>" />
-				                </label>
-				            </div>
-			            </p>
-			            <p><div class="submit"><input type="submit" name="save_options" class="button-primary" value="<?php esc_attr_e(__('Save Options', $this->localization_domain));?>" /></div></p>
 			            
 			        <?php
 			            } else {
@@ -282,6 +230,7 @@ class blog_templates_main_menu {
 			        ?>
 			            <p><a href="<?php echo $url; ?>">&laquo; <?php _e('Back to Blog Templates', $this->localization_domain); ?></a></p>
 			            <h2><?php _e('Edit Blog Template', $this->localization_domain); ?></h2>
+			            <input type="hidden" name="template_id" value="<?php echo $t; ?>" />
 			            <div id="nbtpoststuff">
 			            	<div id="post-body" class="metabox-holder columns-2">
 			            		<div id="post-body-content">
@@ -345,6 +294,25 @@ class blog_templates_main_menu {
 					                        <input type='checkbox' name='block_posts_pages' id='nbt-block-posts-pages' <?php checked( $template['block_posts_pages'] ); ?>>
 					                        <label for='nbt-block-posts-pages'><?php _e( 'Check if you want to block for edition (even for the blog administrator) the posts/pages created by the template by default', $this->localization_domain ); ?></label>
 					                    <?php $this->render_row( __( 'Block Posts/Pages', $this->localization_domain ), ob_get_clean() ); ?>
+
+					                    <?php 
+					                    	ob_start();
+
+					                    	if ( empty( $template['screenshot'] ) )
+					                    		$img = nbt_get_default_screenshot_url($template['blog_id']);
+					                    	else
+					                    		$img = $template['screenshot'];
+
+										?>
+											<img src="<?php echo $img; ?>" style="max-width:100%;"/><br/>
+											<p>
+												<label for="screenshot">
+													<?php _e( 'Upload new screenshot', $this->localization_domain ); ?> 
+													<input type="file" name="screenshot">
+												</label>
+												<?php submit_button( __( 'Reset screenshot', $this->localization_domain ), 'secondary', 'reset-screenshot', true ); ?>
+											</p>
+					                    <?php $this->render_row( __( 'Screenshot', $this->localization_domain ), ob_get_clean() ); ?>
 									</table>
 				                    <?php
 						                global $wpdb;
@@ -405,6 +373,17 @@ class blog_templates_main_menu {
 					            	</table>
 					            	
 					            </div>
+
+					            <?php 
+					            	$model = blog_templates_model::get_instance();
+					            	$categories = $model->get_templates_categories(); 
+					            	$template_categories_tmp = $model->get_template_categories( $t );
+
+					            	$template_categories = array();
+					            	foreach ( $template_categories_tmp as $row ) {
+					            		$template_categories[] = absint( $row['ID'] );
+					            	}
+					            ?>
 					            <div id="postbox-container-1" class="postbox-container">
 									<div id="side-sortables" class="meta-box-sortables ui-sortable">
 										<div id="categorydiv" class="postbox ">
@@ -412,6 +391,11 @@ class blog_templates_main_menu {
 												<div class="inside">
 													<div id="taxonomy-category" class="categorydiv">
 														<div id="category-all" class="tabs-panel">
+															<ul id="templatecategorychecklist" class="categorychecklist form-no-clear">
+																<?php foreach ( $categories as $category ): ?>
+																	<li id="template-cat-<?php echo $category['ID']; ?>"><label class="selectit"><input value="<?php echo $category['ID']; ?>" <?php checked( in_array( $category['ID'], $template_categories ) ); ?> type="checkbox" name="template_category[]"> <?php echo $category['name']; ?></label></li>
+																<?php endforeach; ?>
+															</ul>
 														</div>
 													</div>
 												</div>
@@ -420,10 +404,12 @@ class blog_templates_main_menu {
 									</div>
 								</div>
 					        </div>
-			            </div>			            
+			            </div>
+			            <div class="clear"></div>
+			            <?php submit_button( __( 'Save template', $this->localization_domain ), 'primary', 'save_updated_template' ); ?>		            
 			        <?php } ?>
-			        <div class="clear"></div>
-			        <?php submit_button( __( 'Save template', $this->localization_domain ), 'primary', 'save_updated_template' ); ?>
+			        
+			        
 			    </form>
 			<?php
 	    }
@@ -490,28 +476,12 @@ class blog_templates_main_menu {
 
             $t = isset( $_GET['t'] ) ? (string) $_GET['t'] : '';
 
-            if (isset($_POST['save_options'])) {
-
-                if (! wp_verify_nonce($_POST['_nbtnonce'], 'blog_templates-update-options') )
-                    wp_die( __( 'Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)', $this->localization_domain ) );
-                $this->options['show-registration-templates'] = isset($_POST['show-registration-templates']) ? (int)$_POST['show-registration-templates'] : 0;
-                $this->options['registration-templates-appearance'] = isset($_POST['registration-templates-appearance']) ? $_POST['registration-templates-appearance'] : '';
-
-                if ( ! empty( $_POST['registration-templates-button-text'] ) )
-					$this->options['previewer_button_text'] = sanitize_text_field( $_POST['registration-templates-button-text'] );
-
-                $this->save_admin_options(); 
-
-                $this->updated_message =  __( 'Options saved.', $this->localization_domain );
-                add_action( 'network_admin_notices', array( &$this, 'show_admin_notice' ) );
-                return;
-            }
-
-            if( !empty( $_POST['save_updated_template'] ) ) {
+            $save_template = ( ! empty( $_POST['reset-screenshot'] ) || ! empty( $_POST['save_updated_template'] ) );
+            if( $save_template ) {
 
                 if (! wp_verify_nonce($_POST['_nbtnonce'], 'blog_templates-update-options') )
                     die( __( 'Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)', $this->localization_domain ) );
-
+                
 
                 $args = array( 
 	                'name' => stripslashes($_POST['template_name'] ),
@@ -521,6 +491,26 @@ class blog_templates_main_menu {
 	                'copy_status' => isset( $_POST['copy_status'] ) ? true : false,
 	                'block_posts_pages' => isset( $_POST['block_posts_pages'] ) ? true : false,
 	            );
+	            if ( ! empty( $_FILES['screenshot']['tmp_name'] ) ) {
+                	$uploaded_file = $_FILES['screenshot'];
+                	$wp_filetype = wp_check_filetype_and_ext( $uploaded_file['tmp_name'], $uploaded_file['name'], false );
+					if ( ! wp_match_mime_types( 'image', $wp_filetype['type'] ) )
+						wp_die( '<div class="error"><p>' . __( 'The uploaded file is not a valid image. Please try again.' ) . '</p></div>' );
+
+					$movefile = wp_handle_upload( $uploaded_file, array( 'test_form' => false ) );
+
+					if ( $movefile ) {
+					    $args['screenshot'] = $movefile['url'];
+					}
+                }
+                else {
+                	$template = $model->get_template( absint( $_POST['template_id'] ) );
+                	$args['screenshot'] = ! empty( $template['screenshot'] ) ? $template['screenshot'] : false;
+                }
+
+                if ( ! empty( $_POST['reset-screenshot'] ) ) {
+            		$args['screenshot'] = false;
+            	}
 
                 if ( ! isset( $_POST['post_category'] ) ) {
                 	$post_category = array( 'all-categories' );
@@ -542,8 +532,24 @@ class blog_templates_main_menu {
                 		}
                 	}
                 }
-
                 $args['post_category'] = $post_category; 
+
+                if ( ! isset( $_POST['template_category'] ) ) {
+                	$template_category = array( $model->get_default_category_id() );
+                }
+                else {
+                	$categories = $_POST['template_category'];
+
+                	$template_category = array();
+            		foreach( $categories as $category ) {
+            			if ( ! is_numeric( $category ) )
+            				continue;
+
+            			$template_category[] = absint( $category );
+            		}
+                }
+
+                $model->update_template_categories( $t, $template_category );
 
                 $model->update_template( $t, $args );
 
