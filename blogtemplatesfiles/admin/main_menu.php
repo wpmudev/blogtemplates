@@ -470,8 +470,6 @@ class blog_templates_main_menu {
             if ( ! isset( $_GET['page'] ) || $_GET['page'] !== $this->menu_slug )
                 return;
 
-            unset( $this->options['templates'][''] ); //Delete the [] item, this will fix corrupted data
-
             $model = blog_templates_model::get_instance();
 
             $t = isset( $_GET['t'] ) ? (string) $_GET['t'] : '';

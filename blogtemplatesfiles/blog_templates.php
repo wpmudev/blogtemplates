@@ -1076,8 +1076,14 @@ if ( ! class_exists( 'blog_templates' ) ) {
             $theme_file = locate_template(array($tpl_file));
             $theme_file = $theme_file ? $theme_file : $this->thispluginpath . 'template/' . $tpl_file;
             if (!file_exists($theme_file)) return false;
-            
-            // Do the thing
+
+            nbt_render_theme_selection_scripts($this->options['registration-templates-appearance']);
+
+            if ( $this->options['show-categories-selection'] && in_array( $this->options['registration-templates-appearance'], array( 'previewer' ,'screenshot' ,'screenshot_plus' ) ) ) {
+                $toolbar = new blog_templates_theme_selection_toolbar( $this->options['registration-templates-appearance'] );
+                $toolbar->display();
+            }
+
             @include $theme_file;
         }
         

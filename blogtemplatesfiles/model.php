@@ -347,6 +347,24 @@ class blog_templates_model {
 
 			return false;
 		}
+
+		public function get_templates_by_category( $cat_id ) {
+
+			global $wpdb;
+
+			if ( ! $cat_id )
+				return $this->get_templates();
+
+			$query = $wpdb->prepare(
+				"SELECT t.* FROM $this->templates_table t
+				INNER JOIN $this->categories_relationships_table r
+				ON t.ID = r.template_id
+				WHERE r.cat_id = %d",
+				$cat_id
+			);
+
+			return $wpdb->get_results( $query, ARRAY_A );
+		}
 }
 
 
