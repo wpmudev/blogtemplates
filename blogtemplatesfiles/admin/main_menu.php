@@ -147,7 +147,7 @@ class blog_templates_main_menu {
      * @since 1.2.1
      */
     function network_admin_page() {
-        $this->page_id = add_menu_page( __( 'Templates', $this->localization_domain ), __( 'Templates', $this->localization_domain ), 'manage_network', $this->menu_slug, array($this,'admin_options_page'));
+        $this->page_id = add_menu_page( __( 'Blog Templates', $this->localization_domain ), __( 'Blog Templates', $this->localization_domain ), 'manage_network', $this->menu_slug, array($this,'admin_options_page'));
     }
 
     /**
