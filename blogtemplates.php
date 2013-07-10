@@ -37,13 +37,16 @@ define( 'NBT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/filters.php' );
 require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/model.php' );
 require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/upgrade.php' );
-require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/blog_templates_admin_pages.php' );
+require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/admin/main_menu.php' );
+require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/admin/categories_menu.php' );
 require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/blog_templates.php' );
 require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/blog_templates_lock_posts.php' );
 
 
-if ( is_network_admin() )
-	require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/templates_table.php' );
+if ( is_network_admin() ) {
+	require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/tables/templates_table.php' );
+	require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/tables/categories_table.php' );
+}
 
 
 

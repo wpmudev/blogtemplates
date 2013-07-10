@@ -74,7 +74,14 @@ if ( ! class_exists( 'blog_templates' ) ) {
             }
 
             if ( is_network_admin() ) {
-                new blog_templates_admin_pages();
+                new blog_templates_main_menu();
+                new blog_templates_categories_menu();
+            }
+
+            $model = blog_templates_model::get_instance();
+            $categories_count = $model->get_categories_count();
+            if ( empty( $categories_count ) ) {
+                $model->add_default_template_category();
             }
 
             add_action( 'init', array( &$this, 'maybe_upgrade' ) );
@@ -84,8 +91,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
             // Initialize the options
             $this->get_options();
 
-
-            
 
             // Actions
             $action_order = defined('NBT_APPLY_TEMPLATE_ACTION_ORDER') && NBT_APPLY_TEMPLATE_ACTION_ORDER ? NBT_APPLY_TEMPLATE_ACTION_ORDER : 9999;

@@ -87,6 +87,7 @@ class blog_templates_model {
 				ID bigint(20) NOT NULL AUTO_INCREMENT,
 				name varchar(255) NOT NULL,
 				description mediumtext,
+				is_default int(1) NOT NULL DEFAULT '0',
 				PRIMARY KEY  (ID)
 			      ) $this->db_charset_collate;";
 
@@ -158,6 +159,7 @@ class blog_templates_model {
 			global $wpdb;
 
 			$wpdb->query( $wpdb->prepare( "DELETE FROM $this->templates_table WHERE ID = %d", $id ) );
+			$wpdb->query( $wpdb->prepare( "DELETE FROM $this->categories_relationships_table WHERE template_id = %d", $id ) );
 		}
 
 		public function get_template( $id ) {
@@ -207,6 +209,106 @@ class blog_templates_model {
 			global $wpdb;
 
 			$wpdb->query( "UPDATE $this->templates_table SET is_default = 0" );
+		}
+
+		public function add_default_template_category() {
+			global $wpdb;
+
+			$this->add_template_category( __( 'Default category', 'blog_templates' ), '', true );
+		}
+
+		public function get_categories_count() {
+			global $wpdb;
+
+			return $wpdb->get_var( "SELECT COUNT(ID) FROM $this->categories_table" );
+		}
+
+		public function get_template_category( $cat_id ) {
+			global $wpdb;
+
+			$results = $wpdb->get_row( $wpdb->prepare( "SELECT name, description FROM $this->categories_table WHERE ID = %d", $cat_id ), ARRAY_A );
+
+			if ( empty( $results ) )
+				return false;
+			else
+				return $results;
+		}
+
+		public function get_templates_categories() {
+			global $wpdb;
+
+			return $wpdb->get_results( "SELECT * FROM $this->categories_table", ARRAY_A );
+		}
+
+		public function delete_template_category( $cat_id ) {
+			global $wpdb;
+
+			$wpdb->query( $wpdb->prepare( "DELETE FROM $this->categories_table WHERE ID = %d", $cat_id ) );
+
+			$wpdb->query( $wpdb->prepare( "DELETE FROM $this->categories_relationships_table WHERE cat_id = %d", $cat_id ) );
+		}
+
+		public function add_template_category( $name, $description, $is_default = false ) {
+			global $wpdb;
+
+			$wpdb->insert( 
+				$this->categories_table, 
+				array( 
+					'name' => $name, 
+					'description' => $description,
+					'is_default' => ( $is_default ) ? 1 : 0
+				), 
+				array( 
+					'%s', 
+					'%s',
+					'%d'
+				) 
+			);
+		}
+
+		public function update_template_category( $id, $name, $description ) {
+			global $wpdb;
+
+			$wpdb->update( 
+				$this->categories_table, 
+				array( 
+					'name' => $name, 
+					'description' => $description 
+				), 
+				array( 'ID' => $id ),
+				array( 
+					'%s', 
+					'%s' 
+				),
+				array( '%d' )
+			);
+		}
+
+		public function is_default_category( $id ) {
+			global $wpdb;
+
+			return $wpdb->get_var( $wpdb->prepare( "SELECT is_default FROM $this->categories_table WHERE ID = %d", $id ) );
+		}
+
+		public function get_default_category_id() {
+			global $wpdb;
+
+			return $wpdb->get_var( "SELECT ID FROM $this->categories_table WHERE is_default = '1'" );
+		}
+
+		public function get_template_categories( $id ) {
+			global $wpdb;
+
+			return $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT * 
+					FROM  `wp_nbt_templates_categories` cat
+					INNER JOIN wp_nbt_categories_relationships_table rel ON rel.cat_id = cat.ID
+					WHERE rel.template_id = %d",
+					$id
+				),
+				ARRAY_A
+			);
 		}
 }
 
