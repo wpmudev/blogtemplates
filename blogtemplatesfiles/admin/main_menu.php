@@ -128,6 +128,7 @@ class blog_templates_main_menu {
 
     	if ( get_current_screen()->id == $this->page_id . '-network' ) {
     		wp_enqueue_script( 'nbt-settings-js', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/js/nbt-settings.js', array( 'jquery' ) );
+    		wp_enqueue_script( 'nbt-autocomplete-js', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/js/nbt-autocomplete.js', array( 'jquery' ) );
     		wp_enqueue_style( 'nbt-settings-css', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/css/settings.css' );
 
     		wp_enqueue_script( 'jquery-ui-autocomplete' );
