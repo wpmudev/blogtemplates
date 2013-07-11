@@ -60,7 +60,7 @@ class blog_templates_categories_menu {
     	}
     	?>
 			<div class="wrap">
-				<?php screen_icon(); ?>
+				<?php screen_icon( 'blogtemplates' ); ?>
 				<h2><?php echo get_admin_page_title(); ?></h2>
 				
 				<?php if ( isset( $_GET['action'] ) && 'edit' == $_GET['action'] && isset( $_GET['category'] ) && $cat_id = absint( $_GET['category'] ) ): ?>

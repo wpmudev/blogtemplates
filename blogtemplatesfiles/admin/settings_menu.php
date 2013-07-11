@@ -126,6 +126,7 @@ class blog_templates_settings_menu {
 			    <form method="post" id="options">
 		        	<?php wp_nonce_field('blog_templates-update-options', '_nbtnonce'); ?> 
 		            
+                    <?php screen_icon( 'blogtemplates' ); ?>
 		            <h2><?php _e('Options', $this->localization_domain); ?></h2>
 					
 					<h3><?php _e( 'Template selection', $this->localization_domain ); ?></h3>

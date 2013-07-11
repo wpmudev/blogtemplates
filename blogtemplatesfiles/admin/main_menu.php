@@ -125,10 +125,11 @@ class blog_templates_main_menu {
     }
 
     public function add_javascript($hook) {
-
+    	wp_enqueue_style( 'nbt-icon-styles', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/css/icon-styles.css' );
     	if ( get_current_screen()->id == $this->page_id . '-network' ) {
     		wp_enqueue_script( 'nbt-settings-js', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/js/nbt-settings.js', array( 'jquery' ) );
     		wp_enqueue_script( 'nbt-autocomplete-js', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/js/nbt-autocomplete.js', array( 'jquery' ) );
+    		
     		wp_enqueue_style( 'nbt-settings-css', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/css/settings.css' );
 
     		wp_enqueue_script( 'jquery-ui-autocomplete' );
@@ -148,7 +149,7 @@ class blog_templates_main_menu {
      * @since 1.2.1
      */
     function network_admin_page() {
-        $this->page_id = add_menu_page( __( 'Blog Templates', $this->localization_domain ), __( 'Blog Templates', $this->localization_domain ), 'manage_network', $this->menu_slug, array($this,'admin_options_page'));
+        $this->page_id = add_menu_page( __( 'Blog Templates', $this->localization_domain ), __( 'Blog Templates', $this->localization_domain ), 'manage_network', $this->menu_slug, array($this,'admin_options_page'), 'div' );
     }
 
     /**
@@ -178,11 +179,12 @@ class blog_templates_main_menu {
 			?>
 
 			<div class="wrap">
+				<?php screen_icon( 'blogtemplates' ); ?>
 			    <form method="post" id="options" enctype="multipart/form-data">
 			        <?php wp_nonce_field('blog_templates-update-options', '_nbtnonce'); 
 			        
 			        if ( ! is_numeric( $t ) ) { ?>
-			            <h2>Blog Templates</h2>
+			            <h2><?php _e( 'Blog Templates', $this->localization_domain ); ?></h2>
 			            <?php 
 			                $templates_table = new NBT_Templates_Table(); 
 			                $templates_table->prepare_items();
@@ -229,8 +231,9 @@ class blog_templates_main_menu {
 			            	$model = blog_templates_model::get_instance();
 			                $template = $model->get_template( $t );
 			        ?>
-			            <p><a href="<?php echo $url; ?>">&laquo; <?php _e('Back to Blog Templates', $this->localization_domain); ?></a></p>
+			            
 			            <h2><?php _e('Edit Blog Template', $this->localization_domain); ?></h2>
+			            <p><a href="<?php echo $url; ?>">&laquo; <?php _e('Back to Blog Templates', $this->localization_domain); ?></a></p>
 			            <input type="hidden" name="template_id" value="<?php echo $t; ?>" />
 			            <div id="nbtpoststuff">
 			            	<div id="post-body" class="metabox-holder columns-2">
