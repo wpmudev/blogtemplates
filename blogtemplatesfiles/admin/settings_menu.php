@@ -85,7 +85,6 @@ class blog_templates_settings_menu {
     }
 
     public function add_javascript($hook) {
-
     	if ( get_current_screen()->id == $this->page_id . '-network' ) {
             wp_enqueue_style( 'wp-color-picker' );
     		wp_enqueue_script( 'nbt-settings-js', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/js/nbt-settings.js', array( 'jquery', 'wp-color-picker' ) );

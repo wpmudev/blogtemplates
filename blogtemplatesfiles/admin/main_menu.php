@@ -127,8 +127,7 @@ class blog_templates_main_menu {
     public function add_javascript($hook) {
     	wp_enqueue_style( 'nbt-icon-styles', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/css/icon-styles.css' );
     	if ( get_current_screen()->id == $this->page_id . '-network' ) {
-    		wp_enqueue_script( 'nbt-settings-js', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/js/nbt-settings.js', array( 'jquery' ) );
-    		wp_enqueue_script( 'nbt-autocomplete-js', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/js/nbt-autocomplete.js', array( 'jquery' ) );
+    		wp_enqueue_script( 'nbt-templates-js', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/js/nbt-templates.js', array( 'jquery' ) );
     		
     		wp_enqueue_style( 'nbt-settings-css', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/css/settings.css' );
 
@@ -139,7 +138,7 @@ class blog_templates_main_menu {
 			$params = array(
 				'ajaxurl' => admin_url( 'admin-ajax.php' )
 			);
-			wp_localize_script( 'nbt-settings-js', 'export_to_text_js', $params );
+			wp_localize_script( 'nbt-templates-js', 'export_to_text_js', $params );
     	}
     }
 
@@ -149,6 +148,7 @@ class blog_templates_main_menu {
      * @since 1.2.1
      */
     function network_admin_page() {
+
         $this->page_id = add_menu_page( __( 'Blog Templates', $this->localization_domain ), __( 'Blog Templates', $this->localization_domain ), 'manage_network', $this->menu_slug, array($this,'admin_options_page'), 'div' );
     }
 
