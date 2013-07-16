@@ -1110,6 +1110,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
     } // End Class
 
     // instantiate the class
-    $blog_templates =& new blog_templates();
+    $blog_templates = new blog_templates();
 
 } // End if blog_templates class exists statement
