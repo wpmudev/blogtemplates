@@ -9,7 +9,6 @@ jQuery(document).ready(function($) {
 			type: $('#nbt-toolbar').data('toolbar-type')
 		};
 
-		console.log(data);
 
 		var the_content = $('.blog_template-option');
 	    $.ajax({
@@ -17,7 +16,9 @@ jQuery(document).ready(function($) {
 			data: data,
 			type: 'post',
 			beforeSend: function() {
-				the_content.html('Loading...');
+
+				the_content.html('<div id="toolbar-loader"><img id="toolbar-loader-image" src="' + export_to_text_js.imagesurl + 'ajax-loader.gif" /></div>');
+				console.log( export_to_text_js.imagesurl + 'ajax-loader.gif' );
 			}
 		}).done(function( data ) {
 			the_content.html(data);

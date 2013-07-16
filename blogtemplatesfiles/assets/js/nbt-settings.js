@@ -41,5 +41,7 @@ jQuery(document).ready(function($) {
 		else
 			$( '#previewer-button-text' ).slideUp();
 	});
+
+	$('.color-field').wpColorPicker();
 	
 });

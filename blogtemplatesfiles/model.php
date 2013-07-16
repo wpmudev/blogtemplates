@@ -363,7 +363,20 @@ class blog_templates_model {
 				$cat_id
 			);
 
-			return $wpdb->get_results( $query, ARRAY_A );
+			$results = $wpdb->get_results( $query, ARRAY_A );
+
+			if ( ! empty( $results ) ) {
+				$new_results = array();
+				foreach ( $results as $template ) {
+					$tmp_template = $template;
+					$tmp_template = array_merge( maybe_unserialize( $template['options'] ), $tmp_template );
+					unset( $tmp_template['options'] );
+					$new_results[] = $tmp_template;
+				}
+				$results = $new_results;
+			}
+
+			return $results;
 		}
 }
 

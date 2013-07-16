@@ -77,14 +77,18 @@ class blog_templates_settings_menu {
     		'registration-templates-appearance' => '',
     		'default' => '',
     		'previewer_button_text' => __( 'Select this theme', $this->localization_domain ),
-    		'show-categories-selection' => false
+            'show-categories-selection' => false,
+            'toolbar-color' => '#8B8B8B',
+            'toolbar-text-color' => '#FFFFFF',
+    		'toolbar-border-color' => '#333333'
     	);
     }
 
     public function add_javascript($hook) {
 
     	if ( get_current_screen()->id == $this->page_id . '-network' ) {
-    		wp_enqueue_script( 'nbt-settings-js', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/js/nbt-settings.js', array( 'jquery' ) );
+            wp_enqueue_style( 'wp-color-picker' );
+    		wp_enqueue_script( 'nbt-settings-js', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/js/nbt-settings.js', array( 'jquery', 'wp-color-picker' ) );
     		wp_enqueue_style( 'nbt-settings-css', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/css/settings.css' );
     	}
     }
@@ -140,44 +144,73 @@ class blog_templates_settings_menu {
 			            
 			            <?php ob_start(); ?>
 
-			            <?php ob_start(); ?>
-			                <label for="show-categories-selection">
-			                    <input type="checkbox" <?php checked( !empty($this->options['show-categories-selection']) ); ?> name="show-categories-selection" id="show-categories-selection" value="1"/> 
-			                    <?php _e( 'A new toolbar will appear on to on the selection screen. Users will be able to filter by templates categories <strong>(Just applicable when theme screenshot or previewer is selected)</strong>.', $this->localization_domain); ?>
-			                </label><br/>
-			                <?php $this->render_row( __('Show categories menu', $this->localization_domain), ob_get_clean() ); ?>
-			            
-			            <?php ob_start(); ?>
+                        <?php $appearance_template = $this->_get_config_option('registration-templates-appearance'); ?>
+                        <label for="registration-templates-appearance-select">
+                            <input type="radio" <?php checked( empty( $appearance_template ) ); ?> name="registration-templates-appearance" id="registration-templates-appearance-select" value=""/>
+                            <?php _e('As simple selection box', $this->localization_domain); ?>
+                        </label><br/>
+                        <label for="registration-templates-appearance-description">
+                            <input type="radio" <?php checked( $appearance_template, 'description' ); ?> name="registration-templates-appearance" id="registration-templates-appearance-description" value="description"/>
+                            <?php _e('As radio-box selection with descriptions', $this->localization_domain); ?>
+                        </label><br/>
+                        <label for="registration-templates-appearance-screenshot">
+                            <input type="radio" <?php checked( $appearance_template, 'screenshot' ); ?> name="registration-templates-appearance" id="registration-templates-appearance-screenshot" value="screenshot" />
+                            <?php _e('As theme screenshot selection', $this->localization_domain); ?>
+                        </label><br/>
+                        <label for="registration-templates-appearance-screenshot_plus">
+                            <input type="radio" <?php checked( $appearance_template, 'screenshot_plus' ); ?> name="registration-templates-appearance" id="registration-templates-appearance-screenshot_plus" value="screenshot_plus" />
+                            <?php _e('As theme screenshot selection with titles and description', $this->localization_domain); ?>
+                        </label><br/>
+                        <label for="registration-templates-appearance-previewer">
+                            <input type="radio" <?php checked( 'previewer' == $appearance_template ); ?> name="registration-templates-appearance" id="registration-templates-appearance-previewer" value="previewer" />
+                            <?php _e('As a theme previewer', $this->localization_domain); ?>
+                        </label><br/>
+                        <div id="previewer-button-text">
+                            <label style="margin-left:20px;margin-top:10px" for="registration-templates-appearance-previewer-button-text">
+                                <?php _e( '"Select this Theme" button text', $this->localization_domain); ?>
+                                <input type="text" name="registration-templates-button-text" id="registration-templates-appearance-previewer-button-text" value="<?php echo $this->options['previewer_button_text']; ?>" />
+                            </label>
+                        </div>
+                        <?php $this->render_row( __('Type of selection', $this->localization_domain), ob_get_clean() ); ?>
 
-			            <?php $appearance_template = $this->_get_config_option('registration-templates-appearance'); ?>
-		                <label for="registration-templates-appearance-select">
-		                    <input type="radio" <?php checked( empty( $appearance_template ) ); ?> name="registration-templates-appearance" id="registration-templates-appearance-select" value=""/>
-		                    <?php _e('As simple selection box', $this->localization_domain); ?>
-		                </label><br/>
-		                <label for="registration-templates-appearance-description">
-		                    <input type="radio" <?php checked( $appearance_template, 'description' ); ?> name="registration-templates-appearance" id="registration-templates-appearance-description" value="description"/>
-		                    <?php _e('As radio-box selection with descriptions', $this->localization_domain); ?>
-		                </label><br/>
-		                <label for="registration-templates-appearance-screenshot">
-		                    <input type="radio" <?php checked( $appearance_template, 'screenshot' ); ?> name="registration-templates-appearance" id="registration-templates-appearance-screenshot" value="screenshot" />
-		                    <?php _e('As theme screenshot selection', $this->localization_domain); ?>
-		                </label><br/>
-		                <label for="registration-templates-appearance-screenshot_plus">
-		                    <input type="radio" <?php checked( $appearance_template, 'screenshot_plus' ); ?> name="registration-templates-appearance" id="registration-templates-appearance-screenshot_plus" value="screenshot_plus" />
-		                    <?php _e('As theme screenshot selection with titles and description', $this->localization_domain); ?>
-		                </label><br/>
-		                <label for="registration-templates-appearance-previewer">
-		                    <input type="radio" <?php checked( 'previewer' == $appearance_template ); ?> name="registration-templates-appearance" id="registration-templates-appearance-previewer" value="previewer" />
-		                    <?php _e('As a theme previewer', $this->localization_domain); ?>
-		                </label><br/>
-		                <div id="previewer-button-text">
-			                <label style="margin-left:20px;margin-top:10px" for="registration-templates-appearance-previewer-button-text">
-			                	<?php _e( '"Select this Theme" button text', $this->localization_domain); ?>
-			                    <input type="text" name="registration-templates-button-text" id="registration-templates-appearance-previewer-button-text" value="<?php echo $this->options['previewer_button_text']; ?>" />
-			                </label>
-			            </div>
-			            <?php $this->render_row( __('Type of selection', $this->localization_domain), ob_get_clean() ); ?>
+
 			        </table>
+                    
+                    <h3><?php _e( 'Categories Toolbar', 'blog_templates' ); ?></h3>
+                    <table class="form-table">
+                        <?php ob_start(); ?>
+                            <label for="show-categories-selection">
+                                <input type="checkbox" <?php checked( !empty($this->options['show-categories-selection']) ); ?> name="show-categories-selection" id="show-categories-selection" value="1"/> 
+                                <?php _e( 'A new toolbar will appear on to on the selection screen. Users will be able to filter by templates categories <strong>(Just applicable when theme screenshot or previewer is selected)</strong>.', $this->localization_domain); ?>
+                            </label><br/>
+                            <?php $this->render_row( __('Show categories menu', $this->localization_domain), ob_get_clean() ); ?>
+                        
+                        <?php ob_start(); ?>
+
+                        <?php ob_start(); ?>
+                            <label for="toolbar-color">
+                                <input type="text" class="color-field" name="toolbar-color" id="toolbar-color" value="<?php echo $this->options['toolbar-color']; ?>"/> 
+                            </label>
+                            <?php $this->render_row( __( 'Toolbar background color', $this->localization_domain ), ob_get_clean() ); ?>
+                        
+                        <?php ob_start(); ?>
+
+                        <?php ob_start(); ?>
+                            <label for="toolbar-text-color">
+                                <input type="text" class="color-field" name="toolbar-text-color" id="toolbar-text-color" value="<?php echo $this->options['toolbar-text-color']; ?>"/> 
+                            </label>
+                            <?php $this->render_row( __( 'Toolbar text color', $this->localization_domain ), ob_get_clean() ); ?>
+                        
+                        <?php ob_start(); ?>
+
+                        <?php ob_start(); ?>
+                            <label for="toolbar-border-color">
+                                <input type="text" class="color-field" name="toolbar-border-color" id="toolbar-border-color" value="<?php echo $this->options['toolbar-border-color']; ?>"/> 
+                            </label>
+                            <?php $this->render_row( __( 'Toolbar border color', $this->localization_domain ), ob_get_clean() ); ?>
+                        
+                        <?php ob_start(); ?>
+                    </table>
 		            <p><div class="submit"><input type="submit" name="save_options" class="button-primary" value="<?php esc_attr_e(__('Save Settings', $this->localization_domain));?>" /></div></p>
 			    </form>
 			   </div>
@@ -248,9 +281,13 @@ class blog_templates_settings_menu {
 
                 if (! wp_verify_nonce($_POST['_nbtnonce'], 'blog_templates-update-options') )
                     wp_die( __( 'Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)', $this->localization_domain ) );
+
+                $defaults = $this->get_default_settings();
                 $this->options['show-registration-templates'] = isset($_POST['show-registration-templates']) ? (int)$_POST['show-registration-templates'] : 0;
                 $this->options['registration-templates-appearance'] = isset($_POST['registration-templates-appearance']) ? $_POST['registration-templates-appearance'] : '';
                 $this->options['show-categories-selection'] = isset($_POST['show-categories-selection']) ? $_POST['show-categories-selection'] : 0;
+                $this->options['toolbar-color'] = isset($_POST['toolbar-color']) ? $_POST['toolbar-color'] : $defaults['toolbar-color'];
+                $this->options['toolbar-text-color'] = isset($_POST['toolbar-text-color']) ? $_POST['toolbar-text-color'] : $defaults['toolbar-text-color'];
 
                 if ( ! empty( $_POST['registration-templates-button-text'] ) )
 					$this->options['previewer_button_text'] = sanitize_text_field( $_POST['registration-templates-button-text'] );
