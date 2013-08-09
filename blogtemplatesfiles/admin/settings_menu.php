@@ -66,7 +66,7 @@ class blog_templates_settings_menu {
             $theOptions = $this->get_default_settings();
             update_site_option($this->options_name, $theOptions);
         }
-
+        
         $this->options = wp_parse_args( $theOptions, $this->get_default_settings() );
     }
 
@@ -120,7 +120,7 @@ class blog_templates_settings_menu {
      * @since 1.0
      */
     function admin_options_page() {
-
+        
 	    $t = isset( $_GET['t'] ) ? (string) $_GET['t'] : '';
 
 		?>
@@ -175,7 +175,8 @@ class blog_templates_settings_menu {
 
 			        </table>
                     
-                    <h3><?php _e( 'Categories Toolbar', 'blog_templates' ); ?></h3>
+                    <!-- If you're watching this: The next code will be included in following versions. It's still in BETA. It works, but it's ugly-->
+                    <!--h3><?php _e( 'Categories Toolbar', 'blog_templates' ); ?></h3>
                     <table class="form-table">
                         <?php ob_start(); ?>
                             <label for="show-categories-selection">
@@ -209,7 +210,7 @@ class blog_templates_settings_menu {
                             <?php $this->render_row( __( 'Toolbar border color', $this->localization_domain ), ob_get_clean() ); ?>
                         
                         <?php ob_start(); ?>
-                    </table>
+                    </table-->
 		            <p><div class="submit"><input type="submit" name="save_options" class="button-primary" value="<?php esc_attr_e(__('Save Settings', $this->localization_domain));?>" /></div></p>
 			    </form>
 			   </div>

@@ -121,6 +121,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
              */
             add_action( 'all_admin_notices', array( &$this, 'alert_main_site_templated' ) );
 
+            add_action( 'delete_blog', array( &$this, 'maybe_delete_template' ), 10, 1 );
+
 
         }
 
@@ -168,6 +170,38 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
         }
 
+        /**
+         * Delete templates attached to blogs that no longer exist
+         * 
+         * @param Integer $blog_id 
+         */
+        function maybe_delete_template( $blog_id ) {
+
+            $delete_template_ids = array();
+
+            // Searching those templates attached to that blog
+            foreach ( $this->options['templates'] as $key => $template ) {
+                if ( $template['blog_id'] == $blog_id ) {
+                    $delete_template_ids[] = $key;
+                }
+            }
+
+            // Deleting and saving new options
+            if ( ! empty( $delete_template_ids ) ) {
+                $model = blog_templates_model::get_instance();
+                foreach ( $delete_template_ids as $template_id ) {
+                    unset( $this->options['templates'][ $template_id ] );
+
+                    if ( $this->options['default'] == $template_id )
+                        $this->options['default'] = false;
+
+                    $model->delete_template( $template_id );
+
+                    $this->save_admin_options();
+                }
+            }
+        }
+
         function alert_main_site_templated() {
             if ( ! empty( $this->options['templates'] ) ) {
                 $main_site_templated = false;
@@ -204,7 +238,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 echo "<select name=\"$tag_name\">";
                 echo ($include_none ? "<option value=\"none\">None</option>" : '');
                 foreach ($templates as $key=>$value) {
-                    echo "<option value=\"$key\">" . esc_attr( $value ) . "</option>";
+                    $selected = $key == $this->options['default'] ? 'selected="selected"' : '';
+                    echo "<option value=\"$key\"" . $selected . ">" . esc_attr( $value ) . "</option>";
                 }
                 echo '</select>';
             }
@@ -226,7 +261,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                     jQuery('.form-table:last tr:last').before('\
                     <tr class="form-field form-required">\
                         <th scope="row"><?php _e('Template', $this->localization_domain) ?></th>\
-                        <td><?php $this->get_template_dropdown('blog_template',true); ?></td>\
+                        <td><?php $this->get_template_dropdown('blog_template_admin',true); ?></td>\
                     </tr>');
                 });
             </script>
@@ -264,16 +299,28 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 ;
             }
 
-
+            
+            
             $template = '';
             // Check $_POST first for passed template and use that, if present.
             // Otherwise, check passed meta from blog signup.
             // Lastly, apply the default.
-            if ( isset( $_POST['blog_template'] ) && is_numeric( $_POST['blog_template'] ) ) { //If they've chosen a template, use that. For some reason, when PHP gets 0 as a posted var, it doesn't recognize it as is_numeric, so test for that specifically
+            if ( isset( $_POST['blog_template_admin'] ) && is_network_admin() ) {
+                // The blog is being created from the admin network.
+                // The super admin can create a blog without a template
+                if ( 'none' === $_POST['blog_template_admin'] ) {
+                    // The Super Admin does not want to use any template
+                    return;
+                }
+                else {
+                    $template = $this->options['templates'][$_POST['blog_template_admin']];
+                }
+            }
+            elseif ( isset( $_POST['blog_template'] ) && is_numeric( $_POST['blog_template'] ) ) { //If they've chosen a template, use that. For some reason, when PHP gets 0 as a posted var, it doesn't recognize it as is_numeric, so test for that specifically
                 $template = $this->options['templates'][$_POST['blog_template']];
-            } else if ($_passed_meta && isset($_passed_meta['blog_template']) && is_numeric($_passed_meta['blog_template'])) { // Do we have a template in meta?
+            } elseif ($_passed_meta && isset($_passed_meta['blog_template']) && is_numeric($_passed_meta['blog_template'])) { // Do we have a template in meta?
                 $template = $this->options['templates'][$_passed_meta['blog_template']]; // Why, yes. Yes, we do. Use that. 
-            } else if ( $default ) { //If they haven't chosen a template, use the default if it exists
+            } elseif ( $default ) { //If they haven't chosen a template, use the default if it exists
                 $template = $default;
             }
             $template = apply_filters('blog_templates-blog_template', $template, $blog_id, $user_id, $this);
@@ -901,6 +948,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             $model = blog_templates_model::get_instance();
             
             $this->options = $theOptions;
+            
             $this->options['templates'] = $model->get_templates();
         }
 
@@ -1079,10 +1127,10 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             nbt_render_theme_selection_scripts($this->options['registration-templates-appearance']);
 
-            if ( $this->options['show-categories-selection'] && in_array( $this->options['registration-templates-appearance'], array( 'previewer' ,'screenshot' ,'screenshot_plus' ) ) ) {
-                $toolbar = new blog_templates_theme_selection_toolbar( $this->options['registration-templates-appearance'] );
-                $toolbar->display();
-            }
+            //if ( $this->options['show-categories-selection'] && in_array( $this->options['registration-templates-appearance'], array( 'previewer' ,'screenshot' ,'screenshot_plus' ) ) ) {
+            //    $toolbar = new blog_templates_theme_selection_toolbar( $this->options['registration-templates-appearance'] );
+            //    $toolbar->display();
+            //}
 
             @include $theme_file;
         }
@@ -1092,7 +1140,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
          */
         function registration_template_selection_add_meta ($meta) {
             $meta = $meta ? $meta : array();
-            $meta['blog_template'] = @$_POST['blog_template'];
+
+            $meta['blog_template'] = isset( $_POST['blog_template'] ) && is_numeric( $_POST['blog_template'] ) ? $_POST['blog_template'] : $this->options['default'];
             return $meta;
         }
 
@@ -1113,3 +1162,5 @@ if ( ! class_exists( 'blog_templates' ) ) {
     $blog_templates = new blog_templates();
 
 } // End if blog_templates class exists statement
+
+
