@@ -103,7 +103,7 @@ class NBT_Templates_Table extends WP_List_Table {
         $columns = array(
             'name'          => __( 'Template Name', $this->localization_domain ),
             'blog'          => __( 'Blog', $this->localization_domain ),
-            'categories'    => __( 'Categories', $this->localization_domain ),
+            //'categories'    => __( 'Categories', $this->localization_domain ),
             'screenshot'    => __( 'Screenshot', $this->localization_domain ),
         );
         return $columns;

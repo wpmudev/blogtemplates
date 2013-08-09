@@ -41,7 +41,7 @@ class blog_templates_categories_menu {
      * @since 1.2.1
      */
     function network_admin_page() {
-        $this->page_id = add_submenu_page( 'blog_templates_main', __( 'Templates categories', $this->localization_domain ), __( 'Templates categories', $this->localization_domain ), 'manage_network', $this->menu_slug, array($this,'render_page'));
+        //$this->page_id = add_submenu_page( 'blog_templates_main', __( 'Template categories', $this->localization_domain ), __( 'Template categories', $this->localization_domain ), 'manage_network', $this->menu_slug, array($this,'render_page'));
     }
 
     public function render_page() {

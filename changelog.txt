@@ -5,6 +5,20 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+1.9 - 2013-08-09
+----------------------------------------------------------------------
+- The template will be automatically deleted if the attached blog is deleted
+- Fixed bug when the user does not select any template. The default one will be chosen (if available)
+- Fixed Javascript conflicts
+- Removed deprecated assignment
+- New single menu for the plugin
+- Search by blog name when creating templates with autocomplete
+- Minor fixes
+- Added screenshot option
+- Fixed error when reassigning pages authors
+- New DB Model for the plugin
+- Fixed error when saving button caption
+
 1.8 - 2013-06-26
 ----------------------------------------------------------------------
 - Improved styling on Settings Page
