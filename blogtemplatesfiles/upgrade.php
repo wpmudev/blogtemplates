@@ -2,9 +2,10 @@
 
 function blog_templates_upgrade_19() {
 
-	$options = get_site_option( 'blog_templates_options', array( 'templates' => array() ) );
-	$model = blog_templates_model::get_instance();
+	global $wpdb;
 
+	$options = get_site_option( 'blog_templates_options', array( 'templates' => array() ) );
+	var_dump($options);
 	$default = isset( $options['default'] ) ? absint( $options['default'] ) : false;
 
 	foreach ( $options['templates'] as $key => $template ) {
@@ -19,10 +20,35 @@ function blog_templates_upgrade_19() {
 
 		$tmp_template['screenshot'] = false;
 
-		$template_id = $model->add_template( $blog_id, $name, $description, $tmp_template );
+		// Inserting templates
+		$wpdb->insert( 
+			$wpdb->base_prefix . 'nbt_templates',
+			array(
+				'blog_id' =>  $blog_id,
+				'name' => $name,
+				'description' => $description,
+				'options' => maybe_serialize( $tmp_template )
+			),
+			array(
+				'%d',
+				'%s',
+				'%s',
+				'%s'
+			)
+		);
 
-		if ( $default === $key )
-			$model->set_default_template( $template_id );
+		$template_id = $wpdb->insert_id;
+
+		if ( $default === $key ) {
+			$wpdb->update(
+				$wpdb->base_prefix . 'nbt_templates',
+				array( 'is_default' => 1 ),
+				array( 'ID' => $id ),
+				array( '%d' ),
+				array( '%d' )
+			);
+		}
+
 	}
 
 	$new_options = array();
@@ -33,4 +59,6 @@ function blog_templates_upgrade_19() {
 	$new_options['toolbar-text-color'] = isset( $options['toolbar-text-color'] ) ? $options['toolbar-text-color'] : '#FFFFFF';
 	$new_options['toolbar-border-color'] = isset( $options['toolbar-border-color'] ) ? $options['toolbar-border-color'] : '#333333';
 	$new_options['show-categories-selection'] = isset($options['show-categories-selection']) ? $options['show-categories-selection'] : 0;
+
+	update_site_option( 'blog_templates_options', $new_options );
 }

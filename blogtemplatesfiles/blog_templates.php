@@ -129,41 +129,46 @@ if ( ! class_exists( 'blog_templates' ) ) {
         function maybe_upgrade() {
 
             // Split posts option into posts and pages options
-            $current_version = get_site_option( 'nbt_plugin_version', false );
+            $saved_version = get_site_option( 'nbt_plugin_version', false );
 
-            if ( $current_version && version_compare( $current_version, '1.7.2' ) == -1 ) {
-                $new_options = $this->options;
-                foreach ( $this->options['templates'] as $key => $template ) {
+            if ( ! $saved_version )
+                $saved_version = '1.7.2';
+
+            if ( version_compare( NBT_PLUGIN_VERSION, $saved_version, '>' ) ) {
+                $options = get_site_option( 'blog_templates_options', array( 'templates' => array() ) );
+                $new_options = $options;
+                foreach ( $options['templates'] as $key => $template ) {
                     $to_copy = $template['to_copy'];
                     if ( in_array( 'posts', $to_copy ) )
                         $new_options['templates'][ $key ]['to_copy'][] = 'pages';
                 }
-                $this->options = $new_options;
-                $this->save_admin_options();
+
+                update_site_option( 'blog_templates_options', $new_options );
+                update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );
+                $this->get_options();
             }
 
-            if( $current_version && version_compare( $current_version, '1.7.6' ) == -1 ) {
-                $new_options = $this->options;
+            if ( version_compare( $saved_version, '1.7.6', '<' ) ) {
+                $options = get_site_option( 'blog_templates_options', array( 'templates' => array() ) );
+                $new_options = $options;
 
-                foreach ( $this->options['templates'] as $key => $template ) {
+                foreach ( $options['templates'] as $key => $template ) {
                     $new_options['templates'][ $key ]['block_posts_pages'] = false;
                     $new_options['templates'][ $key ]['post_category'] = array( 'all-categories' );
                 }
-
-                $this->options = $new_options;
-                $this->save_admin_options();
                 
+                update_site_option( 'blog_templates_options', $new_options );
+                update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );
+                $this->get_options();
             }
 
-            if ( $current_version && version_compare( $current_version, '1.9' ) == -1 ) {
+
+            if ( version_compare( $saved_version, '1.9', '<' ) ) {
                 $model = blog_templates_model::get_instance();
                 $model->create_tables();
                 blog_templates_upgrade_19();
-            }
-
-            if ( ! $current_version ) {
-                $model = blog_templates_model::get_instance();
-                $model->create_tables();
+                update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );
+                $this->get_options();
             }
 
             update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );                
@@ -211,7 +216,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 }
 
                 if ( $main_site_templated && is_super_admin() ) {
-                    $settings_url = add_query_arg( 'page', basename(__FILE__), network_admin_url( 'settings.php' ) );
+                    $settings_url = add_query_arg( 'page', 'blog_templates_main', network_admin_url( 'settings.php' ) );
                     ?>
                         <div class="error">
                             <p><?php printf( __( '<strong>New Blog Templates alert:</strong> The main site cannot be templated from 1.7.1 version, please <a href="%s">go to settings page</a> and remove that template (will not be shown as a choice from now on)', $this->localization_domain ), $settings_url ); ?></p>
@@ -941,7 +946,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
         function get_options() {
             //Don't forget to set up the default options
             if (!$theOptions = get_site_option($this->options_name)) {
-                $theOptions = array('templates'=>array());
+                $theOptions = array();
                 update_site_option($this->options_name, $theOptions);
             }
 
