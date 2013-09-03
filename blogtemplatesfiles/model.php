@@ -140,7 +140,8 @@ class blog_templates_model {
 				'copy_status' => $copy_status,
 				'block_posts_pages' => $block_posts_pages,
 				'post_category' => $post_category,
-				'screenshot' => ! empty( $screenshot ) ? $screenshot : false
+				'screenshot' => ! empty( $screenshot ) ? $screenshot : false,
+				'pages_ids' => $pages_ids
 			) );
 
 			$wpdb->update( 
@@ -182,7 +183,7 @@ class blog_templates_model {
 				$final_results = array();
 				foreach ( $results as $template ) {
 					$final_results[$template['ID']] = $template;
-					$final_results[$template['ID']] = array_merge( maybe_unserialize( $template['options'] ), $final_results[$template['ID']] );
+					$final_results[$template['ID']]['options'] = maybe_unserialize( $template['options'] );
 				}
 				return $final_results;
 			}

@@ -1,32 +1,47 @@
 jQuery(document).ready(function($) {
-	var all_checks = $('#categorychecklist input[type=checkbox]').slice(1);
-	$('#poststuff').hide();
+	var nbt_settings = {
+		init: function() {
+			var postboxes = $('.postbox');
 
-	$( '#select-category-link' ).click( function(e) {
-		e.preventDefault();
-		$('#poststuff').slideToggle();
-	});
+			var postboxes_checkboxes = postboxes.find('input[type=checkbox]');
 
-	if ( $('#in-all-categories').attr('checked') ) {
-		all_checks.each(function(i) {
-			$(this).attr('checked',false);
-			$(this).attr('disabled',true);
-		});
+			var all_selectors = postboxes.find('input.all-selector');
+			
+			
+			all_selectors.each(function(i,selector) {
+				selector = $(selector);
+				if ( selector.attr('checked') ) {
+					var list_items = nbt_settings.get_list(selector);
+					list_items.attr('disabled',true);
+				}	
+			});
+
+			postboxes_checkboxes.change(function() {
+				var item = $(this);
+
+				if ( item.hasClass('all-selector') ) {
+					var list_items = nbt_settings.get_list(item);
+					
+					if ( item.attr('checked') ) {
+						list_items.attr('checked', false);
+						list_items.attr('disabled',  true);
+					}
+					else {
+						list_items.attr('disabled',  false);
+					}
+				}
+			});
+
+		},
+		get_list: function( item ) {
+			return item
+				.closest('ul')
+				.find('input[type=checkbox]' )
+				.not('#' + item.attr('id'));
+		}
 	}
-
-	$( '#in-all-categories' ).change( function(e) {
-		if ( $(this).attr('checked') == 'checked' ) {
-			all_checks.each(function(i) {
-				$(this).attr('checked',false);
-				$(this).attr('disabled',true);
-			});
-		}
-		else {
-			all_checks.each(function(i) {
-				$(this).attr('disabled',false);
-			});
-		}
-	});
+	nbt_settings.init();
+	
 
 	var nbt_cache = {};
 	$( "#search_for_blog" ).autocomplete({

@@ -165,6 +165,43 @@ class blog_templates_main_menu {
         add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, 'filter_plugin_actions' ) );
     }
 
+    private function get_post_categories_list( $template ) {
+    	ob_start();
+    	?>
+    		<ul id="nbt-post-categories-checklist">
+				<li id="all-categories"><label class="selectit"><input class="all-selector" value="all-categories" type="checkbox" <?php checked( in_array( 'all-categories', $template['post_category'] ) ); ?> name="post_category[]" id="in-all-categories"> <strong><?php _e( 'All categories', $this->localization_domain ); ?></strong></label></li>
+				<?php
+					switch_to_blog( $template['blog_id'] );
+					wp_terms_checklist( 0, array( 'selected_cats' => $template['post_category'], 'checked_ontop' => 0 ) );
+					restore_current_blog();
+				?>
+	 		</ul>
+    	<?php
+    	return ob_get_clean();
+    }
+
+    private function get_pages_list( $template ) {
+    	switch_to_blog( $template['blog_id'] );
+    	$pages = get_pages();
+    	restore_current_blog();
+
+    	ob_start();
+    		?>
+			<ul id="nbt-pages-checklist">
+				<li id="all-nbt-pages"><label class="selectit"><input class="all-selector" value="all-pages" type="checkbox" <?php checked( in_array( 'all-pages', $template['pages_ids'] ) ); ?> name="pages_ids[]" id="in-all-nbt-pages"> <strong><?php _e( 'All pages', $this->localization_domain ); ?></strong></label></li>
+				<?php foreach ( $pages as $page ): ?>
+					<li id="page-<?php echo $page->ID; ?>">
+						<label class="selectit">
+							<input type="checkbox" name="pages_ids[]" id="in-page-<?php echo $page->ID; ?>" value="<?php echo $page->ID; ?>" <?php checked( ! in_array( 'all-pages', $template['pages_ids'] ) && in_array( $page->ID, $template['pages_ids'] ) ); ?>> <?php echo $page->post_title; ?>
+						</label>
+					</li>
+				<?php endforeach; ?>
+	 		</ul>
+	 	<?php
+    	return ob_get_clean();
+    }
+
+
     /**
      * Adds settings/options page
      *
@@ -250,39 +287,48 @@ class blog_templates_main_menu {
 						                <?php 
 						                    ob_start(); 
 						                    $options_to_copy = array(
-						                        'settings' => __( 'Wordpress Settings, Current Theme, and Active Plugins', $this->localization_domain ),
-						                        'posts'    => __( 'Posts', $this->localization_domain ) . ' <a href="#" id="select-category-link" class="button-secondary">' . __( 'Select categories', $this->localization_domain ) . ' &#x25BC;</a>',
-						                        'pages'    => __( 'Pages', $this->localization_domain ),
-						                        'terms'    => __( 'Categories, Tags, and Links', $this->localization_domain ),
-						                        'users'    => __( 'Users', $this->localization_domain ),
-						                        'menus'    => __( 'Menus', $this->localization_domain ),
-						                        'files'    => __( 'Files', $this->localization_domain )
-						                        
+						                        'settings' => array(
+						                        	'title' => __( 'Wordpress Settings, Current Theme, and Active Plugins', $this->localization_domain ),
+						                        	'content' => false
+						                        ),
+						                        'posts'    => array(
+						                        	'title' => __( 'Posts', $this->localization_domain ),
+						                        	'content' => $this->get_post_categories_list( $template )
+						                        ),
+						                        'pages'    => array(
+						                        	'title' => __( 'Pages', $this->localization_domain ),
+						                        	'content' => $this->get_pages_list( $template )
+						                        ),
+						                        'terms'    => array(
+						                        	'title' => __( 'Categories, Tags, and Links', $this->localization_domain ),
+						                        	'content' => false
+						                        ),
+						                        'users'    => array(
+						                        	'title' => __( 'Users', $this->localization_domain ),
+						                        	'content' => false
+						                        ),
+						                        'menus'    => array(
+						                        	'title' => __( 'Menus', $this->localization_domain ),
+						                        	'content' => false
+						                        ),
+						                        'files'    => array(
+						                        	'title' => __( 'Files', $this->localization_domain ),
+						                        	'content' => false
+						                        )
 						                    );
 
 						                    foreach ( $options_to_copy as $key => $value ) : ?>
-						                            <input type="checkbox" name="to_copy[]" id="nbt-<?php echo $key; ?>" value="<?php echo $key; ?>" <?php checked( in_array( $key, $template['to_copy'] ) ); ?>> <label for='nbt-<?php echo $key; ?>' id="nbt-label-<?php echo $key; ?>"><?php echo $value; ?></label><br/>
-						                            <?php if ( 'posts' === $key ) :   ?>
-						                            		<div id="poststuff" style="width:280px;margin-left:25px">
-							                            		<div id="categorydiv" class="postbox ">
-																	<h3 class="hndle"><span>Categories</span></h3>
-																	<div class="inside">
-																		<div id="taxonomy-category" class="categorydiv">
-
-																			<div id="category-all" class="tabs-panel">
-																				<ul id="categorychecklist" data-wp-lists="list:category" class="categorychecklist form-no-clear">
-																					<li id="all-categories"><label class="selectit"><input value="all-categories" type="checkbox" <?php checked( in_array( 'all-categories', $template['post_category'] ) ); ?> name="post_category[]" id="in-all-categories"> <strong><?php _e( 'All categories', $this->localization_domain ); ?></strong></label></li>
-																					<?php switch_to_blog( $template['blog_id'] ); ?>
-																					<?php wp_terms_checklist( 0, array( 'selected_cats' => $template['post_category'] ) ); ?>
-																					<?php restore_current_blog(); ?>
-																				</ul>
-																			</div>
-																					
-																		</div>
-																	</div>
-																</div>
+						                            <div id="nbt-<?php echo $key; ?>-to-copy" class="postbox">
+														<h3 class="hndle">
+															<label><input type="checkbox" name="to_copy[]" id="nbt-<?php echo $key; ?>" value="<?php echo $key; ?>" <?php checked( in_array( $key, $template['to_copy'] ) ); ?>> <?php echo $value['title']; ?></label><br/>
+														</h3>
+														<?php if ( $value['content'] ): ?>
+															<div class="inside">
+																<?php echo $value['content']; ?>
 															</div>
-						                        	<?php endif; ?>
+														<?php endif; ?>
+													</div>
+
 						                  	<?php endforeach; ?>
 						                <?php $this->render_row( __( 'What To Copy To New Blog?', $this->localization_domain ), ob_get_clean() ); ?>
 
@@ -514,10 +560,9 @@ class blog_templates_main_menu {
             		$args['screenshot'] = false;
             	}
 
-                if ( ! isset( $_POST['post_category'] ) ) {
-                	$post_category = array( 'all-categories' );
-                }
-                else {
+            	// POST CATEGORIES
+                $post_category = array( 'all-categories' );
+                if ( isset( $_POST['post_category'] ) ) {
                 	$categories = $_POST['post_category'];
 
                 	if ( in_array( 'all-categories', $categories ) ) {
@@ -536,6 +581,27 @@ class blog_templates_main_menu {
                 }
                 $args['post_category'] = $post_category; 
 
+                // PAGES IDs
+                $pages_ids = array( 'all-pages' );
+
+                if ( isset( $_POST['pages_ids'] ) && is_array( $_POST['pages_ids'] ) ) {
+                	if ( in_array( 'all-pages', $_POST['pages_ids'] ) ) {
+                		$pages_ids = array( 'all-pages' );
+                	}
+                	else {
+                		$pages_ids = array();
+                		foreach( $_POST['pages_ids'] as $page_id ) {
+                			if ( ! is_numeric( $page_id ) )
+                				continue;
+
+                			$pages_ids[] = absint( $page_id );
+                		}
+                	}
+                }
+                $args['pages_ids'] = $pages_ids;
+
+
+                // TEMPLATE CATEGORY
                 if ( ! isset( $_POST['template_category'] ) ) {
                 	$template_category = array( $model->get_default_category_id() );
                 }

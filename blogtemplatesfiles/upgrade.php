@@ -62,3 +62,33 @@ function blog_templates_upgrade_19() {
 
 	update_site_option( 'blog_templates_options', $new_options );
 }
+
+function blog_templates_upgrade_192() {
+	global $wpdb;
+
+	$templates = $wpdb->get_results( "SELECT * FROM " . $wpdb->base_prefix . 'nbt_templates', ARRAY_A );
+
+	if ( ! empty( $templates ) ) {
+		$final_results = array();
+		foreach ( $templates as $template ) {
+			$final_results[$template['ID']] = $template;
+			$final_results[$template['ID']]['options'] = maybe_unserialize( $template['options'] );
+		}
+		$templates = $final_results;
+	}
+	else {
+		$templates = array();
+	}
+    
+    foreach ( $templates as $key => $template ) {
+        $options = $template['options'];
+        $options['pages_ids'] = array( 'all-pages');
+        $wpdb->update(
+        	$wpdb->base_prefix . 'nbt_templates',
+        	array( 'options' => maybe_serialize( $options ) ),
+        	array( 'ID' => $template['ID'] ),
+        	array( '%s' ),
+        	array( '%d' )
+        );
+    }
+}

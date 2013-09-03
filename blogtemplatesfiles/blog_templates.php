@@ -134,7 +134,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             if ( ! $saved_version )
                 $saved_version = '1.7.2';
 
-            if ( version_compare( NBT_PLUGIN_VERSION, $saved_version, '>' ) ) {
+            if ( version_compare( $saved_version, '1.7.2', '<=' ) ) {
                 $options = get_site_option( 'blog_templates_options', array( 'templates' => array() ) );
                 $new_options = $options;
                 foreach ( $options['templates'] as $key => $template ) {
@@ -147,6 +147,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );
                 $this->get_options();
             }
+            
 
             if ( version_compare( $saved_version, '1.7.6', '<' ) ) {
                 $options = get_site_option( 'blog_templates_options', array( 'templates' => array() ) );
@@ -167,6 +168,12 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 $model = blog_templates_model::get_instance();
                 $model->create_tables();
                 blog_templates_upgrade_19();
+                update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );
+                $this->get_options();
+            }
+
+            if ( version_compare( $saved_version, '1.9.2', '<' ) ) {
+                blog_templates_upgrade_192();
                 update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );
                 $this->get_options();
             }
@@ -305,7 +312,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
             }
 
             
-            
             $template = '';
             // Check $_POST first for passed template and use that, if present.
             // Otherwise, check passed meta from blog signup.
@@ -428,13 +434,20 @@ if ( ! class_exists( 'blog_templates' ) ) {
                         $this->copy_posts_table($template['blog_id'],"postmeta");
                         do_action('blog_templates-copy-postmeta', $template, $blog_id, $user_id);
 
+                        $this->update_posts_dates('posts');
+                        do_action('blog_templates-update-posts-dates', $template, $blog_id, $user_id);
+
                     break;
                     case 'pages':
-                        $this->copy_posts_table($template['blog_id'],"pages");
+                        $pages_ids = in_array( 'all-pages', $template['pages_ids'] ) ? false : $template['pages_ids'];
+                        $this->copy_posts_table($template['blog_id'],"pages", $pages_ids);
                         do_action('blog_templates-copy-pages', $template, $blog_id, $user_id);
 
                         $this->copy_posts_table($template['blog_id'],"pagemeta");
                         do_action('blog_templates-copy-pagemeta', $template, $blog_id, $user_id);
+
+                        $this->update_posts_dates('pages');
+                        do_action('blog_templates-update-pages-dates', $template, $blog_id, $user_id);
 
                     break;
                     case 'terms':
@@ -656,6 +669,25 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
         }
 
+        function update_posts_dates( $post_type ) {
+            $posts = get_posts( array(
+                'post_type' => array( $post_type ),
+                'post_status' => 'publish'
+            ));
+
+            foreach ( $posts as $post ) {
+                $post_id = $post->ID;
+                $current_date = date_i18n( 'Y-m-d H:i:s' );
+                $current_gmt_date = date_i18n( 'Y-m-d H:i:s', false, true );
+
+                wp_update_post( array(
+                    'ID' => $post->ID,
+                    'post_date' => $current_date,
+                    'post_date_gmt' => $current_gmt_date
+                ) );
+            }
+        }
+
         /**
         * Added to automate comparing the two tables, and making sure no old fields that have been removed get copied to the new table
         *
@@ -786,9 +818,19 @@ if ( ! class_exists( 'blog_templates' ) ) {
             }
             elseif ( 'pages' == $type ) {
                 $query .= "WHERE t1.post_type = 'page'";
+
+                $pages_ids = $categories;
+                if ( is_array( $pages_ids ) && count( $pages_ids ) > 0 ) {
+                    $query .= " AND t1.ID IN (" . implode( ',', $pages_ids ) . ")";
+                }
             }
             elseif ( 'pagemeta' == $type ) {
                 $query .= "INNER JOIN $wpdb->posts t2 ON t1.post_id = t2.ID WHERE t2.post_type = 'page'";
+
+                $pages_ids = $categories;
+                if ( is_array( $pages_ids ) && count( $pages_ids ) > 0 ) {
+                    $query .= " AND t2.ID IN (" . implode( ',', $pages_ids ) . ")";
+                }
             }
 
             $templated = $wpdb->get_results( $query );
@@ -955,6 +997,13 @@ if ( ! class_exists( 'blog_templates' ) ) {
             $this->options = $theOptions;
             
             $this->options['templates'] = $model->get_templates();
+
+            foreach( $this->options['templates'] as $key => $template ) {
+                $options = $template['options'];
+                unset( $this->options['templates'][ $key ]['options'] );
+                $this->options['templates'][ $key ] = array_merge( $this->options['templates'][ $key ], $options );
+            }
+
         }
 
         /**
