@@ -1004,6 +1004,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 $this->options['templates'][ $key ] = array_merge( $this->options['templates'][ $key ], $options );
             }
 
+            $this->options = wp_parse_args( $this->options, blog_templates_settings_menu::get_default_settings() );
+
         }
 
         /**
@@ -1179,7 +1181,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             $theme_file = $theme_file ? $theme_file : $this->thispluginpath . 'template/' . $tpl_file;
             if (!file_exists($theme_file)) return false;
 
-            nbt_render_theme_selection_scripts($this->options['registration-templates-appearance']);
+            nbt_render_theme_selection_scripts($this->options);
 
             //if ( $this->options['show-categories-selection'] && in_array( $this->options['registration-templates-appearance'], array( 'previewer' ,'screenshot' ,'screenshot_plus' ) ) ) {
             //    $toolbar = new blog_templates_theme_selection_toolbar( $this->options['registration-templates-appearance'] );

@@ -13,7 +13,7 @@
 		<?php
 			// Print templates dropdown selection box.
 			// Pass false as second argument to force a template to be selected.
-			$this->get_template_dropdown('blog_template', false);
+			$this->get_template_dropdown('blog_template', true);
 		?>
 	</p>
 </div>

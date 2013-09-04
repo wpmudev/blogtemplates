@@ -44,6 +44,7 @@ function nbt_get_sites_search() {
 }
 add_action( 'wp_ajax_nbt_get_sites_search', 'nbt_get_sites_search' );
 
+
 class blog_templates_main_menu {
 
 	/**
@@ -81,7 +82,6 @@ class blog_templates_main_menu {
         $this->get_options();
 
         
-
 		// Add the super admin page
         if( version_compare( $wp_version , '3.0.9', '>' ) ) {
             add_action( 'network_admin_menu', array( $this, 'network_admin_page' ) );
@@ -642,7 +642,8 @@ class blog_templates_main_menu {
                     'to_copy' => array(),
                     'post_category' => array( 'all-categories' ),
                     'copy_status' => false,
-                    'block_posts_pages' => false
+                    'block_posts_pages' => false,
+                    'pages_ids' => array( 'all-pages' )
                 );
 
                 $template_id = $model->add_template( $blog_id, $name, $description, $settings );

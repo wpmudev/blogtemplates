@@ -70,7 +70,6 @@ function nbt_render_theme_selection_item( $type, $tkey, $template, $options = ar
 					<img src="<?php echo $img;?>" />
 					<input type="radio" name="blog_template" id="blog-template-radio-<?php echo $tkey;?>" <?php checked( ! empty( $default ) ); ?> value="<?php echo $tkey;?>" style="display: none" />
 					<div class="theme-previewer-overlay">
-
 						<span class="template-name"><?php echo $tplid; ?></span> <button class="view-demo-button" data-blog-url="<?php echo $blog_url;?>"><?php _e( 'View demo', 'blog_templates' ); ?></button><br/><br/>
 						<button class="select-theme-button" data-theme-key="<?php echo $tkey;?>"><?php echo $options['previewer_button_text']; ?></button>
 					</div>
@@ -83,12 +82,12 @@ function nbt_render_theme_selection_item( $type, $tkey, $template, $options = ar
 		$tplid = preg_replace('/[^a-z0-9]/i', '', strtolower($template['name'])) . "-{$tkey}";
 		$default = @$options['default'] == $tkey ? "blog_template-default_item" : "";
 		?>
-		<div class="blog_template-item">
-			<a href="#<?php echo $tplid; ?>" class="blog_template-item_selector <?php echo $default; ?>">
-				<img src="<?php echo $img;?>" />
-				<input type="radio" name="blog_template" value="<?php echo $tkey;?>" style="display: none" />
-			</a>
-		</div>
+			<div class="theme-screenshot-wrap <?php echo $default; ?>" id="theme-screenshot-wrap-<?php echo $tkey;?>">
+				<a href="#<?php echo $tplid; ?>" data-theme-key="<?php echo $tkey;?>" class="blog_template-item_selector <?php echo $default; ?>">
+					<img src="<?php echo $img;?>" />
+					<input type="radio" id="blog-template-radio-<?php echo $tkey;?>" <?php checked( ! empty( $default ) ); ?> name="blog_template" value="<?php echo $tkey;?>" style="display: none" />
+				</a>
+			</div>
 		<?php 
 	}
 	elseif ( 'screenshot_plus' === $type ) {
@@ -96,47 +95,60 @@ function nbt_render_theme_selection_item( $type, $tkey, $template, $options = ar
 		$tplid = preg_replace('/[^a-z0-9]/i', '', strtolower($template['name'])) . "-{$tkey}";
 		$default = @$options['default'] == $tkey ? "blog_template-default_item" : "";
 		?>
-		<div class="blog_template-item">
-			<h4><?php echo strip_tags($template['name']);?></h4><br />
-			<a href="#<?php echo $tplid; ?>" class="blog_template-item_selector <?php echo $default; ?>">
-				<img src="<?php echo $img;?>" />
-				<input type="radio" name="blog_template" value="<?php echo $tkey;?>" style="display: none" />
-			</a>
-			<p class="blog_template-description">
-				<?php echo nl2br($template['description']); ?>
-			</p>
-		</div>
-		<?php 
+			<div class="theme-screenshot-plus-wrap" id="theme-screenshot-plus-wrap-<?php echo $tkey;?>">
+				<h4><?php echo strip_tags( $template['name'] );?></h4>
+				<div class="theme-screenshot-plus-image-wrap <?php echo $default; ?>" id="theme-screenshot-plus-image-wrap-<?php echo $tkey;?>">
+					<a href="#<?php echo $tplid; ?>" data-theme-key="<?php echo $tkey;?>" class="blog_template-item_selector">
+						<img src="<?php echo $img;?>" />
+						<input type="radio" id="blog-template-radio-<?php echo $tkey;?>" <?php checked( ! empty( $default ) ); ?> name="blog_template" value="<?php echo $tkey;?>" style="display: none" />
+					</a>
+				</div>
+				<p class="blog_template-description">
+					<?php echo nl2br($template['description']); ?>
+				</p>
+			</div>
+		<?php
+
 	}
 }
 
-function nbt_render_theme_selection_scripts( $type ) {
+function nbt_render_theme_selection_scripts( $options ) {
+	$type = $options['registration-templates-appearance'];
+	$selected_color = $options['selected-background-color'];
+	$unselected_color = $options['unselected-background-color'];
+
+	?>
+		<style>
+			.theme-previewer-wrap,
+			.theme-screenshot-wrap {
+				width:45%;
+				float:left;
+				margin-right:10%;
+				margin-bottom:25px;
+				box-sizing:border-box;
+				position:relative;
+				background:<?php echo $unselected_color; ?>;
+				padding:3px;
+			}
+			.blog_template-default_item {
+				background:<?php echo $selected_color; ?> !important;
+			}
+			.theme-previewer-wrap:nth-child(even),
+			.theme-screenshot-wrap:nth-child(even),
+			.theme-screenshot-plus-wrap:nth-child(even) {
+				margin-right:0px;
+			}
+			.blog_template-item_selector img {
+				max-width:100%;
+			}
+		</style>
+	<?php
 	if ( 'previewer' == $type ) {
 		?>
-			<style>
-				.theme-previewer-wrap {
-					width:45%;
-					float:left;
-					margin-right:10%;
-					margin-bottom:25px;
-					box-sizing:border-box;
-					position:relative;
-					border-color:transparent;
-					border-style: solid;
-					border-width:1px;
-				}
-				.blog_template-default_item {
-					border-color:#333;
-				}
+			<style>				
 				.theme-previewer-wrap:hover .theme-previewer-overlay {
 					opacity:1;
-				}
-				.theme-previewer-wrap:nth-child(even) {
-					margin-right:0px;
-				}
-				.blog_template-item_selector img {
-					max-width:100%;
-				}
+				}				
 				.theme-previewer-overlay {
 					opacity:0;
 					background:#333;
@@ -148,10 +160,13 @@ function nbt_render_theme_selection_scripts( $type ) {
 					width:100%;
 					box-sizing:border-box;
 					text-align: center;
-					padding-top:100px;
+					padding-top:20%;
+				}
+				.view-demo-button {
+					font-size:0.8em;
 				}
 				.select-theme-button {
-					font-size:1.2em;
+					font-size:1em;
 					font-weight:bold;
 				}
 				.template-name {
@@ -171,7 +186,7 @@ function nbt_render_theme_selection_scripts( $type ) {
 					wrap.addClass('blog_template-default_item');
 
 					$('input[name=blog_template]').attr('checked',false);
-					$('#blog-template-radio-'+theme_key).attr('checked',true);
+					$('#blog-template-radio-' + theme_key).attr('checked',true);
 				});
 				$(document).on('click', '.view-demo-button', function(e) {
 					e.preventDefault();
@@ -183,106 +198,52 @@ function nbt_render_theme_selection_scripts( $type ) {
 	}
 	elseif ( 'screenshot' === $type ) {
 		?>
-			<style type="text/css">
-				.blog_template-option {
-					overflow: hidden;
-				}
-				.blog_template-item_selector {
-					display: block;
-					float: left;
-					padding: 12px;
-					border: 3px solid transparent;
-					background: transparent;
-				}
-				.blog_template-item img {
-					max-width:100%;
-				}
-				.blog_template-item {
-					width:45%;
-					margin-right:10%;
-					margin-bottom:25px;
-					box-sizing:border-box;
-					float: left;
-					padding: 12px;
-					border: 2px solid transparent;
-					background: transparent;
-				}
-				.blog_template-item:nth-child(odd) {
-					margin-right:0px;
-				}
-				.blog_template-selected {
-					border: 3px solid #ccc;
-					background: #eee;
-				}
-				#blog_template-selection {
-					clear:both;
-				}
-				</style>
-				<script type="text/javascript">
-					(function ($) {
-					$(function () {
+			<script type="text/javascript">
+				jQuery(document).ready(function($) {
+					$(document).on( 'click', '.blog_template-item_selector', function(e) {
+						e.preventDefault();
+						var theme_key = $(this).data('theme-key');
+						var wrap = $('#theme-screenshot-wrap-' + theme_key );
+						$('.theme-screenshot-wrap').removeClass('blog_template-default_item');
+						wrap.addClass('blog_template-default_item');
 
-					$(document).on( 'click', ".blog_template-item_selector", function () {
-						$(".blog_template-item_selector").removeClass("blog_template-selected")
-						$(".blog_template-item_selector :radio").attr("checked", false);
-						$(this)
-							.addClass("blog_template-selected")
-							.find(":radio").attr("checked", true)
-						;
-						return false;	
+						$('input[name=blog_template]').attr('checked',false);
+						$('#blog-template-radio-' + theme_key).attr('checked',true);
 					});
-					if ($(".blog_template-item_selector.blog_template-default_item").length) $(".blog_template-item_selector.blog_template-default_item").trigger("click");
-					});
-					})(jQuery);
-				</script>
+				});
+			</script>
 		<?php
 	}
 	elseif ( 'screenshot_plus' === $type ) {
 		?>
-		<style type="text/css">
-			.blog_template-option {
-				overflow: hidden;
-			}
-			.blog_template-item img {
-				max-width:100%;
-			}
-			.blog_template-item {
-				width:45%;
-				margin-right:10%;
-				margin-bottom:25px;
-				box-sizing:border-box;
-				float: left;
-				padding: 12px;
-				border: 2px solid transparent;
-				background: transparent;
-			}
-			.blog_template-item:nth-child(odd) {
-				margin-right:0px;
-			}
-			.blog_template-selected {
-				border: 2px solid #ccc;
-				background: #eee;
-			}
-			#blog_template-selection {
-				clear:both;
-			}
+			<style>
+				.theme-screenshot-plus-wrap {
+					width:45%;
+					float:left;
+					margin-right:10%;
+					margin-bottom:25px;
+					box-sizing:border-box;
+					position:relative;
+					
+				}
+				.theme-screenshot-plus-image-wrap {
+					background:<?php echo $unselected_color; ?>;
+					padding:3px;
+				}
 			</style>
 			<script type="text/javascript">
-				(function ($) {
-				$(function () {
+				jQuery(document).ready(function($) {
+					$(document).on( 'click', '.blog_template-item_selector', function(e) {
+						e.preventDefault();
+						var theme_key = $(this).data('theme-key');
+						var wrap = $('#theme-screenshot-plus-image-wrap-' + theme_key );
+						$('.theme-screenshot-plus-image-wrap').removeClass('blog_template-default_item');
+						wrap.addClass('blog_template-default_item');
 
-				$(document).on('click', ".blog_template-item_selector", function () {
-					$(".blog_template-item").removeClass("blog_template-selected")
-					$(".blog_template-item_selector :radio").attr("checked", false);
-					$(this)
-						.parents(".blog_template-item").addClass("blog_template-selected").end()
-						.find(":radio").attr("checked", true)
-					;
-					return false;	
+						$('input[name=blog_template]').attr('checked',false);
+						$('#blog-template-radio-' + theme_key).attr('checked',true);
+					});
 				});
-				if ($(".blog_template-item_selector.blog_template-default_item").length) $(".blog_template-item_selector.blog_template-default_item").trigger("click");
-				});
-				})(jQuery);
 			</script>
 		<?php
 	}
