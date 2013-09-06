@@ -172,8 +172,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 $this->get_options();
             }
 
-            if ( version_compare( $saved_version, '1.9.2', '<' ) ) {
-                blog_templates_upgrade_192();
+            if ( version_compare( $saved_version, '1.9.1', '<' ) ) {
+                blog_templates_upgrade_191();
                 update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );
                 $this->get_options();
             }

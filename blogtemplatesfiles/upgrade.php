@@ -63,7 +63,7 @@ function blog_templates_upgrade_19() {
 	update_site_option( 'blog_templates_options', $new_options );
 }
 
-function blog_templates_upgrade_192() {
+function blog_templates_upgrade_191() {
 	global $wpdb;
 
 	$templates = $wpdb->get_results( "SELECT * FROM " . $wpdb->base_prefix . 'nbt_templates', ARRAY_A );

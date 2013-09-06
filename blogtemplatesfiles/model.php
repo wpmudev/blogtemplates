@@ -64,6 +64,14 @@ class blog_templates_model {
 			$this->create_templates_categories_relationships();
 		}
 
+		public function delete_tables() {
+			global $wpdb;
+
+			$wpdb->query( "DROP TABLE $this->templates_table;" );
+			$wpdb->query( "DROP TABLE $this->categories_table;" );
+			$wpdb->query( "DROP TABLE $this->categories_relationships_table;" );
+		}
+
 		private function create_templates_table() {
 			global $wpdb;
 
