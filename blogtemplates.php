@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/new-blog-template
 Description: Allows the site admin to create new blogs based on templates, to speed up the blog creation process
 Author: Jason DeVelvis, Ulrich Sossou (Incsub), Ignacio Cruz (Incsub)
 Author URI: http://premium.wpmudev.org/
-Version: 1.9.1
+Version: 2.0
 Network: true
 Text Domain: blog_templates
 WDP ID: 130
@@ -28,7 +28,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-define( 'NBT_PLUGIN_VERSION', '1.9.1' );
+define( 'NBT_PLUGIN_VERSION', '2.0' );
 if ( ! is_multisite() )
 	exit( __( 'The New Blog Template plugin is only compatible with WordPress Multisite.', 'blog_templates' ) );
 

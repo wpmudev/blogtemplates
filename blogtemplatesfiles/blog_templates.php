@@ -178,6 +178,13 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 $this->get_options();
             }
 
+            if ( version_compare( $saved_version, '2.0', '<' ) ) {
+                // Due to a server issue in WPMUDEV we need to upgrade again in the same way
+                blog_templates_upgrade_191();
+                update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );
+                $this->get_options();
+            }
+
             update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );                
 
         }
