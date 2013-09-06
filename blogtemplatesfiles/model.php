@@ -49,7 +49,6 @@ class blog_templates_model {
 			if ( ! empty($wpdb->collate) )
 				$this->db_charset_collate .= " COLLATE $wpdb->collate";
 
-			$this->add_default_template_category();
 		}
 
 		/**
@@ -121,8 +120,14 @@ class blog_templates_model {
 		public function upgrade_20() {
 			global $wpdb;
 
+			// Reseting categories as it has been never used
+			$wpdb->query( "DELETE FROM $this->categories_table" );
+			$wpdb->query( "DELETE FROM $this->categories_relationships_table" );
+			$this->add_default_template_category();
+
 			$this->check_for_uncategorized_templates();
 			$this->recount_categories();
+
 		}
 
 		public function check_for_uncategorized_templates() {
