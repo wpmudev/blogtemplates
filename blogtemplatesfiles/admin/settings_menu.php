@@ -80,9 +80,9 @@ class blog_templates_settings_menu {
             'show-categories-selection' => false,
             'unselected-background-color' => '#DFD9D9',
             'selected-background-color' => '#333333',
-            'toolbar-color' => '#8B8B8B',
-            'toolbar-text-color' => '#FFFFFF',
-    		'toolbar-border-color' => '#333333'
+            'toolbar-color' => '#d86565',
+            'toolbar-text-color' => '#ffffff',
+    		'toolbar-border-color' => '#898989'
     	);
     }
 
@@ -187,7 +187,7 @@ class blog_templates_settings_menu {
 			        </table>
                     
                     <!-- If you're watching this: The next code will be included in following versions. It's still in BETA. It works, but it's ugly-->
-                    <!--h3><?php _e( 'Categories Toolbar', 'blog_templates' ); ?></h3>
+                    <h3><?php _e( 'Categories Toolbar', 'blog_templates' ); ?></h3>
                     <table class="form-table">
                         <?php ob_start(); ?>
                             <label for="show-categories-selection">
@@ -221,7 +221,7 @@ class blog_templates_settings_menu {
                             <?php $this->render_row( __( 'Toolbar border color', $this->localization_domain ), ob_get_clean() ); ?>
                         
                         <?php ob_start(); ?>
-                    </table-->
+                    </table>
 		            <p><div class="submit"><input type="submit" name="save_options" class="button-primary" value="<?php esc_attr_e(__('Save Settings', $this->localization_domain));?>" /></div></p>
 			    </form>
 			   </div>
@@ -299,6 +299,7 @@ class blog_templates_settings_menu {
                 $this->options['show-categories-selection'] = isset($_POST['show-categories-selection']) ? $_POST['show-categories-selection'] : 0;
                 $this->options['toolbar-color'] = isset($_POST['toolbar-color']) ? $_POST['toolbar-color'] : $defaults['toolbar-color'];
                 $this->options['toolbar-text-color'] = isset($_POST['toolbar-text-color']) ? $_POST['toolbar-text-color'] : $defaults['toolbar-text-color'];
+                $this->options['toolbar-border-color'] = isset($_POST['toolbar-border-color']) ? $_POST['toolbar-border-color'] : $defaults['toolbar-border-color'];
                 $this->options['selected-background-color'] = isset($_POST['selected-background-color']) ? $_POST['selected-background-color'] : $defaults['selected-background-color'];
                 $this->options['unselected-background-color'] = isset($_POST['unselected-background-color']) ? $_POST['unselected-background-color'] : $defaults['unselected-background-color'];
 

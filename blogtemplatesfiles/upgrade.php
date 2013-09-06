@@ -5,7 +5,6 @@ function blog_templates_upgrade_19() {
 	global $wpdb;
 
 	$options = get_site_option( 'blog_templates_options', array( 'templates' => array() ) );
-	var_dump($options);
 	$default = isset( $options['default'] ) ? absint( $options['default'] ) : false;
 
 	foreach ( $options['templates'] as $key => $template ) {
@@ -91,4 +90,10 @@ function blog_templates_upgrade_191() {
         	array( '%d' )
         );
     }
+}
+
+function blog_templates_upgrade_20() {
+	$model = blog_templates_model::get_instance();
+	$model->upgrade_20();
+
 }

@@ -48,6 +48,8 @@ class blog_templates_model {
 				$this->db_charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
 			if ( ! empty($wpdb->collate) )
 				$this->db_charset_collate .= " COLLATE $wpdb->collate";
+
+			$this->add_default_template_category();
 		}
 
 		/**
@@ -96,6 +98,7 @@ class blog_templates_model {
 				name varchar(255) NOT NULL,
 				description mediumtext,
 				is_default int(1) NOT NULL DEFAULT '0',
+				templates_count bigint(20) NOT NULL DEFAULT '0',
 				PRIMARY KEY  (ID)
 			      ) $this->db_charset_collate;";
 
@@ -113,6 +116,54 @@ class blog_templates_model {
 			      ) $this->db_charset_collate;";
 
 			dbDelta($sql);
+		}
+
+		public function upgrade_20() {
+			global $wpdb;
+
+			$this->check_for_uncategorized_templates();
+			$this->recount_categories();
+		}
+
+		public function check_for_uncategorized_templates() {
+			global $wpdb;
+
+			$uncategorized_templates = $wpdb->get_results( "SELECT t.ID 
+				FROM  $this->templates_table t
+				LEFT OUTER JOIN $this->categories_relationships_table ct ON ct.template_id = t.ID
+				WHERE cat_id IS NULL");
+
+			if ( ! empty( $uncategorized_templates ) ) {
+				$default_cat_id = $this->get_default_category_id();
+				if ( ! empty( $default_cat_id ) ) {
+					foreach ( $uncategorized_templates as $template ) {
+						$this->update_template_categories( $template->ID, array( $default_cat_id ) );
+					}
+				}
+			}
+			
+
+		}
+
+		public function recount_categories() {
+			global $wpdb;
+
+			$templates = $wpdb->get_results( "SELECT cat_id, count(t.ID) the_count FROM $this->templates_table t
+				JOIN $this->categories_relationships_table r ON r.template_id = t.ID
+				GROUP BY cat_id" );
+
+			if ( ! empty( $templates ) ) {
+				foreach ( $templates as $template ) {
+					$wpdb->update(
+						$this->categories_table,
+						array( 'templates_count' => $template->the_count ),
+						array( 'ID' => $template->cat_id ),
+						array( '%d' ),
+						array( '%d' )
+					);
+				}
+			}
+
 		}
 
 		public function add_template( $blog_id, $name, $description, $settings ) {
@@ -224,7 +275,20 @@ class blog_templates_model {
 		public function add_default_template_category() {
 			global $wpdb;
 
-			$this->add_template_category( __( 'Default category', 'blog_templates' ), '', true );
+			$default_cat = $this->get_default_template_category();
+			if ( empty( $default_cat ) )
+				$this->add_template_category( __( 'Default category', 'blog_templates' ), '', true );
+		}
+
+		public function get_default_template_category() {
+			global $wpdb;
+
+			$default_cat = $wpdb->get_row( "SELECT * FROM $this->categories_table WHERE is_default = 1 ");
+
+			if ( ! empty( $default_cat ) )
+				$wpdb->query( "UPDATE $this->categories_table SET is_default = 0 WHERE is_default = 1 AND ID != $default_cat->ID" );
+
+			return $default_cat;
 		}
 
 		public function get_categories_count() {
@@ -344,6 +408,8 @@ class blog_templates_model {
 				);
 				$wpdb->query( $query );
 			}
+
+			$this->recount_categories();
 		}
 
 		public function exist_relation( $tid, $cat_id ) {

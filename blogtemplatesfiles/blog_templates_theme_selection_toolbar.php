@@ -29,17 +29,10 @@ class blog_templates_theme_selection_toolbar {
 		$this->render_css();
 		?>
 			<div id="nbt-toolbar" data-toolbar-type="<?php echo $this->type; ?>">
-				<div class="nbt-toolbar-title">
-					<h3><?php _e( 'Filter by category', 'blog_templates' ); ?></h3>
-				</div>
-				<ul>
-					<li class="toolbar-item"><a href="#" data-cat-id="0"><?php _e( 'Show all', 'blog_templates' ); ?></a>
-					<?php foreach ( $this->categories as $category ): ?>
-						<li class="toolbar-item">
-							<a href="#" data-cat-id="<?php echo $category['ID']; ?>"><?php echo $category['name']; ?></a>
-						</li>
-					<?php endforeach; ?>
-				</ul>
+				<a href="#" id="item-0" class="toolbar-item" data-cat-id="0"><?php _e( 'ALL', 'blog_templates' ); ?></a>
+				<?php foreach ( $this->categories as $category ): ?>
+					<a href="#" id="item-<?php echo $category['ID']; ?>" class="toolbar-item" style="opacity: 0.62;" data-cat-id="<?php echo $category['ID']; ?>"><?php echo $category['name']; ?></a>
+				<?php endforeach; ?>
 				<div style="clear:both"></div>
 			</div>
 		<?php
@@ -51,42 +44,34 @@ class blog_templates_theme_selection_toolbar {
 		<style>
 			#nbt-toolbar {
 			    width: 100%;
-
 			    box-sizing: border-box;
-			    border: 1px solid <?php echo $options['toolbar-border-color']; ?>;
 			    margin-bottom: 25px;
-			    background: <?php echo $options['toolbar-color']; ?>;
-			}
-
-			#nbt-toolbar ul {
 			    border-top: 1px solid <?php echo $options['toolbar-border-color']; ?>;
+			    text-align: center;
+			    padding-top:25px;
 			}
 
-
-			#nbt-toolbar li.toolbar-item {
-			    float: left;
-
-			    list-style: none;
-			    padding: 10px 25px;
-			    border-right: 1px solid <?php echo $options['toolbar-border-color']; ?>;
-			    margin-left: 0;
+			#nbt-toolbar a {
+				text-transform: uppercase;
+				display: inline-block;
+				background: <?php echo $options['toolbar-color']; ?>;
+				color: <?php echo $options['toolbar-text-color']; ?>;
+				-moz-border-radius: 3px;
+				-webkit-border-radius: 3px;
+				border-radius: 3px;
+				margin: 0 5px 5px 0;
+				padding: 0 0.5em;
+				text-decoration: none;
+				-moz-transition: all 0.2s ease-in-out;
+				-o-transition: all 0.2s ease-in-out;
+				-webkit-transition: all 0.2s ease-in-out;
+				transition: all 0.2s ease-in-out;
+				font-size:1.1em;
+				line-height:1.5;
 			}
 
-			#nbt-toolbar h3,
-			#nbt-toolbar li.toolbar-item a {
-			    text-decoration: none;
-			    color: <?php echo $options['toolbar-text-color']; ?>;
-			}
-
-			#nbt-toolbar li.toolbar-item:last-child {
-				border-right:none;
-			}
-			#nbt-toolbar li.toolbar-item:first-child {
-				border-left:none;
-			}
-
-			#nbt-toolbar .nbt-toolbar-title {
-			    padding: 10px 25px;
+			#nbt-toolbar a:hover {
+				opacity:1 !important;
 			}
 
 			#toolbar-loader {
@@ -114,9 +99,10 @@ function nbt_filter_categories() {
 
 	$options = get_site_option( 'blog_templates_options' );
 	foreach( $templates as $tkey => $template ) {
-		nbt_render_theme_selection_item( $type, $tkey, $template, $options );
+		nbt_render_theme_selection_item( $type, $template['ID'], $template, $options );
 	}
 	
+	echo '<div style="clear:both"></div>';
 
 	die();
 }

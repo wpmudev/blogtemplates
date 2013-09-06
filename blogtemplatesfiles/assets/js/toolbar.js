@@ -1,12 +1,20 @@
 jQuery(document).ready(function($) {
-	$( 'li.toolbar-item > a').click(function(e) {
+	$( '.toolbar-item').click(function(e) {
 		e.preventDefault();
-		var cat_id = $(this).data('cat-id');
+
+		var toolbar = $('#nbt-toolbar');
+		var this_item = $(this);
+		var cat_id = this_item.data('cat-id');
+
+		var rest_of_items = toolbar.find( 'a:not(#item-' + cat_id + ')');
+		this_item.css( 'opacity', '1' );
+		rest_of_items.css('opacity','0.62');
+
 
 		var data = {
 			category_id: cat_id,
 			action: 'nbt_filter_categories',
-			type: $('#nbt-toolbar').data('toolbar-type')
+			type: toolbar.data('toolbar-type')
 		};
 
 
@@ -16,9 +24,7 @@ jQuery(document).ready(function($) {
 			data: data,
 			type: 'post',
 			beforeSend: function() {
-
 				the_content.html('<div id="toolbar-loader"><img id="toolbar-loader-image" src="' + export_to_text_js.imagesurl + 'ajax-loader.gif" /></div>');
-				console.log( export_to_text_js.imagesurl + 'ajax-loader.gif' );
 			}
 		}).done(function( data ) {
 			the_content.html(data);

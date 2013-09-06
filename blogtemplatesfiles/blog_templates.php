@@ -179,8 +179,13 @@ if ( ! class_exists( 'blog_templates' ) ) {
             }
 
             if ( version_compare( $saved_version, '2.0', '<' ) ) {
+                $model = blog_templates_model::get_instance();
+                $model->create_tables();
+
                 // Due to a server issue in WPMUDEV we need to upgrade again in the same way
                 blog_templates_upgrade_191();
+
+                blog_templates_upgrade_20();
                 update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );
                 $this->get_options();
             }
@@ -1183,6 +1188,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             $tpl_file_suffix = $this->options['registration-templates-appearance'] ? '-' . $this->options['registration-templates-appearance'] : '';
             $tpl_file = "blog_templates-registration{$tpl_file_suffix}.php";
 
+
             // Setup theme file
             $theme_file = locate_template(array($tpl_file));
             $theme_file = $theme_file ? $theme_file : $this->thispluginpath . 'template/' . $tpl_file;
@@ -1190,12 +1196,10 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             nbt_render_theme_selection_scripts($this->options);
 
-            //if ( $this->options['show-categories-selection'] && in_array( $this->options['registration-templates-appearance'], array( 'previewer' ,'screenshot' ,'screenshot_plus' ) ) ) {
-            //    $toolbar = new blog_templates_theme_selection_toolbar( $this->options['registration-templates-appearance'] );
-            //    $toolbar->display();
-            //}
+            
 
             @include $theme_file;
+
         }
         
         /**

@@ -434,7 +434,7 @@ class blog_templates_main_menu {
 					            		$template_categories[] = absint( $row['ID'] );
 					            	}
 					            ?>
-					            <!--div id="postbox-container-1" class="postbox-container">
+					            <div id="postbox-container-1" class="postbox-container">
 									<div id="side-sortables" class="meta-box-sortables ui-sortable">
 										<div id="categorydiv" class="postbox ">
 											<div class="handlediv" title=""><br></div><h3 class="hndle"><span><?php _e( 'Template categories' ); ?></span></h3>
@@ -452,7 +452,7 @@ class blog_templates_main_menu {
 											</div>
 										</div>			
 									</div>
-								</div-->
+								</div>
 					        </div>
 			            </div>
 			            <div class="clear"></div>

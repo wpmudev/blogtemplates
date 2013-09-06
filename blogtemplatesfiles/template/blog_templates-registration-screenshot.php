@@ -9,6 +9,12 @@
 <?php if (defined('BP_VERSION') && 'bp-default' == get_blog_option(bp_get_root_blog_id(), 'stylesheet')) echo '<br style="clear:both" />'; ?>
 <div id="blog_template-selection">
 	<h3><?php _e('Select a template', 'blog_templates') ?></h3>
+
+	<?php
+	$toolbar = new blog_templates_theme_selection_toolbar( $this->options['registration-templates-appearance'] );
+    $toolbar->display();
+    ?>
+    
 	<div class="blog_template-option">
 		
 		<?php 
