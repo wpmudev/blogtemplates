@@ -186,7 +186,6 @@ class blog_templates_settings_menu {
                         <?php $this->render_row( __('Type of selection', $this->localization_domain), ob_get_clean() ); ?>
 			        </table>
                     
-                    <!-- If you're watching this: The next code will be included in following versions. It's still in BETA. It works, but it's ugly-->
                     <h3><?php _e( 'Categories Toolbar', 'blog_templates' ); ?></h3>
                     <table class="form-table">
                         <?php ob_start(); ?>

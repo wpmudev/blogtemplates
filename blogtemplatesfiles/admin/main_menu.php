@@ -345,6 +345,13 @@ class blog_templates_main_menu {
 					                        <label for='nbt-block-posts-pages'><?php _e( 'Check if you want to block for edition (even for the blog administrator) the posts/pages created by the template by default', $this->localization_domain ); ?></label>
 					                    <?php $this->render_row( __( 'Block Posts/Pages', $this->localization_domain ), ob_get_clean() ); ?>
 
+					                    <?php ob_start(); ?>
+							            	<label>
+							            		<input type="checkbox" name="update_dates" <?php checked( ! empty( $template['update_dates'] ) ); ?>>
+							            		<?php _e( 'If selected, the dates of the posts/pages will be updated to the date when the blog is created', $this->localization_domain ); ?>
+							            	</label>
+					                	<?php $this->render_row( __( 'Update dates', $this->localization_domain ), ob_get_clean() ); ?>
+
 					                    <?php 
 					                    	ob_start();
 
@@ -371,9 +378,14 @@ class blog_templates_main_menu {
 						            ?>
 						            <br/><br/>
 						            <h2><?php _e('Advanced Options',$this->localization_domain); ?></h2>
-						            <p><?php printf(__('The tables listed here were likely created by plugins you currently have or have had running on this blog. If you want the data from these tables copied over to your new blogs, add a checkmark next to the table. Note that the only tables displayed here begin with %s, which is the standard table prefix for this specific blog. Plugins not following this convention will not have their tables listed here.',$this->localization_domain),$wpdb->prefix); ?></p>
+						            
 							       	<table class="form-table">
-						                <?php ob_start();
+
+						                <?php ob_start(); ?>
+
+						                <p><?php printf(__('The tables listed here were likely created by plugins you currently have or have had running on this blog. If you want the data from these tables copied over to your new blogs, add a checkmark next to the table. Note that the only tables displayed here begin with %s, which is the standard table prefix for this specific blog. Plugins not following this convention will not have their tables listed here.',$this->localization_domain),$wpdb->prefix); ?></p>
+
+						                <?php
 
 						                //Grab all non-core tables and display them as options
 						                // Changed
@@ -419,7 +431,8 @@ class blog_templates_main_menu {
 						                
 						                $this->render_row( __( 'Additional Tables', $this->localization_domain ), ob_get_clean() ); ?>
 							            <?php restore_current_blog(); ?>
-					                	
+
+
 					            	</table>
 					            	
 					            </div>
@@ -538,6 +551,7 @@ class blog_templates_main_menu {
 	                'additional_tables' => isset( $_POST['additional_template_tables'] ) ? $_POST['additional_template_tables'] : array(),
 	                'copy_status' => isset( $_POST['copy_status'] ) ? true : false,
 	                'block_posts_pages' => isset( $_POST['block_posts_pages'] ) ? true : false,
+	                'update_dates' => isset( $_POST['update_dates'] ) ? true: false
 	            );
 	            if ( ! empty( $_FILES['screenshot']['tmp_name'] ) ) {
                 	$uploaded_file = $_FILES['screenshot'];
@@ -643,7 +657,8 @@ class blog_templates_main_menu {
                     'post_category' => array( 'all-categories' ),
                     'copy_status' => false,
                     'block_posts_pages' => false,
-                    'pages_ids' => array( 'all-pages' )
+                    'pages_ids' => array( 'all-pages' ),
+                    'update_dates' => false
                 );
 
                 $template_id = $model->add_template( $blog_id, $name, $description, $settings );

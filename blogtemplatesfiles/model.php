@@ -205,7 +205,8 @@ class blog_templates_model {
 				'block_posts_pages' => $block_posts_pages,
 				'post_category' => $post_category,
 				'screenshot' => ! empty( $screenshot ) ? $screenshot : false,
-				'pages_ids' => $pages_ids
+				'pages_ids' => $pages_ids,
+				'update_dates' => $update_dates
 			) );
 
 			$wpdb->update( 

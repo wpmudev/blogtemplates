@@ -446,9 +446,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
                         $this->copy_posts_table($template['blog_id'],"postmeta");
                         do_action('blog_templates-copy-postmeta', $template, $blog_id, $user_id);
 
-                        $this->update_posts_dates('posts');
-                        do_action('blog_templates-update-posts-dates', $template, $blog_id, $user_id);
-
                     break;
                     case 'pages':
                         $pages_ids = in_array( 'all-pages', $template['pages_ids'] ) ? false : $template['pages_ids'];
@@ -457,9 +454,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
                         $this->copy_posts_table($template['blog_id'],"pagemeta");
                         do_action('blog_templates-copy-pagemeta', $template, $blog_id, $user_id);
-
-                        $this->update_posts_dates('pages');
-                        do_action('blog_templates-update-pages-dates', $template, $blog_id, $user_id);
 
                     break;
                     case 'terms':
@@ -534,7 +528,13 @@ if ( ! class_exists( 'blog_templates' ) ) {
                         do_action('blog_templates-copy-users', $template, $blog_id, $user_id);
                     break;
                     case 'menus':
-                        $this->copy_menu( $template['blog_id'], $blog_id );
+                        global $wp_version;
+                        if ( version_compare( $wp_version, '3.6', '>=' ) ) {
+                            $this->copy_menu( $template['blog_id'], $blog_id );
+                        }
+                        else {
+                            $this->old_copy_menu( $template['blog_id'], $blog_id );
+                        }
                     break;
                     case 'files':
                         global $wp_filesystem;
@@ -651,6 +651,15 @@ if ( ! class_exists( 'blog_templates' ) ) {
             //error_log('Finished Successfully');
             $wpdb->query("COMMIT;"); //If we get here, everything's fine. Commit the transaction
 
+            if ( ! empty( $template['update_dates'] ) ) {
+                $this->update_posts_dates('post');
+                do_action('blog_templates-update-posts-dates', $template, $blog_id, $user_id);
+            }
+            if ( ! empty( $template['update_dates'] ) ) {
+                $this->update_posts_dates('page');
+                do_action('blog_templates-update-pages-dates', $template, $blog_id, $user_id);
+            }
+
             // We need now to change the attachments URLs
             $attachment_guids = array();
             foreach ( $template_attachments as $attachment ) {
@@ -682,22 +691,23 @@ if ( ! class_exists( 'blog_templates' ) ) {
         }
 
         function update_posts_dates( $post_type ) {
-            $posts = get_posts( array(
-                'post_type' => array( $post_type ),
-                'post_status' => 'publish'
-            ));
+            global $wpdb;
 
-            foreach ( $posts as $post ) {
-                $post_id = $post->ID;
-                $current_date = date_i18n( 'Y-m-d H:i:s' );
-                $current_gmt_date = date_i18n( 'Y-m-d H:i:s', false, true );
+            $sql = $wpdb->prepare( "UPDATE $wpdb->posts
+                SET post_date = %s,
+                post_date_gmt = %s,
+                post_modified = %s,
+                post_modified_gmt = %s
+                WHERE post_type = %s
+                AND post_status = 'publish'",
+                current_time( 'mysql', false ),
+                current_time( 'mysql', true ),
+                current_time( 'mysql', false ),
+                current_time( 'mysql', true ),
+                $post_type
+            );
 
-                wp_update_post( array(
-                    'ID' => $post->ID,
-                    'post_date' => $current_date,
-                    'post_date_gmt' => $current_gmt_date
-                ) );
-            }
+            $wpdb->query( $sql );
         }
 
         /**
@@ -886,7 +896,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
          * @param int $new_blog_id The ID of the new blog
          *
          */
-        function copy_menu( $templated_blog_id, $new_blog_id ) {
+        function old_copy_menu( $templated_blog_id, $new_blog_id ) {
             global $wpdb;
 
             do_action( 'blog_templates-copying_menu', $templated_blog_id, $new_blog_id);
@@ -940,6 +950,134 @@ if ( ! class_exists( 'blog_templates' ) ) {
                     WHERE object_id IN $menus"
                 );
 
+
+            }
+        }
+
+        function copy_menu( $templated_blog_id, $new_blog_id ) {
+            global $wpdb;
+
+            do_action( 'blog_templates-copying_menu', $templated_blog_id, $new_blog_id);
+
+            switch_to_blog( $templated_blog_id );
+            $templated_posts_table = $wpdb->posts;
+            $templated_postmeta_table = $wpdb->postmeta;
+            $templated_terms_table = $wpdb->terms;
+            $templated_term_taxonomy_table = $wpdb->term_taxonomy;
+            $templated_term_relationships_table = $wpdb->term_relationships;
+
+            $menu_locations = get_nav_menu_locations();
+            restore_current_blog();
+
+            switch_to_blog( $new_blog_id );
+            $new_posts_table = $wpdb->posts;
+            $new_postmeta_table = $wpdb->postmeta;
+            $new_terms_table = $wpdb->terms;
+            $new_term_taxonomy_table = $wpdb->term_taxonomy;
+            $new_term_relationships_table = $wpdb->term_relationships;
+
+            $new_blog_locations = $menu_locations;
+
+            set_theme_mod( 'nav_menu_locations', $new_blog_locations );
+            restore_current_blog();
+            
+            // First, the menus
+            $menus_ids = implode( ',', $menu_locations );
+            $menus = $wpdb->get_results(
+                "SELECT * FROM $templated_terms_table
+                WHERE term_id IN ( $menus_ids )"
+            );
+
+
+            //$menus = $wpdb->get_col(
+            //    "SELECT ID FROM $templated_posts_table
+            //    WHERE post_type = 'nav_menu_item'"
+            //);
+
+            if ( ! empty( $menus ) ) {
+
+                foreach ( $menus as $menu ) {
+
+                    // Inserting the menu
+                    $wpdb->insert(
+                        $new_terms_table,
+                        array(
+                            'term_id' => $menu->term_id,
+                            'name' => $menu->name,
+                            'slug' => $menu->slug,
+                            'term_group' => $menu->term_group
+                        ),
+                        array( '%d', '%s', '%s', '%d' )
+                    );
+
+                    // Terms taxonomies
+                    $term_taxonomies = $wpdb->get_results(
+                        $wpdb->prepare(
+                            "SELECT * FROM $templated_term_taxonomy_table
+                            WHERE term_id = %d",
+                            $menu->term_id
+                        )
+                    );
+
+                    $terms_taxonomies_ids = array();
+                    foreach ( $term_taxonomies as $term_taxonomy ) {
+                        $terms_taxonomies_ids[] = $term_taxonomy->term_taxonomy_id;
+
+                        // Inserting terms taxonomies
+                        $wpdb->insert(
+                            $new_term_taxonomy_table,
+                            array(
+                                'term_taxonomy_id' => $term_taxonomy->term_taxonomy_id,
+                                'term_id' => $term_taxonomy->term_id,
+                                'taxonomy' => $term_taxonomy->taxonomy,
+                                'description' => empty( $term_taxonomy->description ) ? '' : $term_taxonomy->description,
+                                'parent' => $term_taxonomy->parent,
+                                'count' => $term_taxonomy->count
+                            ),
+                            array( '%d', '%d', '%s', '%d', '%d' )
+                        );
+                    }
+
+                    $terms_taxonomies_ids = implode( ',', $terms_taxonomies_ids );
+
+                    $term_relationships = $wpdb->get_results(
+                        "SELECT * FROM $templated_term_relationships_table
+                        WHERE term_taxonomy_id IN ( $terms_taxonomies_ids )"
+                    );
+
+                    $objects_ids = array();
+                    foreach ( $term_relationships as $term_relationship ) {
+                        $objects_ids[] = $term_relationship->object_id;
+
+                        // Inserting terms relationships
+                        $wpdb->insert(
+                            $new_term_relationships_table,
+                            array(
+                                'object_id' => $term_relationship->object_id,
+                                'term_taxonomy_id' => $term_relationship->term_taxonomy_id,
+                                'term_order' => $term_relationship->term_order,
+                            ),
+                            array( '%d', '%d', '%d' )
+                        );
+                    }
+
+                    $objects_ids = implode( ',', $objects_ids );
+
+                    // Inserting the objects
+                    $objects = $wpdb->get_results(
+                        "INSERT IGNORE INTO $new_posts_table
+                        SELECT * FROM $templated_posts_table
+                        WHERE ID IN ( $objects_ids )"
+                    );
+
+                    // Inserting the objects meta
+                    $objects_meta = $wpdb->get_results(
+                        "INSERT IGNORE INTO $new_postmeta_table
+                        SELECT * FROM $templated_postmeta_table
+                        WHERE post_id IN ( $objects_ids )"
+                    );
+
+                }
 
             }
         }
