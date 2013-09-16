@@ -43,6 +43,7 @@ require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/admin/categories_menu.php' )
 require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/admin/settings_menu.php' );
 require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/blog_templates.php' );
 require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/blog_templates_lock_posts.php' );
+require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/integration.php' );
 
 
 if ( is_network_admin() ) {

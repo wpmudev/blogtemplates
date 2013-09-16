@@ -430,6 +430,11 @@ if ( ! class_exists( 'blog_templates' ) ) {
                                     wp_die($error);
                                 }
                             }
+
+                            // Membership integration
+                            if( class_exists( 'membershipadmin' ) ) {
+                                nbt_add_membership_caps( $user_id );
+                            }
                             do_action('blog_templates-copy-options', $template);
                         } else {
                             $error = '<div id="message" class="error"><p>' . sprintf( __( 'Deletion Error: %s - The template was not applied. (New Blog Templates - While removing auto-generated settings)', $this->localization_domain ), $wpdb->last_error ) . '</p></div>';
@@ -535,6 +540,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                         else {
                             $this->old_copy_menu( $template['blog_id'], $blog_id );
                         }
+                        $this->set_menus_urls( $template['blog_id'], $blog_id );
                     break;
                     case 'files':
                         global $wp_filesystem;
@@ -649,6 +655,9 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 }
             }
             //error_log('Finished Successfully');
+
+            $this->set_content_urls();
+
             $wpdb->query("COMMIT;"); //If we get here, everything's fine. Commit the transaction
 
             if ( ! empty( $template['update_dates'] ) ) {
@@ -1080,6 +1089,62 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 }
 
             }
+        }
+
+        /**
+         * Replace the manually inserted links in menus
+         * 
+         * @return type
+         */
+        function set_menus_urls( $templated_blog_id, $blog_id ) {
+            global $wpdb;
+
+            $pattern = '/^(http|https):\/\//';
+            switch_to_blog( $templated_blog_id );
+            $templated_home_url = preg_replace( $pattern, '', home_url() );
+            restore_current_blog();
+
+            switch_to_blog( $blog_id );
+            $new_home_url = preg_replace( $pattern, '', home_url() );
+
+            $sql = "SELECT * FROM $wpdb->postmeta WHERE meta_key = '_menu_item_url';";
+            $results = $wpdb->get_results( $sql );
+
+            foreach ( $results as $row ) {
+                $meta_value = preg_replace( $pattern, '', $row->meta_value );
+                if ( strpos( $meta_value, $templated_home_url ) !== false ) {
+                    //UPDATE 
+                    $meta_value = str_replace( $templated_home_url, $new_home_url, $row->meta_value );
+                    $sql = $wpdb->prepare( "UPDATE $wpdb->postmeta SET meta_value = %s WHERE meta_id = %d;", $meta_value, $row->meta_id );
+                    $wpdb->query( $sql );
+                }
+            }
+            restore_current_blog();
+        }
+                 
+        function set_content_urls() {
+            $templated_blog_id = 27;
+            $blog_id = 48;
+            global $wpdb;
+
+            $pattern = '/^(http|https):\/\//';
+            switch_to_blog( $templated_blog_id );
+            $templated_home_url = preg_replace( $pattern, '', home_url() );
+            restore_current_blog();
+
+            switch_to_blog( $blog_id );
+            $new_home_url = preg_replace( $pattern, '', home_url() );
+
+            $sql = $wpdb->prepare( "SELECT * FROM $wpdb->posts WHERE post_content LIKE %s AND post_status = 'publish';", '%' . $templated_home_url . '%' );
+            $results = $wpdb->get_results( $sql );
+
+            foreach ( $results as $row ) {
+                //UPDATE 
+                $post_content = str_replace( $templated_home_url, $new_home_url, $row->post_content );
+                $sql = $wpdb->prepare( "UPDATE $wpdb->posts SET post_content = %s WHERE ID = %d;", $post_content, $row->ID );
+                $wpdb->query( $sql );
+            }
+            restore_current_blog();
         }
        
 
