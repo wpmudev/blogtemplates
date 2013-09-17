@@ -433,7 +433,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
                             // Membership integration
                             if( class_exists( 'membershipadmin' ) ) {
-                                nbt_add_membership_caps( $user_id );
+                                nbt_add_membership_caps( $user_id, $blog_id );
                             }
                             do_action('blog_templates-copy-options', $template);
                         } else {
@@ -1123,8 +1123,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
         }
                  
         function set_content_urls() {
-            $templated_blog_id = 27;
-            $blog_id = 48;
             global $wpdb;
 
             $pattern = '/^(http|https):\/\//';

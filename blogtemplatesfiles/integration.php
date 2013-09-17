@@ -2,7 +2,8 @@
 
 // Other plugins integrations
 
-function nbt_add_membership_caps( $user_id ) {
+function nbt_add_membership_caps( $user_id, $blog_id ) {
+	switch_to_blog( $blog_id );
 	$user = get_userdata( $user_id );
 	$user->add_cap('membershipadmin');
 	$user->add_cap('membershipadmindashboard');
@@ -18,4 +19,5 @@ function nbt_add_membership_caps( $user_id ) {
 	$user->add_cap('membershipadminoptions');
 	$user->add_cap('membershipadminupdatepermissions');
 	update_user_meta( $user_id, 'membership_permissions_updated', 'yes');
+	restore_current_blog();
 }

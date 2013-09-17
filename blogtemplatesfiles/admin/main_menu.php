@@ -18,13 +18,24 @@ function nbt_get_sites_search() {
 	$like_s = esc_sql( like_escape( $s ) );
 	$query = "SELECT * FROM {$wpdb->blogs} WHERE site_id = '{$wpdb->siteid}' ";
 
-	if ( $like_s != trim('/', $current_site->path) )
-		$blog_s = $current_site->path . $like_s . $wild . '/';
-	else
-		$blog_s = $like_s;
+	if ( is_subdomain_install() ) {
+		$blog_s = $wild . $like_s . $wild;
+		$query .= " AND  ( {$wpdb->blogs}.domain LIKE '$blog_s' ) LIMIT 10";
+	}
+	else {
+		if ( $like_s != trim('/', $current_site->path) )
+			$blog_s = $current_site->path . $like_s . $wild . '/';
+		else
+			$blog_s = $like_s;	
 
-	$query .= " AND  ( {$wpdb->blogs}.path LIKE '$blog_s' ) LIMIT 10";
+		$query .= " AND  ( {$wpdb->blogs}.path LIKE '$blog_s' ) LIMIT 10";
+	}
+	
+
+	
 	$results = $wpdb->get_results( $query );
+
+
 
 	$returning = array();
 	if ( ! empty( $results ) ) {
