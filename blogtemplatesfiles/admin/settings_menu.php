@@ -219,9 +219,23 @@ class blog_templates_settings_menu {
                             </label>
                             <?php $this->render_row( __( 'Toolbar border color', $this->localization_domain ), ob_get_clean() ); ?>
                         
-                        <?php ob_start(); ?>
                     </table>
 		            <p><div class="submit"><input type="submit" name="save_options" class="button-primary" value="<?php esc_attr_e(__('Save Settings', $this->localization_domain));?>" /></div></p>
+                </form>
+                <form method="post">
+                    <table class="form-table">
+                        <h3><?php _e( 'Repair Database', $this->localization_domain ); ?></h3>
+                        <p><?php _e( 'Check the option and click on the button if some of the plugin tables have not been created', $this->localization_domain ); ?></p>
+                        <?php ob_start(); ?>
+                            <label for="repair-tables">
+                                <input type="checkbox" name="repair-tables" id="repair-tables" /> 
+                                <?php _e( 'No data will be deleted from the existent tables.', $this->localization_domain); ?>
+                            </label><br/>
+                            <?php $this->render_row( __( 'Repair tables?', $this->localization_domain), ob_get_clean() ); ?>
+                    </table>
+                    <input type="hidden" name="action" value="repair_database">
+                    <?php wp_nonce_field( 'repair-database' ); ?>
+                    <p><div class="submit"><input type="submit" name="submit_repair_database" class="button-primary" value="<?php esc_attr_e(__('Repair now!', $this->localization_domain));?>" /></div></p>
 			    </form>
 			   </div>
 			<?php
@@ -310,6 +324,19 @@ class blog_templates_settings_menu {
                 $this->updated_message =  __( 'Options saved.', $this->localization_domain );
                 add_action( 'network_admin_notices', array( &$this, 'show_admin_notice' ) );
                 return;
+            }
+
+            if ( isset( $_POST['submit_repair_database'] ) && isset( $_POST['action'] ) && 'repair_database' == $_POST['action' ] ) {
+
+                if ( ! wp_verify_nonce( $_POST['_wpnonce'], 'repair-database' ) )
+                    return false;
+
+                if ( ! ( isset( $_POST['repair-tables'] ) ) )
+                    return false;
+                
+                $model = blog_templates_model::get_instance();
+                $model->create_tables();
+
             }
 
         }
