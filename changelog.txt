@@ -5,6 +5,20 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+2.0 - 2013-09-20
+----------------------------------------------------------------------
+- Added uninstall functionality
+- Improved upgrading system
+- Pages filtering
+- Better UI in admin side
+- New toolbar in signup page
+- Added functions to detect if a default category is missing
+- Templates categories
+- Updated menu copies for WP 3.6
+- Membership integration
+- Fixed blog search in subdomain sites
+- Minor fixes
+
 1.9 - 2013-08-09
 ----------------------------------------------------------------------
 - The template will be automatically deleted if the attached blog is deleted
