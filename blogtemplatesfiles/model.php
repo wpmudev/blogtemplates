@@ -384,8 +384,8 @@ class blog_templates_model {
 			$results =  $wpdb->get_results(
 				$wpdb->prepare(
 					"SELECT rel.cat_id ID, cat.name, cat.description, cat.is_default 
-					FROM  `wp_nbt_templates_categories` cat
-					INNER JOIN wp_nbt_categories_relationships_table rel ON rel.cat_id = cat.ID
+					FROM  $this->categories_table cat
+					INNER JOIN $this->categories_relationships_table rel ON rel.cat_id = cat.ID
 					WHERE rel.template_id = %d",
 					$id
 				),
