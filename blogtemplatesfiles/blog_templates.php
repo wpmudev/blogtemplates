@@ -365,6 +365,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             //Don't forget to get the template blog's prefix
             switch_to_blog($template['blog_id']);
+            $theme_slug = get_option( 'stylesheet' );
             $template_prefix = $wpdb->prefix;
 
             // Attachments URL for the template blogç
@@ -588,6 +589,28 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
                                 if ( @file_exists( $dir_to_copy_into . '/sitemap.xml' ) )
                                     @unlink( $dir_to_copy_into . '/sitemap.xml' );
+
+                                // If we set the same theme, we need to replace URLs in theme mods
+                                if ( in_array( 'settings', $template['to_copy'] ) ) {
+                                    $mods = get_theme_mods();
+                                    array_walk_recursive( $mods, array( &$this, 'set_theme_mods_url' ), array( $template_content_url, $new_content_url, $template['blog_id'], $blog_id ) );
+                                    update_option( "theme_mods_$theme_slug", $mods );
+                                }
+
+                                // We need now to change the attachments URLs
+                                $attachment_guids = array();
+                                foreach ( $template_attachments as $attachment ) {
+                                    $new_url = str_replace( $template_content_url, $new_content_url, dirname( $attachment->guid ) );
+                                    $new_url = str_replace( 'sites/' . $template['blog_id'], 'sites/' . $blog_id, $new_url );
+                                    $new_url = str_replace( 'blogs.dir/' . $template['blog_id'], 'blogs.dir/' . $blog_id, $new_url );
+                                
+                                    // We get an array with key = old_url and value = new_url
+                                    $attachment_guids[ dirname( $attachment->guid ) ] = $new_url;
+                                }
+                                
+                                $this->set_attachments_urls( $attachment_guids );
+                                
+
                             } else {
                                 $error = '<div id="message" class="error"><p>' . sprintf( __( 'File System Error: Unable to create directory %s. (New Blog Templates - While copying files)', $this->localization_domain ), $dir_to_copy_into ) . '</p></div>';
                                 $wpdb->query( 'ROLLBACK;' );
@@ -656,7 +679,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             }
             //error_log('Finished Successfully');
 
-            $this->set_content_urls();
+            $this->set_content_urls( $template['blog_id'], $blog_id );
 
             $wpdb->query("COMMIT;"); //If we get here, everything's fine. Commit the transaction
 
@@ -668,27 +691,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 $this->update_posts_dates('page');
                 do_action('blog_templates-update-pages-dates', $template, $blog_id, $user_id);
             }
-
-            // We need now to change the attachments URLs
-            $attachment_guids = array();
-            foreach ( $template_attachments as $attachment ) {
-                $new_url = str_replace( 
-                    $template_content_url, 
-                    $new_content_url, 
-                    dirname($attachment->guid) 
-                );
-                $new_url = str_replace(
-                    'sites/' . $template['blog_id'],
-                    'sites/' . $blog_id,
-                    $new_url
-                );
-            
-                // We get an array with key = old_url and value = new_url
-                $attachment_guids[ dirname( $attachment->guid ) ] = $new_url;
-            }
-            
-            $this->set_attachments_urls( $attachment_guids );
-            
+                        
             // Now we need to update the blog status because of a conflict with Multisite Privacy Plugin
             if ( isset( $template['copy_status'] ) && $template['copy_status'] &&  is_plugin_active( 'sitewide-privacy-options/sitewide-privacy-options.php' ) )
                 update_blog_status( $blog_id, 'public', get_blog_status( $template['blog_id'], 'public' ) ); 
@@ -1122,7 +1125,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             restore_current_blog();
         }
                  
-        function set_content_urls() {
+        function set_content_urls( $templated_blog_id, $blog_id ) {
             global $wpdb;
 
             $pattern = '/^(http|https):\/\//';
@@ -1186,9 +1189,24 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 );
             }
 
-            if ( count( $queries ) > 0 ) {
-                $queries = implode( ';', $queries );
-                $wpdb -> query( $queries );
+            foreach ( $queries as $query )
+                $wpdb->query( $query );
+
+        }
+
+        function set_theme_mods_url( &$item, $key, $userdata = array() ) {
+            $template_upload_url = $userdata[0];
+            $new_upload_url = $userdata[1];
+            $template_blog_id = $userdata[2];
+            $new_blog_id = $userdata[3];
+
+            if ( ! $template_upload_url || ! $new_upload_url )
+                return;
+            
+            if ( is_string( $item ) ) {
+                $item = str_replace( $template_upload_url, $new_upload_url, $item );
+                $item = str_replace( 'sites/' . $template_blog_id . '/', 'sites/' . $new_blog_id . '/', $item );
+                $item = str_replace( 'blogs.dir/' . $template_blog_id . '/', 'blogs.dir/' . $new_blog_id . '/', $item );
             }
 
         }
