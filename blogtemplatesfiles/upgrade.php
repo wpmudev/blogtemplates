@@ -97,3 +97,31 @@ function blog_templates_upgrade_20() {
 	$model->upgrade_20();
 
 }
+
+function blog_templates_upgrade_22() {
+	global $wpdb;
+
+	$model = blog_templates_model::get_instance();
+	$model->upgrade_22();
+
+	$table = $model->templates_table;
+	$results = $wpdb->get_results( "SELECT * FROM $table" );
+
+	if ( ! empty( $results ) ) {
+		foreach( $results as $template ) {
+			$blog_id = $template->blog_id;
+			$blog_details = get_blog_details( $blog_id );
+
+			if ( ! empty( $blog_details ) ) {
+				$network_id = $blog_details->site_id;
+				$wpdb->update(
+					$table,
+					array( 'network_id' => $network_id ),
+					array( 'ID' => $template->ID ),
+					array( '%d' ),
+					array( '%d' )
+				);
+			}
+		}
+	}
+}

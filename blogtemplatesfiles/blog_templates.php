@@ -127,7 +127,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
         }
 
         function maybe_upgrade() {
-
             // Split posts option into posts and pages options
             $saved_version = get_site_option( 'nbt_plugin_version', false );
 
@@ -190,7 +189,10 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 $this->get_options();
             }
 
-            update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );                
+            if ( version_compare( $saved_version, '2.2', '<' ) ) {
+                blog_templates_upgrade_22();
+                update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );   
+            }
 
         }
 

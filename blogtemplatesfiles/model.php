@@ -9,9 +9,9 @@ class blog_templates_model {
 		/**
 		 * Tables
 		 */
-		private $templates_table;
-		private $categories_table;
-		private $categories_relationships_table;
+		public $templates_table;
+		public $categories_table;
+		public $categories_relationships_table;
 
 		/**
 		 * Database charset and collate
@@ -83,6 +83,7 @@ class blog_templates_model {
 				description mediumtext,
 				is_default int(1) DEFAULT 0,
 				options longtext NOT NULL,
+				network_id bigint(20) NOT NULL DEFAULT 1
 				PRIMARY KEY  (ID)
 			      ) $this->db_charset_collate;";
 
@@ -130,6 +131,11 @@ class blog_templates_model {
 
 		}
 
+		public function upgrade_22() {
+			require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+			$this->create_templates_table();
+		}
+
 		public function check_for_uncategorized_templates() {
 			global $wpdb;
 
@@ -172,7 +178,9 @@ class blog_templates_model {
 		}
 
 		public function add_template( $blog_id, $name, $description, $settings ) {
-			global $wpdb;
+			global $wpdb, $current_site;
+
+			$current_site_id = ! empty ( $current_site ) ? $current_site->id : 1;
 
 			$wpdb->insert( 
 				$this->templates_table,
@@ -180,13 +188,15 @@ class blog_templates_model {
 					'blog_id' =>  $blog_id,
 					'name' => $name,
 					'description' => $description,
-					'options' => maybe_serialize( $settings )
+					'options' => maybe_serialize( $settings ),
+					'network_id' => $current_site_id
 				),
 				array(
 					'%d',
 					'%s',
 					'%s',
-					'%s'
+					'%s',
+					'%d'
 				)
 			);
 
@@ -223,9 +233,11 @@ class blog_templates_model {
 		}
 
 		public function delete_template( $id ) {
-			global $wpdb;
+			global $wpdb, $current_site;
 
-			$wpdb->query( $wpdb->prepare( "DELETE FROM $this->templates_table WHERE ID = %d", $id ) );
+			$current_site_id = ! empty ( $current_site ) ? $current_site->id : 1;
+
+			$wpdb->query( $wpdb->prepare( "DELETE FROM $this->templates_table WHERE ID = %d AND network_id = %d", $id, $current_site_id ) );
 			$wpdb->query( $wpdb->prepare( "DELETE FROM $this->categories_relationships_table WHERE template_id = %d", $id ) );
 		}
 
@@ -240,9 +252,11 @@ class blog_templates_model {
 		}
 
 		public function get_templates() {
-			global $wpdb;
+			global $wpdb, $current_site;
 
-			$results = $wpdb->get_results( "SELECT * FROM $this->templates_table", ARRAY_A );
+			$current_site_id = ! empty ( $current_site ) ? $current_site->id : 1;
+
+			$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $this->templates_table WHERE network_id = %d", $current_site_id ), ARRAY_A );
 
 			if ( ! empty( $results ) ) {
 				$final_results = array();
@@ -273,9 +287,11 @@ class blog_templates_model {
 		}
 
 		public function remove_default_template() {
-			global $wpdb;
+			global $wpdb, $current_site;
 
-			$wpdb->query( "UPDATE $this->templates_table SET is_default = 0" );
+			$current_site_id = ! empty ( $current_site ) ? $current_site->id : 1;
+
+			$wpdb->query( $wpdb->prepare( "UPDATE $this->templates_table SET is_default = 0 WHERE network_id = %d", $current_site_id ) );
 		}
 
 		public function add_default_template_category() {
@@ -287,12 +303,20 @@ class blog_templates_model {
 		}
 
 		public function get_default_template_category() {
-			global $wpdb;
+			global $wpdb, $current_site;
 
-			$default_cat = $wpdb->get_row( "SELECT * FROM $this->categories_table WHERE is_default = 1 ");
+			$current_site_id = ! empty ( $current_site ) ? $current_site->id : 1;
 
-			if ( ! empty( $default_cat ) )
-				$wpdb->query( "UPDATE $this->categories_table SET is_default = 0 WHERE is_default = 1 AND ID != $default_cat->ID" );
+			$default_cat = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->categories_table WHERE is_default = 1 AND network_id = %d", $current_site_id ) );
+
+			if ( ! empty( $default_cat ) ) {
+				$wpdb->query( 
+					$wpdb->perpare( 
+						"UPDATE $this->categories_table SET is_default = 0 WHERE is_default = 1 AND ID != $default_cat->ID AND network_id = %d",
+						$current_site_id 
+					)
+				);
+			}
 
 			return $default_cat;
 		}
@@ -373,9 +397,11 @@ class blog_templates_model {
 		}
 
 		public function get_default_category_id() {
-			global $wpdb;
+			global $wpdb, $current_site;
 
-			return $wpdb->get_var( "SELECT ID FROM $this->categories_table WHERE is_default = '1'" );
+			$current_site_id = ! empty ( $current_site ) ? $current_site->id : 1;
+
+			return $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $this->categories_table WHERE is_default = '1' AND network_id = %d", $current_site_id ) );
 		}
 
 		public function get_template_categories( $id ) {
@@ -431,7 +457,9 @@ class blog_templates_model {
 
 		public function get_templates_by_category( $cat_id ) {
 
-			global $wpdb;
+			global $wpdb, $current_site;
+
+			$current_site_id = ! empty ( $current_site ) ? $current_site->id : 1;
 
 			if ( ! $cat_id )
 				return $this->get_templates();
@@ -440,8 +468,10 @@ class blog_templates_model {
 				"SELECT t.* FROM $this->templates_table t
 				INNER JOIN $this->categories_relationships_table r
 				ON t.ID = r.template_id
-				WHERE r.cat_id = %d",
-				$cat_id
+				WHERE r.cat_id = %d
+				AND network_id = %d",
+				$cat_id,
+				$current_site_id
 			);
 
 			$results = $wpdb->get_results( $query, ARRAY_A );
