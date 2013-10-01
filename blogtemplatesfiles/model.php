@@ -307,12 +307,12 @@ class blog_templates_model {
 
 			$current_site_id = ! empty ( $current_site ) ? $current_site->id : 1;
 
-			$default_cat = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->categories_table WHERE is_default = 1 AND network_id = %d", $current_site_id ) );
+			$default_cat = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->categories_table WHERE is_default = 1" ) );
 
 			if ( ! empty( $default_cat ) ) {
 				$wpdb->query( 
 					$wpdb->perpare( 
-						"UPDATE $this->categories_table SET is_default = 0 WHERE is_default = 1 AND ID != $default_cat->ID AND network_id = %d",
+						"UPDATE $this->categories_table SET is_default = 0 WHERE is_default = 1 AND ID != $default_cat->ID",
 						$current_site_id 
 					)
 				);
@@ -401,7 +401,7 @@ class blog_templates_model {
 
 			$current_site_id = ! empty ( $current_site ) ? $current_site->id : 1;
 
-			return $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $this->categories_table WHERE is_default = '1' AND network_id = %d", $current_site_id ) );
+			return $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $this->categories_table WHERE is_default = '1'", $current_site_id ) );
 		}
 
 		public function get_template_categories( $id ) {

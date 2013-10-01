@@ -646,7 +646,7 @@ class blog_templates_main_menu {
 
                 $model->update_template( $t, $args );
 
-                $this->updated_message =  __( 'Your changes were sucessfully saved!', $this->localization_domain );
+                $this->updated_message =  __( 'Your changes were successfully saved!', $this->localization_domain );
                 add_action( 'network_admin_notices', array( &$this, 'show_admin_notice' ) );
 
             } elseif( !empty( $_POST['save_new_template'] ) ) {
@@ -708,7 +708,7 @@ class blog_templates_main_menu {
 	               	$this->save_admin_options();
 	            }
 
-                $this->updated_message =  __( 'The default template was sucessfully updated.', $this->localization_domain );
+                $this->updated_message =  __( 'The default template was successfully updated.', $this->localization_domain );
                 add_action( 'network_admin_notices', array( &$this, 'show_admin_notice' ) );
 
             } elseif ( isset( $_GET['d'] ) && is_numeric( $_GET['d'] ) ) {
@@ -718,7 +718,7 @@ class blog_templates_main_menu {
 
                 $model->delete_template( absint( $_GET['d'] ) );
 
-                $this->updated_message =  __( 'Success! The template was sucessfully deleted.', $this->localization_domain );
+                $this->updated_message =  __( 'Success! The template was successfully deleted.', $this->localization_domain );
                 add_action( 'network_admin_notices', array( &$this, 'show_admin_notice' ) );
             }
         }
