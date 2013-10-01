@@ -83,7 +83,7 @@ class blog_templates_model {
 				description mediumtext,
 				is_default int(1) DEFAULT 0,
 				options longtext NOT NULL,
-				network_id bigint(20) NOT NULL DEFAULT 1
+				network_id bigint(20) NOT NULL DEFAULT 1,
 				PRIMARY KEY  (ID)
 			      ) $this->db_charset_collate;";
 
@@ -307,15 +307,10 @@ class blog_templates_model {
 
 			$current_site_id = ! empty ( $current_site ) ? $current_site->id : 1;
 
-			$default_cat = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->categories_table WHERE is_default = 1" ) );
+			$default_cat = $wpdb->get_row( "SELECT * FROM $this->categories_table WHERE is_default = 1" );
 
 			if ( ! empty( $default_cat ) ) {
-				$wpdb->query( 
-					$wpdb->perpare( 
-						"UPDATE $this->categories_table SET is_default = 0 WHERE is_default = 1 AND ID != $default_cat->ID",
-						$current_site_id 
-					)
-				);
+				$wpdb->query( "UPDATE $this->categories_table SET is_default = 0 WHERE is_default = 1 AND ID != $default_cat->ID" );
 			}
 
 			return $default_cat;
