@@ -21,3 +21,14 @@ function nbt_add_membership_caps( $user_id, $blog_id ) {
 	update_user_meta( $user_id, 'membership_permissions_updated', 'yes');
 	restore_current_blog();
 }
+
+function nbt_bp_add_register_scripts() {
+	?>
+	<script>
+		jQuery(document).ready(function($) {
+			var bt_selector = $('#blog_template-selection').remove();
+			bt_selector.appendTo( $('#blog-details') );
+		});
+	</script>
+	<?php
+}

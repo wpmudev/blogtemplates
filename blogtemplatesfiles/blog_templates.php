@@ -111,9 +111,11 @@ if ( ! class_exists( 'blog_templates' ) ) {
             // Signup: WordPress            
             add_action('signup_blogform', array($this, 'registration_template_selection'));
             add_filter('add_signup_meta', array($this, 'registration_template_selection_add_meta'));
+
             // Signup: BuddyPress
             add_action('bp_after_blog_details_fields', array($this, 'registration_template_selection'));
             add_filter('bp_signup_usermeta', array($this, 'registration_template_selection_add_meta'));
+            add_action( 'bp_before_blog_details_fields', 'nbt_bp_add_register_scripts' );
 
             /**
              * From 1.7.1 version we are not allowing to template the main site
