@@ -8,13 +8,14 @@
 ?>
 
 <?php if (defined('BP_VERSION') && 'bp-default' == get_blog_option(bp_get_root_blog_id(), 'stylesheet')) echo '<br style="clear:both" />'; ?>
+<?php $checked = isset( $this->options['default'] ) ? $this->options['default'] : ''; ?>
 <div id="blog_template-selection">
 	
 	<h3><?php _e('Select a template', 'blog_templates') ?></h3>
 	<?php foreach ($templates as $tkey => $template) { ?>
 		<div class="blog_template-option">
 			<label for="blog_template-<?php echo $tkey; ?>">
-				<input type="radio" id="blog_template-<?php echo $tkey; ?>" name="blog_template" value="<?php echo $tkey;?>" />
+				<input type="radio" id="blog_template-<?php echo $tkey; ?>" name="blog_template" <?php checked( $checked, $tkey ); ?> value="<?php echo $tkey;?>" />
 				<strong><?php echo strip_tags($template['name']);?></strong>
 			</label>
 			<div class="blog_template-description">
