@@ -39,7 +39,7 @@ class blog_templates_theme_selection_toolbar {
 	}
 
 	private function render_css() {
-		$options = get_site_option( 'blog_templates_options' );
+		$options = nbt_get_settings();
 		?>
 		<style>
 			#nbt-toolbar {
@@ -83,7 +83,7 @@ class blog_templates_theme_selection_toolbar {
 	}
 
 	private function set_categories() {
-		$model = blog_templates_model::get_instance();
+		$model = nbt_get_model();
 
 		$this->categories = $model->get_templates_categories();
 	}
@@ -94,10 +94,10 @@ function nbt_filter_categories() {
 	$cat_id = absint( $_POST['category_id'] );
 	$type = $_POST['type'];
 
-	$model = blog_templates_model::get_instance();
+	$model = nbt_get_model();
 	$templates = $model->get_templates_by_category( $cat_id );
 
-	$options = get_site_option( 'blog_templates_options' );
+	$options = nbt_get_settings();
 	foreach( $templates as $tkey => $template ) {
 		nbt_render_theme_selection_item( $type, $template['ID'], $template, $options );
 	}

@@ -93,7 +93,7 @@ function blog_templates_upgrade_191() {
 }
 
 function blog_templates_upgrade_20() {
-	$model = blog_templates_model::get_instance();
+	$model = nbt_get_model();
 	$model->upgrade_20();
 
 }
@@ -101,7 +101,7 @@ function blog_templates_upgrade_20() {
 function blog_templates_upgrade_22() {
 	global $wpdb;
 
-	$model = blog_templates_model::get_instance();
+	$model = nbt_get_model();
 	$model->upgrade_22();
 
 	$table = $model->templates_table;
@@ -124,4 +124,22 @@ function blog_templates_upgrade_22() {
 			}
 		}
 	}
+}
+
+function blog_templates_upgrade23() {
+	$settings = nbt_get_settings();
+	$model = nbt_get_model();
+
+	if ( empty( $settings['templates'] ) ) {
+		$settings['default'] = '';
+	}
+	else {
+		foreach ( $settings['templates'] as $template ) {
+			if ( $template['is_default'] )
+				$settings['default'] = $template['ID'];
+		}
+	}
+
+	nbt_update_settings( $settings );
+
 }

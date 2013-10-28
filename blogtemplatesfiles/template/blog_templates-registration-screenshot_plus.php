@@ -11,8 +11,8 @@
 	<h3><?php _e('Select a template', 'blog_templates') ?></h3>
 
 	<?php
-		if ( $this->options['show-categories-selection'] ) {
-			$toolbar = new blog_templates_theme_selection_toolbar( $this->options['registration-templates-appearance'] );
+		if ( $settings['show-categories-selection'] ) {
+			$toolbar = new blog_templates_theme_selection_toolbar( $settings['registration-templates-appearance'] );
 		    $toolbar->display();
 		}
     ?>
@@ -21,7 +21,7 @@
 		
 	<?php 
 	foreach ($templates as $tkey => $template) { 
-		nbt_render_theme_selection_item( 'screenshot_plus', $tkey, $template, $this->options );
+		nbt_render_theme_selection_item( 'screenshot_plus', $tkey, $template, $settings );
 	} 
 	?>
 	<div style="clear:both;"></div>

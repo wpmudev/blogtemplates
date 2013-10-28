@@ -72,7 +72,7 @@ class blog_templates_categories_table extends WP_List_Table {
 
     function prepare_items() {
 
-        $model = blog_templates_model::get_instance();
+        $model = nbt_get_model();
 
         if( 'delete' === $this->current_action() ) {
             if ( isset( $_GET['category'] ) && $category = absint( $_GET['category'] ) )

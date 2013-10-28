@@ -34,6 +34,9 @@ if ( ! is_multisite() )
 
 define( 'NBT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'NBT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'NBT_PLUGIN_LANG_DOMAIN', 'blog_templates' );
+
+require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/helpers.php' );
 require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/filters.php' );
 require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/model.php' );
 require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/upgrade.php' );
@@ -44,12 +47,27 @@ require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/admin/settings_menu.php' );
 require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/blog_templates.php' );
 require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/blog_templates_lock_posts.php' );
 require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/integration.php' );
+require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/settings-handler.php' );
 
 
 if ( is_network_admin() ) {
 	require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/tables/templates_table.php' );
 	require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/tables/categories_table.php' );
 }
+
+/**
+ * Load the plugin text domain and MO files
+ * 
+ * These can be uploaded to the main WP Languages folder
+ * or the plugin one
+ */
+function nbt_load_text_domain() {
+	$locale = apply_filters( 'plugin_locale', get_locale(), NBT_PLUGIN_LANG_DOMAIN );
+
+	load_textdomain( NBT_PLUGIN_LANG_DOMAIN, WP_LANG_DIR . '/' . NBT_PLUGIN_LANG_DOMAIN . '/' . NBT_PLUGIN_LANG_DOMAIN . '-' . $locale . '.mo' );
+	load_plugin_textdomain( NBT_PLUGIN_LANG_DOMAIN, false, dirname( plugin_basename( __FILE__ ) ) . '/lang/' );
+}
+add_action( 'plugins_loaded', 'nbt_load_text_domain' );
 
 
 function nbt_get_default_screenshot_url( $blog_id ) {
@@ -124,12 +142,12 @@ function nbt_render_theme_selection_scripts( $options ) {
 			.theme-screenshot-wrap {
 				width:45%;
 				float:left;
-				margin-right:10%;
+				margin-right: 4%;
 				margin-bottom:25px;
 				box-sizing:border-box;
 				position:relative;
 				background:<?php echo $unselected_color; ?>;
-				padding:3px;
+				padding:1%;
 			}
 			.blog_template-default_item {
 				background:<?php echo $selected_color; ?> !important;
@@ -154,7 +172,7 @@ function nbt_render_theme_selection_scripts( $options ) {
 					opacity:0;
 					background:#333;
 					background:rgba(51, 51, 51, 0.6);
-					height:100%;
+					height:80%;
 					position:absolute;
 					top:0;
 					left:0;

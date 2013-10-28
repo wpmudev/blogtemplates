@@ -118,7 +118,7 @@ class NBT_Templates_Table extends WP_List_Table {
 
         $this->_column_headers = array($columns, $hidden, $sortable);
 
-        $model = blog_templates_model::get_instance();
+        $model = nbt_get_model();
         $this->items = $model->get_templates();
 
         $current_page = $this->get_pagenum();

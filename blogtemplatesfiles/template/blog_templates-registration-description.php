@@ -8,7 +8,7 @@
 ?>
 
 <?php if (defined('BP_VERSION') && 'bp-default' == get_blog_option(bp_get_root_blog_id(), 'stylesheet')) echo '<br style="clear:both" />'; ?>
-<?php $checked = isset( $this->options['default'] ) ? $this->options['default'] : ''; ?>
+<?php $checked = isset( $settings['default'] ) ? $settings['default'] : ''; ?>
 <div id="blog_template-selection">
 	
 	<h3><?php _e('Select a template', 'blog_templates') ?></h3>
