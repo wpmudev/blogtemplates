@@ -331,13 +331,10 @@ if ( ! class_exists( 'blog_templates' ) ) {
             } elseif ( $default ) { //If they haven't chosen a template, use the default if it exists
                 $template = $default;
             }
-            $template = apply_filters('blog_templates-blog_template', $template, $blog_id, $user_id, $this);
+            $template = apply_filters('blog_templates-blog_template', $template, $blog_id, $user_id );
 
             if ( ! $template || 'none' == $template )
                 return; //No template, lets leave
-
-            //Begin the transaction
-            $wpdb->query("BEGIN;");
 
             switch_to_blog( $blog_id ); //Switch to the blog that was just created            
 
@@ -350,87 +347,17 @@ if ( ! class_exists( 'blog_templates' ) ) {
             $copier_args['post_category'] = $template['post_category'];
             $copier_args['pages_ids'] = $template['pages_ids'];
             $copier_args['template_id'] = $template['ID'];
+            $copier_args['block_posts_pages'] = $template['block_posts_pages'];
+            $copier_args['update_dates'] = $template['update_dates'];
             $copier_args['additional_tables'] = ( isset( $template['additional_tables'] ) && is_array( $template['additional_tables'] ) ) ? $template['additional_tables'] : array();
 
             $copier = new NBT_Template_copier( $template['blog_id'], $blog_id, $user_id, $copier_args );
             $copier->execute();
 
-            if ( $template['block_posts_pages'] ) {
-                $posts_ids = $wpdb->get_col( "SELECT ID FROM $wpdb->posts" );
-                if ( $posts_ids ) {
-                    foreach ( $posts_ids as $post_id )
-                        add_post_meta( $post_id, 'nbt_block_post', true );
-                }
-            }
-
-            $this->set_content_urls( $template['blog_id'], $blog_id );
-
-            $wpdb->query("COMMIT;"); //If we get here, everything's fine. Commit the transaction
-
-            if ( ! empty( $template['update_dates'] ) ) {
-                $this->update_posts_dates('post');
-                do_action('blog_templates-update-posts-dates', $template, $blog_id, $user_id );
-            }
-            if ( ! empty( $template['update_dates'] ) ) {
-                $this->update_posts_dates('page');
-                do_action('blog_templates-update-pages-dates', $template, $blog_id, $user_id );
-            }
-                        
-            // Now we need to update the blog status because of a conflict with Multisite Privacy Plugin
-            if ( isset( $template['copy_status'] ) && $template['copy_status'] &&  is_plugin_active( 'sitewide-privacy-options/sitewide-privacy-options.php' ) )
-                update_blog_status( $blog_id, 'public', get_blog_status( $template['blog_id'], 'public' ) ); 
-
-            do_action( "blog_templates-copy-after_copying", $template, $blog_id, $user_id );
-
             restore_current_blog(); //Switch back to our current blog
 
         }
 
-        function update_posts_dates( $post_type ) {
-            global $wpdb;
-
-            $sql = $wpdb->prepare( "UPDATE $wpdb->posts
-                SET post_date = %s,
-                post_date_gmt = %s,
-                post_modified = %s,
-                post_modified_gmt = %s
-                WHERE post_type = %s
-                AND post_status = 'publish'",
-                current_time( 'mysql', false ),
-                current_time( 'mysql', true ),
-                current_time( 'mysql', false ),
-                current_time( 'mysql', true ),
-                $post_type
-            );
-
-            $wpdb->query( $sql );
-        }
-
-
-                 
-        function set_content_urls( $templated_blog_id, $blog_id ) {
-            global $wpdb;
-
-            $pattern = '/^(http|https):\/\//';
-            switch_to_blog( $templated_blog_id );
-            $templated_home_url = preg_replace( $pattern, '', home_url() );
-            restore_current_blog();
-
-            switch_to_blog( $blog_id );
-            $new_home_url = preg_replace( $pattern, '', home_url() );
-
-            $sql = $wpdb->prepare( "SELECT * FROM $wpdb->posts WHERE post_content LIKE %s AND post_status = 'publish';", '%' . $templated_home_url . '%' );
-            $results = $wpdb->get_results( $sql );
-
-            foreach ( $results as $row ) {
-                //UPDATE 
-                $post_content = str_replace( $templated_home_url, $new_home_url, $row->post_content );
-                $sql = $wpdb->prepare( "UPDATE $wpdb->posts SET post_content = %s WHERE ID = %d;", $post_content, $row->ID );
-                $wpdb->query( $sql );
-            }
-            restore_current_blog();
-        }
-   
 
         /**
         * Adds field for Multi Domain addition and edition forms

@@ -16,6 +16,9 @@ class NBT_Template_copier {
 
 		$model = nbt_get_model();
 		$this->template = $model->get_template( $this->settings['template_id'] );
+
+        if ( empty( $this->template ) )
+            $this->template = array();
 	}
 
 	private function get_default_args() {
@@ -32,12 +35,17 @@ class NBT_Template_copier {
 			'pages_ids'		=> array( 'all-pages' ),
 			'post_category' => array( 'all-categories' ),
 			'template_id'	=> 0,
-			'additional_tables' => array()
+			'additional_tables' => array(),
+            'block_posts_pages' => false,
+            'update_dates' => false
 		);
 	}
 
 	public function execute() {
 		global $wpdb;
+
+        //Begin the transaction
+        $wpdb->query("BEGIN;");
 
 		// In case we are not copying posts, we'll have to reset the terms count to 0
         if ( $this->settings['to_copy']['posts'] || $this->settings['to_copy']['pages'] ) {
@@ -53,7 +61,79 @@ class NBT_Template_copier {
 		if ( ! empty( $this->settings['additional_tables'] ) )
 			$this->copy_additional_tables();
 
+        if ( $this->settings['block_posts_pages'] ) {
+            $posts_ids = $wpdb->get_col( "SELECT ID FROM $wpdb->posts" );
+            if ( $posts_ids ) {
+                foreach ( $posts_ids as $post_id )
+                    add_post_meta( $post_id, 'nbt_block_post', true );
+            }
+        }
+
+        $this->set_content_urls( $template['blog_id'], $blog_id );
+
+        if ( ! empty( $this->settings['update_dates'] ) ) {
+            $this->update_posts_dates('post');
+            do_action('blog_templates-update-posts-dates', $this->template, $this->new_blog_id, $this->user_id );
+        }
+        if ( ! empty( $this->settings['update_dates'] ) ) {
+            $this->update_posts_dates('page');
+            do_action('blog_templates-update-pages-dates', $this->template, $this->new_blog_id, $this->user_id );
+        }
+                    
+        // Now we need to update the blog status because of a conflict with Multisite Privacy Plugin
+        if ( isset( $this->settings['copy_status'] ) && $this->settings['copy_status'] &&  is_plugin_active( 'sitewide-privacy-options/sitewide-privacy-options.php' ) )
+            update_blog_status( $this->new_blog_id, 'public', get_blog_status( $this->templatd_blog_id, 'public' ) );
+
+        $wpdb->query("COMMIT;"); //If we get here, everything's fine. Commit the transaction
+
+        do_action( "blog_templates-copy-after_copying", $this->template, $this->new_blog_id, $this->user_id );
+
+
+
 	}
+
+    function update_posts_dates( $post_type ) {
+        global $wpdb;
+
+        $sql = $wpdb->prepare( "UPDATE $wpdb->posts
+            SET post_date = %s,
+            post_date_gmt = %s,
+            post_modified = %s,
+            post_modified_gmt = %s
+            WHERE post_type = %s
+            AND post_status = 'publish'",
+            current_time( 'mysql', false ),
+            current_time( 'mysql', true ),
+            current_time( 'mysql', false ),
+            current_time( 'mysql', true ),
+            $post_type
+        );
+
+        $wpdb->query( $sql );
+    }
+
+    function set_content_urls() {
+        global $wpdb;
+
+        $pattern = '/^(http|https):\/\//';
+        switch_to_blog( $this->template_blog_id );
+        $templated_home_url = preg_replace( $pattern, '', home_url() );
+        restore_current_blog();
+
+        switch_to_blog( $this->new_blog_id );
+        $new_home_url = preg_replace( $pattern, '', home_url() );
+
+        $sql = $wpdb->prepare( "SELECT * FROM $wpdb->posts WHERE post_content LIKE %s AND post_status = 'publish';", '%' . $templated_home_url . '%' );
+        $results = $wpdb->get_results( $sql );
+
+        foreach ( $results as $row ) {
+            //UPDATE 
+            $post_content = str_replace( $templated_home_url, $new_home_url, $row->post_content );
+            $sql = $wpdb->prepare( "UPDATE $wpdb->posts SET post_content = %s WHERE ID = %d;", $post_content, $row->ID );
+            $wpdb->query( $sql );
+        }
+        restore_current_blog();
+    }
 
 	public function copy_settings() {
 		global $wpdb;

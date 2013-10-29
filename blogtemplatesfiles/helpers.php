@@ -22,3 +22,4 @@ function nbt_get_default_settings() {
 	$handler = get_settings_handler();
 	return $handler->get_default_settings();
 }
+
