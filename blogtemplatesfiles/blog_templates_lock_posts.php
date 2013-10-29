@@ -98,7 +98,28 @@ class NBT_Lock_Posts {
 		if ( $post_lock_status )
 			$post->post_title .= __( ' - Locked by Super Admin ', 'blog_templates' );
 
-		return $post_lock_status ? (is_super_admin() ? $all : false) : $all;
+		if ( ! $post_lock_status || is_super_admin() )
+			return $all;
+
+		unset( $all['edit_posts'] );
+		unset( $all['edit_others_posts'] );
+		unset( $all['edit_published_posts'] );
+		unset( $all['delete_posts'] );
+		unset( $all['delete_private_posts'] );
+		unset( $all['edit_private_posts'] );
+		unset( $all['delete_others_posts'] );
+		unset( $all['delete_published_posts'] );
+
+		unset( $all['edit_pages'] );
+		unset( $all['edit_others_pages'] );
+		unset( $all['edit_published_pages'] );
+		unset( $all['delete_pages'] );
+		unset( $all['delete_private_pages'] );
+		unset( $all['edit_private_pages'] );
+		unset( $all['delete_others_pages'] );
+		unset( $all['delete_published_pages'] );
+
+		return $all;
 	}
 
 

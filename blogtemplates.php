@@ -85,14 +85,16 @@ function nbt_render_theme_selection_item( $type, $tkey, $template, $options = ar
 		$blog_url = get_site_url( $template['blog_id'] );
 		?>
 			<div class="theme-previewer-wrap <?php echo $default; ?>" id="theme-previewer-wrap-<?php echo $tkey;?>">
+				
 				<a href="#<?php echo $tplid; ?>" class="blog_template-item_selector">
 					<img src="<?php echo $img;?>" />
 					<input type="radio" name="blog_template" id="blog-template-radio-<?php echo $tkey;?>" <?php checked( ! empty( $default ) ); ?> value="<?php echo $tkey;?>" style="display: none" />
-					<div class="theme-previewer-overlay">
-						<span class="template-name"><?php echo $tplid; ?></span> <button class="view-demo-button" data-blog-url="<?php echo $blog_url;?>"><?php _e( 'View demo', 'blog_templates' ); ?></button><br/><br/>
-						<button class="select-theme-button" data-theme-key="<?php echo $tkey;?>"><?php echo $options['previewer_button_text']; ?></button>
-					</div>
 				</a>
+				<div class="theme-previewer-overlay">
+					<div class="template-name"><?php echo $tplid; ?></div><br/>
+					<button class="view-demo-button" data-blog-url="<?php echo $blog_url;?>"><?php _e( 'View demo', 'blog_templates' ); ?></button><br/><br/>
+					<button class="select-theme-button" data-theme-key="<?php echo $tkey;?>"><?php echo $options['previewer_button_text']; ?></button>
+				</div>
 			</div>
 		<?php
 	}
@@ -147,7 +149,8 @@ function nbt_render_theme_selection_scripts( $options ) {
 				box-sizing:border-box;
 				position:relative;
 				background:<?php echo $unselected_color; ?>;
-				padding:1%;
+				padding:3px;
+				max-width:600px;
 			}
 			.blog_template-default_item {
 				background:<?php echo $selected_color; ?> !important;
@@ -159,38 +162,42 @@ function nbt_render_theme_selection_scripts( $options ) {
 			}
 			.blog_template-item_selector img {
 				max-width:100%;
+				max-height:100%;
+				display: block;
 			}
 		</style>
 	<?php
 	if ( 'previewer' == $type ) {
 		?>
 			<style>				
+				.theme-previewer-wrap:hover img {
+					opacity:0.5;
+				}
 				.theme-previewer-wrap:hover .theme-previewer-overlay {
-					opacity:1;
-				}				
+					display:block;
+					
+				}			
 				.theme-previewer-overlay {
-					opacity:0;
-					background:#333;
-					background:rgba(51, 51, 51, 0.6);
-					height:80%;
+					display:none;
 					position:absolute;
-					top:0;
-					left:0;
+					top:50%;
+					opacity:1;
 					width:100%;
+					margin-top:-25%;
 					box-sizing:border-box;
+					white-space: nowrap;
 					text-align: center;
-					padding-top:20%;
 				}
 				.view-demo-button {
-					font-size:0.8em;
+					font-size:90%;
 				}
 				.select-theme-button {
-					font-size:1em;
+					font-size:100%;
 					font-weight:bold;
 				}
 				.template-name {
 					display:inline-block;
-					font-size:1.1em;
+					font-size:100%;
 					color:white;
 					text-shadow:1px 1px 1px black;
 				}

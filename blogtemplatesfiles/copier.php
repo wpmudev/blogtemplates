@@ -179,8 +179,6 @@ class NBT_Template_copier {
         $template_users = get_users();
         restore_current_blog(); 
 
-        
-
         if ( ! empty( $template_users ) ) {
         	foreach( $template_users as $user ) {
         		$user = apply_filters( 'blog_templates-copy-user_entry', $user, $this->template, $this->new_blog_id, $this->user_id );
@@ -362,6 +360,8 @@ class NBT_Template_copier {
 
         return ! empty( $info['basedir'] ) ? $info['basedir'] : false;
     }
+
+    
 
     function set_theme_mods_url( &$item, $key, $userdata = array() ) {
         $template_upload_url = $userdata[0];
