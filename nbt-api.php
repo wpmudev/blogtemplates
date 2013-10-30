@@ -39,3 +39,27 @@ function nbt_api_create_new_blog( $source_blog_id, $new_blog_id, $new_user_id, $
 	$copier = new NBT_Template_copier( $source_blog_id, $new_blog_id, $new_user_id, $args );
 	$copier->execute();
 }
+
+
+/**
+ * Sample code
+ * 
+ * This code will copy all posts, pages and menus in the source blog. It also updates
+ * the dates of the posts and pages
+ * 
+include_once( WP_CONTENT_DIR . '/plugins/blogtemplates/nbt-api.php' );
+nbt_load_api();
+
+add_action( 'wpmu_new_blog', 'my_test_function', 99, 2 );
+function my_test_function( $new_blog_id, $new_user_id ) {
+	$args = array(
+			'to_copy' => array(
+				'posts'		=> true,
+				'pages'		=> true,
+				'menus'		=> true,
+			),
+            'update_dates' => true
+		);
+	nbt_create_new_blog( 27, $new_blog_id, $new_user_id, $args );
+}
+*/
