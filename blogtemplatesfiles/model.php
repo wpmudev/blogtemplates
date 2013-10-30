@@ -246,7 +246,7 @@ class blog_templates_model {
 
 			$template = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->templates_table WHERE ID = %d", $id ), ARRAY_A );
 
-			$template = array_merge( maybe_unserialize( $template['options'] ), $template );
+			$template = array_merge( maybe_unserialize( $template['options'] ), (array)$template );
 
 			return $template;
 		}

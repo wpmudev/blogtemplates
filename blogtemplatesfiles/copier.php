@@ -44,6 +44,7 @@ class NBT_Template_copier {
 	public function execute() {
 		global $wpdb;
 
+        switch_to_blog( $this->new_blog_id );
         //Begin the transaction
         $wpdb->query("BEGIN;");
 
@@ -69,7 +70,7 @@ class NBT_Template_copier {
             }
         }
 
-        $this->set_content_urls( $template['blog_id'], $blog_id );
+        $this->set_content_urls( $this->template['blog_id'], $this->new_blog_id );
 
         if ( ! empty( $this->settings['update_dates'] ) ) {
             $this->update_posts_dates('post');
@@ -87,7 +88,7 @@ class NBT_Template_copier {
         $wpdb->query("COMMIT;"); //If we get here, everything's fine. Commit the transaction
 
         do_action( "blog_templates-copy-after_copying", $this->template, $this->new_blog_id, $this->user_id );
-
+        restore_current_blog();
 
 
 	}

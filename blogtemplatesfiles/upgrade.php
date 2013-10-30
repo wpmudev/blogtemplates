@@ -126,7 +126,7 @@ function blog_templates_upgrade_22() {
 	}
 }
 
-function blog_templates_upgrade23() {
+function blog_templates_upgrade_23() {
 	$settings = nbt_get_settings();
 	$model = nbt_get_model();
 
@@ -135,8 +135,10 @@ function blog_templates_upgrade23() {
 	}
 	else {
 		foreach ( $settings['templates'] as $template ) {
-			if ( $template['is_default'] )
+			if ( $template['is_default'] ) {
 				$settings['default'] = $template['ID'];
+				break;
+			}
 		}
 	}
 
