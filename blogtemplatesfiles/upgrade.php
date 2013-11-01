@@ -124,9 +124,7 @@ function blog_templates_upgrade_22() {
 			}
 		}
 	}
-}
 
-function blog_templates_upgrade_23() {
 	$settings = nbt_get_settings();
 	$model = nbt_get_model();
 
@@ -143,5 +141,4 @@ function blog_templates_upgrade_23() {
 	}
 
 	nbt_update_settings( $settings );
-
 }

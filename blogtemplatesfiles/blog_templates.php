@@ -164,11 +164,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );   
             }
 
-            if ( version_compare( $saved_version, '2.3', '<' ) ) {
-                blog_templates_upgrade_23();
-                update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );   
-            }
-
         }
 
         /**

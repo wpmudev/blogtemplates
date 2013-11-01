@@ -5,6 +5,25 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+2.3 - 2013-11-01
+----------------------------------------------------------------------
+- Improved posts locker capabilities management
+- comments erased when a new blog is created with copied posts
+- Default screenshot were being displayed in templates table
+- Minor fixes.
+- Created a New Blog Templates API.
+- Plugin core splitted from the rest of the plugin. (Users are now able to use the copy functionality without activating the plugin)
+- Improved previewer styles
+- Code with better structure.
+- Added class to handle settings.
+- Added a copier class.
+- Added helpers functions.
+- Default template were not set sometimes
+- Improved registration page for BuddyPress
+- Fixed typos in queries
+- Adding multinetwork compatibility
+- Fixed: Theme mods were not being added properly to the new blog
+
 2.0.1 - 2013-09-20
 ----------------------------------------------------------------------
 - Table prefix was hardcoded in a query
