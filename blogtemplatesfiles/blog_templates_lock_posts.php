@@ -80,46 +80,46 @@ class NBT_Lock_Posts {
 	/**
 	 * Properly filtering out forbidden capabilities for non-super admin users.
 	 */
-	function kill_edit_cap ($all, $caps, $args) {
+	function kill_edit_cap ( $all, $cap, $args ) {
 		global $post;
 
-		if (!is_object($post) || !isset($post->post_type)) return $all; // Only proceed for pages with known post types
+		if ( ! $args ) 
+			return $all; // Something is wrong here.
 
-		if (!$args) return $all; // Something is wrong here.
-		if (count($args) < 3) return $all; // Only proceed for individual items.
-		if (!isset($args[0])) return $all; // Something is still wrong here.
-
-		$post_id = isset($args[2]) ? $args[2] : false;
-		if (!$post_id) return $all; // Can't obtain post ID
-
-
-		$post_lock_status = (get_post_meta($post_id, 'nbt_block_post', true));
-
-		if ( $post_lock_status )
-			$post->post_title .= __( ' - Locked by Super Admin ', 'blog_templates' );
-
-		if ( ! $post_lock_status || is_super_admin() )
+		// Bail out if we're not asking about a post:
+		if ( 'edit_post' != $args[0] )
 			return $all;
 
-		unset( $all['edit_posts'] );
-		unset( $all['edit_others_posts'] );
-		unset( $all['edit_published_posts'] );
-		unset( $all['delete_posts'] );
-		unset( $all['delete_private_posts'] );
-		unset( $all['edit_private_posts'] );
-		unset( $all['delete_others_posts'] );
-		unset( $all['delete_published_posts'] );
+		// Bail out for users who can't publish posts:
+		if ( ! isset( $all['publish_posts'] ) or ! $all['publish_posts'] )
+			return $all;
 
-		unset( $all['edit_pages'] );
-		unset( $all['edit_others_pages'] );
-		unset( $all['edit_published_pages'] );
-		unset( $all['delete_pages'] );
-		unset( $all['delete_private_pages'] );
-		unset( $all['edit_private_pages'] );
-		unset( $all['delete_others_pages'] );
-		unset( $all['delete_published_pages'] );
+		if ( is_super_admin() )
+			return $all;
+
+		$post = get_post( $args[2] );
+		$post->post_title = $post->post_title . ' ' . __( '[Blocked by Super Admin]', 'blog_templates' );
+
+		$blocked = get_post_meta( $post->ID, 'nbt_block_post' );
+
+		if ( $blocked ) {
+			$all[ $cap[0] ] = false;
+		}
 
 		return $all;
+			return $all; // the user is super admin or he cannot edit posts already
+
+		if ( ! isset( $caps[2] ) )
+			return $all;
+
+		$post = get_post( $args[2] );
+		if ( ! is_object( $post ) || ! isset( $post->post_type ) ) 
+			return $all; // Only proceed for pages with known post types
+
+		$all[ $caps[0] ] = false;
+
+		return $all;
+
 	}
 
 

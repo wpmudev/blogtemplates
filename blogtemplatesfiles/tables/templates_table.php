@@ -91,10 +91,10 @@ class NBT_Templates_Table extends WP_List_Table {
 
     function column_screenshot( $item ) {
 
-        if ( empty( $item['screenshot'] ) )
+        if ( empty( $item['options']['screenshot'] ) )
             $img = nbt_get_default_screenshot_url($item['blog_id']);
         else
-            $img = $item['screenshot'];
+            $img = $item['options']['screenshot'];
         
         return '<img style="max-width:25%;" src="' . $img . '"/>';
     }

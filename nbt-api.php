@@ -35,7 +35,7 @@ function nbt_load_api() {
  * 
  * @return type
  */
-function nbt_api_create_new_blog( $source_blog_id, $new_blog_id, $new_user_id, $args ) {
+function nbt_api_copy_contents_to_new_blog( $source_blog_id, $new_blog_id, $new_user_id, $args ) {
 	$copier = new NBT_Template_copier( $source_blog_id, $new_blog_id, $new_user_id, $args );
 	$copier->execute();
 }
@@ -60,6 +60,6 @@ function my_test_function( $new_blog_id, $new_user_id ) {
 			),
             'update_dates' => true
 		);
-	nbt_create_new_blog( 27, $new_blog_id, $new_user_id, $args );
+	nbt_api_copy_contents_to_new_blog( 27, $new_blog_id, $new_user_id, $args );
 }
 */

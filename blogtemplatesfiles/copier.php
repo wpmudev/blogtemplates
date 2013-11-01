@@ -52,6 +52,8 @@ class NBT_Template_copier {
         if ( $this->settings['to_copy']['posts'] || $this->settings['to_copy']['pages'] ) {
             $this->clear_table($wpdb->posts);
             $this->clear_table($wpdb->postmeta);
+            $this->clear_table($wpdb->comments);
+            $this->clear_table($wpdb->commentmeta);
         }
 
 		foreach ( $this->settings['to_copy'] as $setting => $value ) {
