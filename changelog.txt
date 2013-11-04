@@ -23,6 +23,7 @@ Change Log:
 - Fixed typos in queries
 - Adding multinetwork compatibility
 - Fixed: Theme mods were not being added properly to the new blog
+- Fixed incomaptibility with Appointment+
 
 2.0.1 - 2013-09-20
 ----------------------------------------------------------------------
