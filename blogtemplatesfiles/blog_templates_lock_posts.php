@@ -97,28 +97,13 @@ class NBT_Lock_Posts {
 		if ( is_super_admin() )
 			return $all;
 
-		$post = get_post( $args[2] );
-		$post->post_title = $post->post_title . ' ' . __( '[Blocked by Super Admin]', 'blog_templates' );
-
 		$blocked = get_post_meta( $post->ID, 'nbt_block_post' );
 
 		if ( $blocked ) {
+			$post = get_post( $args[2] );
+			$post->post_title = $post->post_title . ' ' . __( '[Blocked by Super Admin]', 'blog_templates' );
 			$all[ $cap[0] ] = false;
 		}
-
-		return $all;
-			return $all; // the user is super admin or he cannot edit posts already
-
-		if ( ! isset( $caps[2] ) )
-			return $all;
-
-		$post = get_post( $args[2] );
-		if ( ! is_object( $post ) || ! isset( $post->post_type ) ) 
-			return $all; // Only proceed for pages with known post types
-
-		$all[ $caps[0] ] = false;
-
-		return $all;
 
 	}
 
