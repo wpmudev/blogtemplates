@@ -105,6 +105,8 @@ class NBT_Lock_Posts {
 			$all[ $cap[0] ] = false;
 		}
 
+		return $all;
+
 	}
 
 
