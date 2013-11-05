@@ -65,10 +65,12 @@ class NBT_Template_copier {
 			$this->copy_additional_tables();
 
         if ( $this->settings['block_posts_pages'] ) {
+            $wpdb->query( "DELETE FROM $wpdb->postmeta WHERE meta_key = 'nbt_block_post'" );
             $posts_ids = $wpdb->get_col( "SELECT ID FROM $wpdb->posts" );
             if ( $posts_ids ) {
-                foreach ( $posts_ids as $post_id )
-                    add_post_meta( $post_id, 'nbt_block_post', true );
+                foreach ( $posts_ids as $post_id ) {
+                    update_post_meta( $post_id, 'nbt_block_post', true );
+                }
             }
         }
 

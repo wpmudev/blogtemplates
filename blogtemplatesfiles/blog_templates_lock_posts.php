@@ -50,7 +50,7 @@ class NBT_Lock_Posts {
 
 		$post_lock_status = get_post_meta( $post->ID, 'nbt_block_post', true );
 
-		if( empty( $post_lock_status ) )
+		if ( ! $post_lock_status )
 			$post_lock_status = false;
 		?>
 		<div id="nbtpostlockstatus">
@@ -70,10 +70,13 @@ class NBT_Lock_Posts {
 	 */
 	function update( $post_id ) {
 		if ( ! empty( $_POST['nbt_post_lock_status'] ) && is_super_admin() ) {
-			if ( 'locked' == $_POST['nbt_post_lock_status'] )
-				update_post_meta( $post_id, 'nbt_block_post', true );
+			$locked = $_POST['nbt_post_lock_status'] == 'locked' ? true : false;
+			if ( $locked ) {
+				delete_post_meta( $post_id, 'nbt_block_post' );
+				add_post_meta( $post_id, 'nbt_block_post', true );
+			}
 			else
-				update_post_meta( $post_id, 'nbt_block_post', false );
+				delete_post_meta( $post_id, 'nbt_block_post' );
 		}
 	}
 
@@ -97,7 +100,7 @@ class NBT_Lock_Posts {
 		if ( is_super_admin() )
 			return $all;
 
-		$blocked = get_post_meta( $post->ID, 'nbt_block_post' );
+		$blocked = get_post_meta( $post->ID, 'nbt_block_post', true );
 
 		if ( $blocked ) {
 			$post = get_post( $args[2] );
