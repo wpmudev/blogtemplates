@@ -194,6 +194,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
                     $model->delete_template( $template_id );
 
+                    do_action( 'blog_templates_delete_template', $template_id );
+
                     nbt_update_settings( $settings );
                 }
             }

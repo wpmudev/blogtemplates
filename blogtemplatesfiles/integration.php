@@ -40,3 +40,9 @@ function nbt_appplus_unregister_action() {
 		remove_action( 'wpmu_new_blog', array( $appointments, 'new_blog' ), 10, 6 );
 	}
 }
+
+add_filter( 'blog_template_exclude_settings', 'nbt_popover_remove_install_setting', 10, 1 );
+function nbt_popover_remove_install_setting( $query ) {
+	$query .= " AND `option_name` != 'popover_installed' ";
+	return $query;
+}

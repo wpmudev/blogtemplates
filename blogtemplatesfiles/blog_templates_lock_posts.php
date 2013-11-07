@@ -100,6 +100,9 @@ class NBT_Lock_Posts {
 		if ( is_super_admin() )
 			return $all;
 
+		if ( ! isset( $post->ID ) )
+			return $all;
+
 		$blocked = get_post_meta( $post->ID, 'nbt_block_post', true );
 
 		if ( $blocked ) {
