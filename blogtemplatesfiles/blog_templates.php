@@ -226,7 +226,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
         *
         * @since 1.0
         */
-        function get_template_dropdown( $tag_name, $include_none, $echo = true ) {
+        function get_template_dropdown( $tag_name, $include_none, $echo = true, $esc_js = true ) {
 
             $settings = nbt_get_settings();
             $templates = array();
@@ -242,7 +242,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
                     $selector .= '<option value="none">' . __( 'None', 'blog_templates' ) . '</option>';
                 
                 foreach ( $templates as $key => $value ) {
-                    $selector .= '<option value="' . esc_attr( $key ) . '" ' . esc_attr( selected( $key == $settings['default'], true, false ) ) . '>' . esc_js( $value ). '</option>';
+                    $label = ( $esc_js ) ? esc_js( $value ) : stripslashes_deep( $value );
+                    $selector .= '<option value="' . esc_attr( $key ) . '" ' . esc_attr( selected( $key == $settings['default'], true, false ) ) . '>' . $label . '</option>';
                 }
                 $selector .= '</select>';    
 
