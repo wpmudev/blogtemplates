@@ -242,7 +242,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                     $selector .= '<option value="none">' . __( 'None', 'blog_templates' ) . '</option>';
                 
                 foreach ( $templates as $key => $value ) {
-                    $selector .= '<option value="' . esc_attr( $key ) . '" ' . esc_attr( selected( $key == $settings['default'], true, false ) ) . '>' . $value . '</option>';
+                    $selector .= '<option value="' . esc_attr( $key ) . '" ' . esc_attr( selected( $key == $settings['default'], true, false ) ) . '>' . esc_js( $value ). '</option>';
                 }
                 $selector .= '</select>';    
 
