@@ -291,7 +291,7 @@ class NBT_Template_copier {
 	}
 
 	public function copy_files() {
-		global $wp_filesystem;
+		global $wp_filesystem, $wpdb;
 
 		$new_content_url = get_bloginfo('wpurl');
 
