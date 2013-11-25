@@ -19,12 +19,12 @@
     
 	<div class="blog_template-option">
 		
-	<?php 
-	foreach ($templates as $tkey => $template) { 
-		nbt_render_theme_selection_item( 'screenshot_plus', $tkey, $template, $settings );
-	} 
-	?>
-	<div style="clear:both;"></div>
+		<?php 
+		foreach ($templates as $tkey => $template) { 
+			nbt_render_theme_selection_item( 'screenshot_plus', $tkey, $template, $settings );
+		} 
+		?>
+		<div style="clear:both;"></div>
 	</div>
 </div>
 

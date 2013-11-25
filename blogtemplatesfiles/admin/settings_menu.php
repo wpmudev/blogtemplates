@@ -119,7 +119,7 @@ class blog_templates_settings_menu {
                         <?php ob_start(); ?>
                             <label for="show-categories-selection">
                                 <input type="checkbox" <?php checked( !empty($settings['show-categories-selection']) ); ?> name="show-categories-selection" id="show-categories-selection" value="1"/> 
-                                <?php _e( 'A new toolbar will appear on to on the selection screen. Users will be able to filter by templates categories <strong>(Just applicable when theme screenshot or previewer is selected)</strong>.', 'blog_templates'); ?>
+                                <?php _e( 'A new toolbar will appear on to on the selection screen. Users will be able to filter by templates categories.', 'blog_templates'); ?>
                             </label><br/>
                             <?php $this->render_row( __('Show categories menu', 'blog_templates'), ob_get_clean() ); ?>
                         

@@ -98,11 +98,23 @@ function nbt_filter_categories() {
 	$templates = $model->get_templates_by_category( $cat_id );
 
 	$options = nbt_get_settings();
+	$checked = isset( $options['default'] ) ? $options['default'] : '';
+
+	if ( '' === $type ) {
+		echo '<select name="blog_template">';
+		if ( empty( $checked ) ) {
+   			echo '<option value="none">' . __( 'None', 'blog_templates' ) . '</option>';
+   		}
+	}
+
 	foreach( $templates as $tkey => $template ) {
 		nbt_render_theme_selection_item( $type, $template['ID'], $template, $options );
 	}
-	
-	echo '<div style="clear:both"></div>';
+
+	if ( '' === $type )
+		echo '</select>';
+	else
+		echo '<div style="clear:both"></div>';
 
 	die();
 }

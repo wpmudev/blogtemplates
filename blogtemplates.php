@@ -84,7 +84,7 @@ function nbt_render_theme_selection_item( $type, $tkey, $template, $options = ar
 		$default = @$options['default'] == $tkey ? "blog_template-default_item" : "";
 		$blog_url = get_site_url( $template['blog_id'] );
 		?>
-			<div class="theme-previewer-wrap <?php echo $default; ?>" id="theme-previewer-wrap-<?php echo $tkey;?>">
+			<div class="template-signup-item theme-previewer-wrap <?php echo $default; ?>" id="theme-previewer-wrap-<?php echo $tkey;?>">
 				
 				<a href="#<?php echo $tplid; ?>" class="blog_template-item_selector">
 					<img src="<?php echo $img;?>" />
@@ -95,6 +95,12 @@ function nbt_render_theme_selection_item( $type, $tkey, $template, $options = ar
 					<button class="view-demo-button" data-blog-url="<?php echo $blog_url;?>"><?php _e( 'View demo', 'blog_templates' ); ?></button><br/><br/>
 					<button class="select-theme-button" data-theme-key="<?php echo $tkey;?>"><?php echo $options['previewer_button_text']; ?></button>
 				</div>
+				
+				<?php if ( ! empty( $template['description'] ) ): ?>
+					<div class="nbt-desc-pointer">
+						<?php echo nl2br($template['description']); ?>
+					</div>
+				<?php endif; ?>
 			</div>
 		<?php
 	}
@@ -103,11 +109,17 @@ function nbt_render_theme_selection_item( $type, $tkey, $template, $options = ar
 		$tplid = preg_replace('/[^a-z0-9]/i', '', strtolower($template['name'])) . "-{$tkey}";
 		$default = @$options['default'] == $tkey ? "blog_template-default_item" : "";
 		?>
-			<div class="theme-screenshot-wrap <?php echo $default; ?>" id="theme-screenshot-wrap-<?php echo $tkey;?>">
+			<div class="template-signup-item theme-screenshot-wrap <?php echo $default; ?>" id="theme-screenshot-wrap-<?php echo $tkey;?>">
 				<a href="#<?php echo $tplid; ?>" data-theme-key="<?php echo $tkey;?>" class="blog_template-item_selector <?php echo $default; ?>">
 					<img src="<?php echo $img;?>" />
 					<input type="radio" id="blog-template-radio-<?php echo $tkey;?>" <?php checked( ! empty( $default ) ); ?> name="blog_template" value="<?php echo $tkey;?>" style="display: none" />
 				</a>
+				
+				<?php if ( ! empty( $template['description'] ) ): ?>
+					<div class="nbt-desc-pointer">
+						<?php echo nl2br($template['description']); ?>
+					</div>
+				<?php endif; ?>
 			</div>
 		<?php 
 	}
@@ -116,7 +128,7 @@ function nbt_render_theme_selection_item( $type, $tkey, $template, $options = ar
 		$tplid = preg_replace('/[^a-z0-9]/i', '', strtolower($template['name'])) . "-{$tkey}";
 		$default = @$options['default'] == $tkey ? "blog_template-default_item" : "";
 		?>
-			<div class="theme-screenshot-plus-wrap" id="theme-screenshot-plus-wrap-<?php echo $tkey;?>">
+			<div class="template-signup-item theme-screenshot-plus-wrap" id="theme-screenshot-plus-wrap-<?php echo $tkey;?>">
 				<h4><?php echo strip_tags( $template['name'] );?></h4>
 				<div class="theme-screenshot-plus-image-wrap <?php echo $default; ?>" id="theme-screenshot-plus-image-wrap-<?php echo $tkey;?>">
 					<a href="#<?php echo $tplid; ?>" data-theme-key="<?php echo $tkey;?>" class="blog_template-item_selector">
@@ -130,6 +142,26 @@ function nbt_render_theme_selection_item( $type, $tkey, $template, $options = ar
 			</div>
 		<?php
 
+	}
+	elseif ( 'description' === $type ) {
+		$default = @$options['default'] == $tkey ? "blog_template-default_item" : "";
+		?>
+			<div class="template-signup-item theme-radio-wrap" id="theme-screenshot-radio-<?php echo $tkey;?>">
+				<label for="blog_template-<?php echo $tkey; ?>">
+					<input type="radio" id="blog_template-<?php echo $tkey; ?>" name="blog_template" <?php checked( ! empty( $default ) ); ?> value="<?php echo $tkey;?>" />
+					<strong><?php echo strip_tags($template['name']);?></strong>
+				</label>
+				<div class="blog_template-description">
+					<?php echo nl2br( $template['description'] ); ?>
+				</div>
+			</div>
+		<?php
+	}
+	else {
+		$default = @$options['default'] == $tkey ? "blog_template-default_item" : "";
+		?>
+			<option value="<?php echo esc_attr( $tkey );?>" <?php selected( ! empty( $default ) ); ?>><?php echo strip_tags($template['name']);?></option>
+		<?php	
 	}
 }
 
@@ -165,7 +197,44 @@ function nbt_render_theme_selection_scripts( $options ) {
 				max-height:100%;
 				display: block;
 			}
+			.nbt-desc-pointer {
+				display:none;
+				border:1px solid black;
+				background:#FFFFFF;
+				color:#333;
+				padding: 20px;
+				z-index: 100;
+				border: 3px solid #DDD;
+				margin-top: 10px;
+				position:absolute;
+				font-size:12px;
+				min-width:200px;
+			}
 		</style>
+		<script type="text/javascript">
+			jQuery(document).ready(function($) {
+				$('.template-signup-item').hover(
+					function(e) {
+						container = $(this);
+						pointer = $(this).find('.nbt-desc-pointer');
+						setTimeout(function() {
+							var outer_width = container.outerHeight() / 2;
+							var margin_left =  (- 0.5 ) * ( 1 - outer_width );
+							pointer.css({
+								left: outer_width + 'px',
+								'margin-left': '-50%',
+								top: container.outerHeight() / 1.5 + 'px',
+								width: container.outerWidth() / 2 + 'px'
+							});
+				          pointer.stop(true,true).fadeIn()
+				       }, 300);
+					},
+					function(e) {
+						$(this).find('.nbt-desc-pointer').fadeOut();
+					}
+				);
+			});
+		</script>
 	<?php
 	if ( 'previewer' == $type ) {
 		?>
@@ -271,6 +340,23 @@ function nbt_render_theme_selection_scripts( $options ) {
 					});
 				});
 			</script>
+		<?php
+	}
+	elseif ( 'description' === $type ) {
+		?>
+			<style>
+				.theme-radio-wrap {
+					margin-bottom: 25px;
+					border: 1px solid #DEDEDE;
+					border-radius: 5px;
+					background: #EFEFEF;
+					padding: 15px;
+					
+				}
+				.blog_template-description {
+					margin-left:30px;
+				}
+			</style>
 		<?php
 	}
 }

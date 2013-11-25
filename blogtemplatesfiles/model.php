@@ -457,16 +457,16 @@ class blog_templates_model {
 			$current_site_id = ! empty ( $current_site ) ? $current_site->id : 1;
 
 			$where = array();
+			$join = '';
 			$where[] = $wpdb->prepare( 'network_id = %d', $current_site_id );
 
-			if ( $cat_id )
+			if ( $cat_id ) {
 				$where[] = $wpdb->prepare( 'r.cat_id = %d', $cat_id );
+				$join = "INNER JOIN $this->categories_relationships_table r ON t.ID = r.template_id";
+			}
 
 			$where = " WHERE " . implode( " AND ", $where );
-			$query = "SELECT t.* FROM $this->templates_table t
-				INNER JOIN $this->categories_relationships_table r
-				ON t.ID = r.template_id
-				$where";
+			$query = "SELECT t.* FROM $this->templates_table t $join $where";
 
 			$results = $wpdb->get_results( $query, ARRAY_A );
 

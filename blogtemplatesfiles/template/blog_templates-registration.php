@@ -7,14 +7,25 @@
  */
 ?>
 <?php if (defined('BP_VERSION') && 'bp-default' == get_blog_option(bp_get_root_blog_id(), 'stylesheet')) echo '<br style="clear:both" />'; ?>
+<?php $checked = isset( $settings['default'] ) ? $settings['default'] : ''; ?>
 <div id="blog_template-selection">
-	<p class="blog_template-option">
-		<label for="blog_template"><?php _e('Select a template', 'blog_templates') ?></label>
-		<?php
-			// Print templates dropdown selection box.
-			// Pass false as second argument to force a template to be selected.
-			$this->get_template_dropdown( 'blog_template', true, true, false );
-		?>
-	</p>
+	<h3><?php _e('Select a template', 'blog_templates') ?></h3>
+
+	<?php
+		if ( $settings['show-categories-selection'] ) {
+			$toolbar = new blog_templates_theme_selection_toolbar( $settings['registration-templates-appearance'] );
+		    $toolbar->display();
+		}
+    ?>
+
+    <div class="blog_template-option" style="text-align:center;margin-bottom:30px;">
+    	<select name="blog_template">
+    		<?php if ( empty( $checked ) ): ?>
+    			<option value="none"><?php _e( 'None', 'blog_templates' ); ?></option>
+    		<?php endif; ?>
+			<?php foreach ($templates as $tkey => $template) {
+				nbt_render_theme_selection_item( '', $tkey, $template, $settings );
+			} ?>
+		</select>
+	</div>
 </div>
-<div style="clear:both"></div>
