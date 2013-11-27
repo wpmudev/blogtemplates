@@ -5,6 +5,16 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+2.2.3 - 2013-11-27
+----------------------------------------------------------------------
+- New feature: Categories selector are now displayed for dropdown or radio templates selectors.
+- New feature: Added description popup on screenshot/previewer selection
+- Fixing fatal error when uploads folder is not correctly Created
+- Popover integration added.
+- Fixed posts blocker. Was failing in very singular cases.
+- Fixed incompatibility with Appointment+
+- Other minor fixes
+
 2.2.2 - 2013-11-02
 ----------------------------------------------------------------------
 - Fixed: When Super Admin edits/creates a new post, this was getting blocked for the resto of the users

@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/new-blog-template
 Description: Allows the site admin to create new blogs based on templates, to speed up the blog creation process
 Author: Jason DeVelvis, Ulrich Sossou (Incsub), Ignacio Cruz (Incsub)
 Author URI: http://premium.wpmudev.org/
-Version: 2.2.2
+Version: 2.2.3
 Network: true
 Text Domain: blog_templates
 WDP ID: 130
@@ -28,7 +28,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-define( 'NBT_PLUGIN_VERSION', '2.2.2' );
+define( 'NBT_PLUGIN_VERSION', '2.2.3' );
 if ( ! is_multisite() )
 	exit( __( 'The New Blog Template plugin is only compatible with WordPress Multisite.', 'blog_templates' ) );
 
@@ -88,7 +88,7 @@ function nbt_render_theme_selection_item( $type, $tkey, $template, $options = ar
 		$default = @$options['default'] == $tkey ? "blog_template-default_item" : "";
 		$blog_url = get_site_url( $template['blog_id'] );
 		?>
-			<div class="template-signup-item theme-previewer-wrap <?php echo $default; ?>" id="theme-previewer-wrap-<?php echo $tkey;?>">
+			<div class="template-signup-item theme-previewer-wrap <?php echo $default; ?>" data-tkey="<?php echo $tkey; ?>" id="theme-previewer-wrap-<?php echo $tkey;?>">
 				
 				<a href="#<?php echo $tplid; ?>" class="blog_template-item_selector">
 					<img src="<?php echo $img;?>" />
@@ -101,7 +101,7 @@ function nbt_render_theme_selection_item( $type, $tkey, $template, $options = ar
 				</div>
 				
 				<?php if ( ! empty( $template['description'] ) ): ?>
-					<div class="nbt-desc-pointer">
+					<div id="nbt-desc-pointer-<?php echo $tkey; ?>" class="nbt-desc-pointer">
 						<?php echo nl2br($template['description']); ?>
 					</div>
 				<?php endif; ?>
@@ -113,14 +113,14 @@ function nbt_render_theme_selection_item( $type, $tkey, $template, $options = ar
 		$tplid = preg_replace('/[^a-z0-9]/i', '', strtolower($template['name'])) . "-{$tkey}";
 		$default = @$options['default'] == $tkey ? "blog_template-default_item" : "";
 		?>
-			<div class="template-signup-item theme-screenshot-wrap <?php echo $default; ?>" id="theme-screenshot-wrap-<?php echo $tkey;?>">
+			<div class="template-signup-item theme-screenshot-wrap <?php echo $default; ?>" data-tkey="<?php echo $tkey; ?>" id="theme-screenshot-wrap-<?php echo $tkey;?>">
 				<a href="#<?php echo $tplid; ?>" data-theme-key="<?php echo $tkey;?>" class="blog_template-item_selector <?php echo $default; ?>">
 					<img src="<?php echo $img;?>" />
 					<input type="radio" id="blog-template-radio-<?php echo $tkey;?>" <?php checked( ! empty( $default ) ); ?> name="blog_template" value="<?php echo $tkey;?>" style="display: none" />
 				</a>
 				
 				<?php if ( ! empty( $template['description'] ) ): ?>
-					<div class="nbt-desc-pointer">
+					<div id="nbt-desc-pointer-<?php echo $tkey; ?>" class="nbt-desc-pointer">
 						<?php echo nl2br($template['description']); ?>
 					</div>
 				<?php endif; ?>
@@ -203,7 +203,6 @@ function nbt_render_theme_selection_scripts( $options ) {
 			}
 			.nbt-desc-pointer {
 				display:none;
-				border:1px solid black;
 				background:#FFFFFF;
 				color:#333;
 				padding: 20px;
@@ -214,27 +213,41 @@ function nbt_render_theme_selection_scripts( $options ) {
 				font-size:12px;
 				min-width:200px;
 			}
+			.nbt-desc-pointer:after {
+				border-bottom:10px solid #DDD;
+    			border-left:10px solid transparent;
+			    border-right:10px solid transparent;
+			    width:0;
+			    height:0;
+			    
+			    content:"";
+			    display:block;
+			    position:absolute;
+			    bottom:100%;
+			    left:1em;
+			}
 		</style>
 		<script type="text/javascript">
 			jQuery(document).ready(function($) {
+				$('.nbt-desc-pointer').appendTo($('body'));
 				$('.template-signup-item').hover(
 					function(e) {
 						container = $(this);
-						pointer = $(this).find('.nbt-desc-pointer');
+						var tkey = container.data('tkey');
+						pointer = $('#nbt-desc-pointer-'+tkey);
 						setTimeout(function() {
-							var outer_width = container.outerHeight() / 2;
-							var margin_left =  (- 0.5 ) * ( 1 - outer_width );
+							var margin_top = e.pageY;
+							var margin_left = e.pageX;
 							pointer.css({
-								left: outer_width + 'px',
-								'margin-left': '-50%',
-								top: container.outerHeight() / 1.5 + 'px',
+								left: margin_left + 'px',
+								top: margin_top + 15,
 								width: container.outerWidth() / 2 + 'px'
-							});
-				          pointer.stop(true,true).fadeIn()
+							}).stop(true,true).fadeIn()
 				       }, 300);
 					},
 					function(e) {
-						$(this).find('.nbt-desc-pointer').fadeOut();
+						var tkey = container.data('tkey');
+						pointer = $('#nbt-desc-pointer-'+tkey).fadeOut();
 					}
 				);
 			});

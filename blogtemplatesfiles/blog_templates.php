@@ -46,6 +46,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
         *
         * @since 1.0
         */
+        
         function __construct() {
             global $wp_version;
 
