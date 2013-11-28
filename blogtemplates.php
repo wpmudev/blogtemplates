@@ -57,7 +57,7 @@ if ( is_network_admin() ) {
 
 global $wpmudev_notices;
 $wpmudev_notices[] = array( 'id'=> 130,'name'=> 'New Blog Templates', 'screens' => array( 'toplevel_page_blog_templates_main-network', 'blog-templates_page_blog_templates_categories-network', 'blog-templates_page_blog_templates_settings-network' ) );
-include_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/dash-notice/wpmudev-dash-notification.php' );
+include_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/externals/wpmudev-dash-notification.php' );
 
 /**
  * Load the plugin text domain and MO files
