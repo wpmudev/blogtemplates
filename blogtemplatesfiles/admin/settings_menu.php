@@ -94,6 +94,19 @@ class blog_templates_settings_menu {
                             <input type="radio" <?php checked( 'previewer' == $appearance_template ); ?> name="registration-templates-appearance" id="registration-templates-appearance-previewer" value="previewer" />
                             <?php _e('As a theme previewer', 'blog_templates'); ?>
                         </label><br/>
+                        <label for="registration-templates-appearance-previewer">
+                            <input type="radio" <?php checked( 'page_showcase' == $appearance_template ); ?> name="registration-templates-appearance" id="registration-templates-appearance-page-showcase" value="page_showcase" />
+                            <?php _e('As a showcase inside a page', 'blog_templates'); ?>
+                        </label>
+                        <?php 
+                            wp_dropdown_pages( array( 
+                                'selected' => $settings['page-showcase-id'],
+                                'name' => 'page-showcase-id',
+                                'show_option_none' => 'true',
+                                'option_none_value' => ''
+                            ) ); 
+                        ?>
+
                         <div id="previewer-button-text">
                             <label style="margin-left:20px;margin-top:20px;display:block;" for="registration-templates-appearance-previewer-button-text">
                                 <?php _e( '"Select this Theme" button text', 'blog_templates'); ?>
@@ -223,7 +236,15 @@ class blog_templates_settings_menu {
 
                 $defaults = nbt_get_default_settings();
                 $settings['show-registration-templates'] = isset($_POST['show-registration-templates']) ? (int)$_POST['show-registration-templates'] : 0;
-                $settings['registration-templates-appearance'] = isset($_POST['registration-templates-appearance']) ? $_POST['registration-templates-appearance'] : '';
+                $appearance = isset($_POST['registration-templates-appearance']) ? $_POST['registration-templates-appearance'] : '';
+                if ( 'page_showcase' == $appearance && ! empty( $_POST['page-showcase-id'] ) && $page = get_post( absint( $_POST['page-showcase-id'] ) ) ) {
+
+                    $settings['registration-templates-appearance'] = $appearance;
+                    $settings['page-showcase-id'] = $page->ID;
+                }
+                elseif ( 'page-showcase' !== $appearance ) {
+                    $settings['registration-templates-appearance'] = $appearance;
+                }
                 $settings['show-categories-selection'] = isset($_POST['show-categories-selection']) ? $_POST['show-categories-selection'] : 0;
                 $settings['toolbar-color'] = isset($_POST['toolbar-color']) ? $_POST['toolbar-color'] : $defaults['toolbar-color'];
                 $settings['toolbar-text-color'] = isset($_POST['toolbar-text-color']) ? $_POST['toolbar-text-color'] : $defaults['toolbar-text-color'];

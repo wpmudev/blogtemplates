@@ -83,6 +83,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             add_action( 'blogs_directory_blogs_list', array($this, 'blogs_directory_blogs_list' ) );
             
             // Signup: WordPress            
+            add_action( 'signup_hidden_fields', array( &$this, 'maybe_add_template_hidden_field' ) );
             add_action('signup_blogform', array($this, 'registration_template_selection'));
             add_filter('add_signup_meta', array($this, 'registration_template_selection_add_meta'));
 
@@ -98,7 +99,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
             add_action( 'all_admin_notices', array( &$this, 'alert_main_site_templated' ) );
 
             add_action( 'delete_blog', array( &$this, 'maybe_delete_template' ), 10, 1 );
-
 
         }
 
@@ -456,6 +456,28 @@ if ( ! class_exists( 'blog_templates' ) ) {
         }
 
         
+        function maybe_add_template_hidden_field() {
+            $settings = nbt_get_settings();
+            if ( 'page_showcase' == $settings['registration-templates-appearance'] ) {
+                if ( 'just_user' == $_REQUEST['blog_template'] ) {
+                    ?>
+                        <script>
+                            jQuery(document).ready(function($) {
+                                $('#signupuser').attr('checked', true);
+                                $('#signupblog').hide();
+                                $('label[for="signupblog"]').hide();
+                            });
+                        </script>
+                    <?php
+                }
+                else {
+                    ?>
+                        <input type="text" name="blog_template" value="<?php echo absint( $_REQUEST['blog_template'] ); ?>">
+                    <?php
+                }
+                return;
+            }
+        }
         /**
          * Shows template selection on registration.
          */
@@ -464,6 +486,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             if ( ! $settings['show-registration-templates'] ) 
                 return false;
+
 
             // Setup vars
             $templates = $settings['templates'];

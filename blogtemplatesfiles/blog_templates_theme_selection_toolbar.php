@@ -77,6 +77,9 @@ class blog_templates_theme_selection_toolbar {
 			#toolbar-loader {
 				text-align:center;
 				padding: 50px 0;
+				max-width:100%;
+				width:50px;
+				margin:0 auto;
 			}
 		</style>
 		<?php

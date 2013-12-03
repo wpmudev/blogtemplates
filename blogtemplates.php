@@ -36,28 +36,28 @@ define( 'NBT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'NBT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'NBT_PLUGIN_LANG_DOMAIN', 'blog_templates' );
 
-require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/helpers.php' );
-require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/filters.php' );
-require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/model.php' );
-require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/upgrade.php' );
-require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/blog_templates_theme_selection_toolbar.php' );
-require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/admin/main_menu.php' );
-require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/admin/categories_menu.php' );
-require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/admin/settings_menu.php' );
-require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/blog_templates.php' );
-require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/blog_templates_lock_posts.php' );
-require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/integration.php' );
-require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/settings-handler.php' );
+require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/helpers.php' );
+require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/filters.php' );
+require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/model.php' );
+require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/upgrade.php' );
+require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/blog_templates_theme_selection_toolbar.php' );
+require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/admin/main_menu.php' );
+require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/admin/categories_menu.php' );
+require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/admin/settings_menu.php' );
+require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/blog_templates.php' );
+require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/blog_templates_lock_posts.php' );
+require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/integration.php' );
+require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/settings-handler.php' );
 
 
 if ( is_network_admin() ) {
-	require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/tables/templates_table.php' );
-	require_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/tables/categories_table.php' );
+	require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/tables/templates_table.php' );
+	require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/tables/categories_table.php' );
 }
 
 global $wpmudev_notices;
 $wpmudev_notices[] = array( 'id'=> 130,'name'=> 'New Blog Templates', 'screens' => array( 'toplevel_page_blog_templates_main-network', 'blog-templates_page_blog_templates_categories-network', 'blog-templates_page_blog_templates_settings-network' ) );
-include_once( NBT_PLUGIN_DIR . '/blogtemplatesfiles/externals/wpmudev-dash-notification.php' );
+include_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/externals/wpmudev-dash-notification.php' );
 
 /**
  * Load the plugin text domain and MO files
@@ -81,6 +81,68 @@ function nbt_get_default_screenshot_url( $blog_id ) {
 	return $img;
 }
 
+function nbt_display_page_showcase( $content ) {
+	if ( is_page() ) {
+		$settings = nbt_get_settings();
+		if ( 'page_showcase' == $settings['registration-templates-appearance'] && is_page( $settings['page-showcase-id'] ) ) {
+			
+            $tpl_file = "blog_templates-registration-page-showcase.php";
+            $templates = $settings['templates'];
+
+            // Setup theme file
+            ob_start();
+            $theme_file = locate_template( array( $tpl_file ) );
+            $theme_file = $theme_file ? $theme_file : NBT_PLUGIN_DIR . '/blogtemplatesfiles/template/' . $tpl_file;
+            if ( ! file_exists( $theme_file ) ) 
+                return false;
+
+            nbt_render_theme_selection_scripts( $settings );
+
+            
+            @include $theme_file;
+			
+			$content .= ob_get_clean();
+			
+		}
+	}
+
+	return $content;
+}
+add_filter( 'the_content', 'nbt_display_page_showcase' );
+
+function nbt_redirect_signup() {
+	global $pagenow;
+
+	if ( 'wp-signup.php' == $pagenow ) {
+		$settings = nbt_get_settings();
+
+		if ( 'page_showcase' !== $settings['registration-templates-appearance'] )
+			return false;
+
+		$redirect_to = get_permalink( $settings['page-showcase-id'] );
+		if ( ! $redirect_to )
+			return false;
+
+		if ( empty( $_REQUEST['blog_template'] ) ) {
+			wp_redirect( $redirect_to );
+			exit();
+		}
+
+		if ( 'just_user' == $_REQUEST['blog_template'] )
+			return false;
+		
+		$model = nbt_get_model();
+		$template = $model->get_template( absint( $_REQUEST['blog_template'] ) );
+
+		if ( ! $template ) {
+			wp_redirect( $redirect_to );
+			exit();
+		}
+
+	}
+}
+add_action( 'init', 'nbt_redirect_signup' );
+
 function nbt_render_theme_selection_item( $type, $tkey, $template, $options = array() ) {
 	if ( 'previewer' == $type ) {
 		$img = ( ! empty( $template['screenshot'] ) ) ? $template['screenshot'] : nbt_get_default_screenshot_url( $template['blog_id'] );
@@ -98,6 +160,35 @@ function nbt_render_theme_selection_item( $type, $tkey, $template, $options = ar
 					<div class="template-name"><?php echo $tplid; ?></div><br/>
 					<button class="view-demo-button" data-blog-url="<?php echo $blog_url;?>"><?php _e( 'View demo', 'blog_templates' ); ?></button><br/><br/>
 					<button class="select-theme-button" data-theme-key="<?php echo $tkey;?>"><?php echo $options['previewer_button_text']; ?></button>
+				</div>
+				
+				<?php if ( ! empty( $template['description'] ) ): ?>
+					<div id="nbt-desc-pointer-<?php echo $tkey; ?>" class="nbt-desc-pointer">
+						<?php echo nl2br($template['description']); ?>
+					</div>
+				<?php endif; ?>
+			</div>
+		<?php
+	}
+	elseif ( 'page-showcase' == $type ) {
+		$img = ( ! empty( $template['screenshot'] ) ) ? $template['screenshot'] : nbt_get_default_screenshot_url( $template['blog_id'] );
+		$tplid = $template['name'];
+		$default = @$options['default'] == $tkey ? "blog_template-default_item" : "";
+		$blog_url = get_site_url( $template['blog_id'] );
+
+		$sign_up_url = network_site_url( 'wp-signup.php' );
+		$sign_up_url = apply_filters( 'wp_signup_location', $sign_up_url );
+		$sign_up_url = add_query_arg( 'blog_template', $tkey, $sign_up_url );
+		?>
+			<div class="template-signup-item theme-page-showcase-wrap <?php echo $default; ?>" data-tkey="<?php echo $tkey; ?>" id="theme-page-showcase-wrap-<?php echo $tkey;?>">
+				
+				<a href="#<?php echo $tplid; ?>" class="blog_template-item_selector">
+					<img src="<?php echo $img;?>" />
+				</a>
+				<div class="theme-page-showcase-overlay">
+					<div class="template-name"><?php echo $tplid; ?></div><br/>
+					<button class="view-demo-button" data-blog-url="<?php echo $blog_url;?>"><?php _e( 'View demo', 'blog_templates' ); ?></button><br/><br/>
+					<button class="select-theme-button" data-signup-url="<?php echo esc_url( $sign_up_url );?>"><?php echo $options['previewer_button_text']; ?></button>
 				</div>
 				
 				<?php if ( ! empty( $template['description'] ) ): ?>
@@ -177,6 +268,7 @@ function nbt_render_theme_selection_scripts( $options ) {
 	?>
 		<style>
 			.theme-previewer-wrap,
+			.theme-page-showcase-wrap,
 			.theme-screenshot-wrap {
 				width:45%;
 				float:left;
@@ -192,6 +284,7 @@ function nbt_render_theme_selection_scripts( $options ) {
 				background:<?php echo $selected_color; ?> !important;
 			}
 			.theme-previewer-wrap:nth-child(even),
+			.theme-page-showcase-wrap:nth-child(even),
 			.theme-screenshot-wrap:nth-child(even),
 			.theme-screenshot-plus-wrap:nth-child(even) {
 				margin-right:0px;
@@ -229,25 +322,31 @@ function nbt_render_theme_selection_scripts( $options ) {
 		</style>
 		<script type="text/javascript">
 			jQuery(document).ready(function($) {
+				var position_top = 0;
+				var position_left = 0;
 				$('.nbt-desc-pointer').appendTo($('body'));
+				$(document).mousemove(function(e) {
+					position_top = e.pageY;
+					position_left = e.pageX;
+				});
 				$('.template-signup-item').hover(
 					function(e) {
 						container = $(this);
 						var tkey = container.data('tkey');
-						pointer = $('#nbt-desc-pointer-'+tkey);
+						pointer = $( '#nbt-desc-pointer-' + tkey );
 						setTimeout(function() {
-							var margin_top = e.pageY;
-							var margin_left = e.pageX;
+							var margin_top = position_top;
+							var margin_left = position_left;
 							pointer.css({
-								left: margin_left + 'px',
-								top: margin_top + 15,
+								left: margin_left - 15 + 'px',
+								top: margin_top + 25,
 								width: container.outerWidth() / 2 + 'px'
 							}).stop(true,true).fadeIn()
-				       }, 300);
+				       }, 500);
 					},
 					function(e) {
 						var tkey = container.data('tkey');
-						pointer = $('#nbt-desc-pointer-'+tkey).fadeOut();
+						pointer = $('#nbt-desc-pointer-'+tkey).stop().fadeOut();
 					}
 				);
 			});
@@ -299,6 +398,57 @@ function nbt_render_theme_selection_scripts( $options ) {
 
 					$('input[name=blog_template]').attr('checked',false);
 					$('#blog-template-radio-' + theme_key).attr('checked',true);
+				});
+				$(document).on('click', '.view-demo-button', function(e) {
+					e.preventDefault();
+					window.open($(this).data('blog-url'));
+				});
+			});
+			</script>
+		<?php
+	}
+	elseif ( 'page_showcase' == $type ) {
+
+		?>
+			<style>				
+				.theme-page-showcase-wrap:hover img {
+					opacity:0.5;
+				}
+				.theme-page-showcase-wrap:hover .theme-page-showcase-overlay {
+					display:block;
+					
+				}			
+				.theme-page-showcase-overlay {
+					display:none;
+					position:absolute;
+					top:50%;
+					opacity:1;
+					width:100%;
+					margin-top:-25%;
+					box-sizing:border-box;
+					white-space: nowrap;
+					text-align: center;
+				}
+				.view-demo-button {
+					font-size:90%;
+				}
+				.select-theme-button {
+					font-size:100%;
+					font-weight:bold;
+				}
+				.template-name {
+					display:inline-block;
+					font-size:100%;
+					color:white;
+					text-shadow:1px 1px 1px black;
+				}
+			</style>
+			<script type="text/javascript">
+			jQuery(document).ready(function($) {
+				$(document).on( 'click', '.view-demo-button, .select-theme-button', function(e) {
+					e.preventDefault();
+					var signup_url = $(this).data('signup-url')
+					location.href = signup_url;
 				});
 				$(document).on('click', '.view-demo-button', function(e) {
 					e.preventDefault();

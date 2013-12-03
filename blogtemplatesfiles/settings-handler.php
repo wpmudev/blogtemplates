@@ -21,6 +21,7 @@ class NBT_Plugin_Settings_Handler {
     		'templates' => array(),
     		'show-registration-templates' => false,
     		'registration-templates-appearance' => '',
+    		'page-showcase-id' => false,
     		'default' => '',
     		'previewer_button_text' => __( 'Select this theme', 'blog_templates' ),
             'show-categories-selection' => false,
