@@ -461,6 +461,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             if ( 'page_showcase' == $settings['registration-templates-appearance'] ) {
                 if ( 'just_user' == $_REQUEST['blog_template'] ) {
                     ?>
+                        <input type="text" name="blog_template" value="just_user">
                         <script>
                             jQuery(document).ready(function($) {
                                 $('#signupuser').attr('checked', true);

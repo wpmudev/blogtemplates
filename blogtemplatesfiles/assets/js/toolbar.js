@@ -27,6 +27,7 @@ jQuery(document).ready(function($) {
 				the_content.html('<div id="toolbar-loader"><img id="toolbar-loader-image" src="' + export_to_text_js.imagesurl + 'ajax-loader.gif" /></div>');
 			}
 		}).done(function( data ) {
+			console.log(data);
 			the_content.html(data);
 		});
 	})

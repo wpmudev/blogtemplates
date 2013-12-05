@@ -94,7 +94,7 @@ class blog_templates_settings_menu {
                             <input type="radio" <?php checked( 'previewer' == $appearance_template ); ?> name="registration-templates-appearance" id="registration-templates-appearance-previewer" value="previewer" />
                             <?php _e('As a theme previewer', 'blog_templates'); ?>
                         </label><br/>
-                        <label for="registration-templates-appearance-previewer">
+                        <label for="registration-templates-appearance-page-showcase">
                             <input type="radio" <?php checked( 'page_showcase' == $appearance_template ); ?> name="registration-templates-appearance" id="registration-templates-appearance-page-showcase" value="page_showcase" />
                             <?php _e('As a showcase inside a page', 'blog_templates'); ?>
                         </label>
@@ -107,14 +107,25 @@ class blog_templates_settings_menu {
                             ) ); 
                         ?>
 
-                        <div id="previewer-button-text">
-                            <label style="margin-left:20px;margin-top:20px;display:block;" for="registration-templates-appearance-previewer-button-text">
+                        <div class="previewer-hidden-fields page_showcase-hidden-fields selection-type-hidden-fields">
+                            <label style="margin-left:20px;margin-top:20px;display:block;" for="registration-templates-appearance-button-text">
                                 <?php _e( '"Select this Theme" button text', 'blog_templates'); ?>
-                                <input type="text" name="registration-templates-button-text" id="registration-templates-appearance-previewer-button-text" value="<?php echo $settings['previewer_button_text']; ?>" />
+                                <input type="text" name="registration-templates-button-text" id="registration-templates-appearance-button-text" value="<?php echo $settings['previewer_button_text']; ?>" />
                             </label>
                         </div>
 
-                        <div id="screenshot-selection-styles">
+                        <div class="page_showcase-hidden-fields selection-type-hidden-fields">
+                            <label style="margin-left:20px;margin-top:20px;display:block;" for="registration-templates-screenshots-width">
+                                <?php _e( 'Screenshots width', 'blog_templates'); ?>
+                                <input type="text" name="registration-screenshots-width" id="registration-templates-screenshots-width" value="<?php echo $settings['screenshots_width']; ?>" class="small-text" /> px
+                            </label>
+                            <label style="margin-left:20px;margin-top:20px;display:block;">
+                                <?php _e( 'Selected overlay/border color', 'blog_templates'); ?><br/>
+                                <input type="text" class="color-field" id="selected-overlay-color" name="selected-overlay-color" value="<?php echo $settings['overlay_color']; ?>" />
+                            </label>
+                        </div>
+
+                        <div class="screenshot-hidden-fields screenshot_plus-hidden-fields selection-type-hidden-fields">
                             <label style="margin-left:20px;margin-top:20px;display:block;">
                                 <?php _e( 'Unselected background color screenshot', 'blog_templates'); ?><br/>
                                 <input type="text" class="color-field" id="selected-background-color" name="unselected-background-color" value="<?php echo $settings['unselected-background-color']; ?>" />
@@ -251,9 +262,13 @@ class blog_templates_settings_menu {
                 $settings['toolbar-border-color'] = isset($_POST['toolbar-border-color']) ? $_POST['toolbar-border-color'] : $defaults['toolbar-border-color'];
                 $settings['selected-background-color'] = isset($_POST['selected-background-color']) ? $_POST['selected-background-color'] : $defaults['selected-background-color'];
                 $settings['unselected-background-color'] = isset($_POST['unselected-background-color']) ? $_POST['unselected-background-color'] : $defaults['unselected-background-color'];
+                $settings['overlay_color'] = isset($_POST['selected-overlay-color']) ? $_POST['selected-overlay-color'] : $defaults['overlay_color'];
 
                 if ( ! empty( $_POST['registration-templates-button-text'] ) )
 					$settings['previewer_button_text'] = sanitize_text_field( $_POST['registration-templates-button-text'] );
+
+                if ( ! empty( $_POST['registration-screenshots-width'] ) )
+                    $settings['screenshots_width'] = absint( $_POST['registration-screenshots-width'] );
 
                 nbt_update_settings( $settings );
 

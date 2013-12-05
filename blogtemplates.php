@@ -123,16 +123,22 @@ function nbt_redirect_signup() {
 		if ( ! $redirect_to )
 			return false;
 
-		if ( empty( $_REQUEST['blog_template'] ) ) {
+		if ( isset( $_REQUEST['blog_template'] ) && 'just_user' == $_REQUEST['blog_template'] )
+			return false;
+
+		$model = nbt_get_model();
+		$default_template_id = $model->get_default_template_id();
+
+		if ( empty( $_REQUEST['blog_template'] ) && ! $default_template_id ) {
 			wp_redirect( $redirect_to );
 			exit();
 		}
 
-		if ( 'just_user' == $_REQUEST['blog_template'] )
-			return false;
+		$_REQUEST['blog_template'] = ! empty( $_REQUEST['blog_template'] ) ? absint( $_REQUEST['blog_template'] ) : $default_template_id;
+
 		
 		$model = nbt_get_model();
-		$template = $model->get_template( absint( $_REQUEST['blog_template'] ) );
+		$template = $model->get_template( $_REQUEST['blog_template'] );
 
 		if ( ! $template ) {
 			wp_redirect( $redirect_to );
@@ -170,7 +176,7 @@ function nbt_render_theme_selection_item( $type, $tkey, $template, $options = ar
 			</div>
 		<?php
 	}
-	elseif ( 'page-showcase' == $type ) {
+	elseif ( 'page-showcase' == $type || 'page_showcase' == $type ) {
 		$img = ( ! empty( $template['screenshot'] ) ) ? $template['screenshot'] : nbt_get_default_screenshot_url( $template['blog_id'] );
 		$tplid = $template['name'];
 		$default = @$options['default'] == $tkey ? "blog_template-default_item" : "";
@@ -264,6 +270,8 @@ function nbt_render_theme_selection_scripts( $options ) {
 	$type = $options['registration-templates-appearance'];
 	$selected_color = $options['selected-background-color'];
 	$unselected_color = $options['unselected-background-color'];
+	$overlay_color = $options['overlay_color'];
+	$screenshots_width = $options['screenshots_width'];
 
 	?>
 		<style>
@@ -272,7 +280,7 @@ function nbt_render_theme_selection_scripts( $options ) {
 			.theme-screenshot-wrap {
 				width:45%;
 				float:left;
-				margin-right: 4%;
+				margin-right: 13px;
 				margin-bottom:25px;
 				box-sizing:border-box;
 				position:relative;
@@ -293,6 +301,7 @@ function nbt_render_theme_selection_scripts( $options ) {
 				max-width:100%;
 				max-height:100%;
 				display: block;
+				border-radius:0px;
 			}
 			.nbt-desc-pointer {
 				display:none;
@@ -324,6 +333,7 @@ function nbt_render_theme_selection_scripts( $options ) {
 			jQuery(document).ready(function($) {
 				var position_top = 0;
 				var position_left = 0;
+				var hovering_out = true;
 				$('.nbt-desc-pointer').appendTo($('body'));
 				$(document).mousemove(function(e) {
 					position_top = e.pageY;
@@ -331,10 +341,13 @@ function nbt_render_theme_selection_scripts( $options ) {
 				});
 				$('.template-signup-item').hover(
 					function(e) {
+						hovering_out = false;
 						container = $(this);
 						var tkey = container.data('tkey');
 						pointer = $( '#nbt-desc-pointer-' + tkey );
 						setTimeout(function() {
+							if ( hovering_out )
+								return;
 							var margin_top = position_top;
 							var margin_left = position_left;
 							pointer.css({
@@ -342,9 +355,10 @@ function nbt_render_theme_selection_scripts( $options ) {
 								top: margin_top + 25,
 								width: container.outerWidth() / 2 + 'px'
 							}).stop(true,true).fadeIn()
-				       }, 500);
+				       }, 200);
 					},
 					function(e) {
+						hovering_out = true;
 						var tkey = container.data('tkey');
 						pointer = $('#nbt-desc-pointer-'+tkey).stop().fadeOut();
 					}
@@ -360,7 +374,6 @@ function nbt_render_theme_selection_scripts( $options ) {
 				}
 				.theme-previewer-wrap:hover .theme-previewer-overlay {
 					display:block;
-					
 				}			
 				.theme-previewer-overlay {
 					display:none;
@@ -410,13 +423,17 @@ function nbt_render_theme_selection_scripts( $options ) {
 	elseif ( 'page_showcase' == $type ) {
 
 		?>
-			<style>				
+			<style>
+				.theme-page-showcase-wrap {
+					background:<?php echo $overlay_color; ?>;
+					width:<?php echo $screenshots_width; ?>px;
+					padding:2px;
+				}
 				.theme-page-showcase-wrap:hover img {
 					opacity:0.5;
 				}
 				.theme-page-showcase-wrap:hover .theme-page-showcase-overlay {
 					display:block;
-					
 				}			
 				.theme-page-showcase-overlay {
 					display:none;
@@ -445,7 +462,7 @@ function nbt_render_theme_selection_scripts( $options ) {
 			</style>
 			<script type="text/javascript">
 			jQuery(document).ready(function($) {
-				$(document).on( 'click', '.view-demo-button, .select-theme-button', function(e) {
+				$(document).on( 'click', '.select-theme-button', function(e) {
 					e.preventDefault();
 					var signup_url = $(this).data('signup-url')
 					location.href = signup_url;

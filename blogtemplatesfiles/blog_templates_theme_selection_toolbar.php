@@ -110,6 +110,7 @@ function nbt_filter_categories() {
    		}
 	}
 
+
 	foreach( $templates as $tkey => $template ) {
 		nbt_render_theme_selection_item( $type, $template['ID'], $template, $options );
 	}

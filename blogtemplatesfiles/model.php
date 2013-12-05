@@ -254,6 +254,17 @@ class blog_templates_model {
 			return $template;
 		}
 
+		public function get_default_template_id() {
+			global $wpdb;
+
+			$default_template_id = $wpdb->get_var( "SELECT ID FROM $this->templates_table WHERE is_default = 1" );
+
+			if ( empty( $default_template_id ) )
+				return false;
+
+			return $default_template_id;
+		}
+
 		public function get_templates() {
 			global $wpdb, $current_site;
 
@@ -470,7 +481,7 @@ class blog_templates_model {
 
 			$where = " WHERE " . implode( " AND ", $where );
 			$query = "SELECT t.* FROM $this->templates_table t $join $where";
-
+			
 			$results = $wpdb->get_results( $query, ARRAY_A );
 
 			if ( ! empty( $results ) ) {
