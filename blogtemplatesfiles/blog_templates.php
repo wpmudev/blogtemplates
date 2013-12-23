@@ -473,7 +473,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 }
                 else {
                     ?>
-                        <input type="text" name="blog_template" value="<?php echo absint( $_REQUEST['blog_template'] ); ?>">
+                        <input type="hidden" name="blog_template" value="<?php echo absint( $_REQUEST['blog_template'] ); ?>">
                     <?php
                 }
                 return;

@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/new-blog-template
 Description: Allows the site admin to create new blogs based on templates, to speed up the blog creation process
 Author: Jason DeVelvis, Ulrich Sossou (Incsub), Ignacio Cruz (Incsub)
 Author URI: http://premium.wpmudev.org/
-Version: 2.2.4
+Version: 2.5
 Network: true
 Text Domain: blog_templates
 WDP ID: 130
@@ -28,7 +28,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-define( 'NBT_PLUGIN_VERSION', '2.2.4' );
+define( 'NBT_PLUGIN_VERSION', '2.5' );
 if ( ! is_multisite() )
 	exit( __( 'The New Blog Template plugin is only compatible with WordPress Multisite.', 'blog_templates' ) );
 
@@ -53,11 +53,12 @@ require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/settings-handler.php' );
 if ( is_network_admin() ) {
 	require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/tables/templates_table.php' );
 	require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/tables/categories_table.php' );
+	global $wpmudev_notices;
+	$wpmudev_notices[] = array( 'id'=> 130,'name'=> 'New Blog Templates', 'screens' => array( 'toplevel_page_blog_templates_main-network', 'blog-templates_page_blog_templates_categories-network', 'blog-templates_page_blog_templates_settings-network' ) );
+	include_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/externals/wpmudev-dash-notification.php' );
 }
 
-global $wpmudev_notices;
-$wpmudev_notices[] = array( 'id'=> 130,'name'=> 'New Blog Templates', 'screens' => array( 'toplevel_page_blog_templates_main-network', 'blog-templates_page_blog_templates_categories-network', 'blog-templates_page_blog_templates_settings-network' ) );
-include_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/externals/wpmudev-dash-notification.php' );
+
 
 /**
  * Load the plugin text domain and MO files
