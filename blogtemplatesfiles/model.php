@@ -203,6 +203,23 @@ class blog_templates_model {
 			return $wpdb->insert_id;
 		}
 
+		/**
+		 * Check if a blog is a template or not
+		 * 
+		 * @param Integer $blog_id Blog ID to check
+		 * @return Boolean
+		 */
+		public function is_template( $blog_id ) {
+			global $wpdb;
+
+			$result = $wpdb->get_row( $wpdb->prepare( "SELECT blog_id FROM $this->templates_table WHERE blog_id = %d", $blog_id ) );
+
+			if ( ! empty( $result ) )
+				return true;
+
+			return false;
+		}
+
 		public function update_template( $id, $args ) {
 			global $wpdb;
 

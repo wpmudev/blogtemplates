@@ -5,34 +5,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
     class blog_templates {
 
         /**
-        * @var string $pluginurl The path to this plugin
-        *
-        * @since 1.0
-        */
-        var $thispluginurl = '';
-
-        /**
-        * @var string $pluginurlpath The path to this plugin
-        *
-        * @since 1.0
-        */
-        var $thispluginpath = '';
-
-        /**
-        * @var string $currenturl_with_querystring Complete current URL
-        *
-        * @since 1.0
-        */
-        var $currenturl_with_querystring;
-
-        /**
-        * @var array $options Stores the options for this plugin
-        *
-        * @since 1.0
-        */
-        var $options = array();
-
-        /**
         * PHP 4 Compatible Constructor
         *
         * @since 1.0
@@ -48,7 +20,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
         */
         
         function __construct() {
-            global $wp_version;
 
             if ( is_network_admin() ) {
                 new blog_templates_main_menu();
@@ -63,8 +34,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
             }
 
             add_action( 'init', array( &$this, 'maybe_upgrade' ) );
-
-            $this->currenturl_with_querystring = is_ssl() ? 'https://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] : 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
 
 
             // Actions
