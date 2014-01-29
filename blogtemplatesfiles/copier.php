@@ -299,7 +299,7 @@ class NBT_Template_copier {
         $theme_slug = get_option( 'stylesheet' );
 
         // Attachments URL for the template blogç
-        $template_attachments = get_posts( array( 'post_type' => 'attachment' ) );
+        $template_attachments = get_posts( array( 'post_type' => 'attachment' ) );        
         $template_content_url = get_bloginfo('wpurl');
         //Now, go back to the new blog that was just created
         restore_current_blog();

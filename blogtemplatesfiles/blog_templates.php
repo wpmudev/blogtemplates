@@ -49,7 +49,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
             add_filter( 'md_update_domain', array($this, 'multi_domain_update_domain' ), 10, 2 ); // saves blog template value on domain update
             add_filter( 'manage_multi_domains_columns', array($this, 'manage_multi_domains_columns' ) ); // add column to multi domain table
             add_action( 'manage_multi_domains_custom_column', array($this, 'manage_multi_domains_custom_column' ), 10, 2 ); // populate blog template column in multi domain table
-            add_action( 'blogs_directory_blogs_list', array($this, 'blogs_directory_blogs_list' ) );
             
             // Signup: WordPress            
             add_action( 'signup_hidden_fields', array( &$this, 'maybe_add_template_hidden_field' ) );
@@ -405,24 +404,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             }
         }
 
-        /**
-         * Exclude blog templates from Blogs Directory list
-         **/
-        function blogs_directory_blogs_list( $blogs ) {
-            $settings = nbt_get_settings();
-            $blog_templates = $settings;
-            $blog_templates_ids = array();
-            foreach ( $blog_templates['templates'] as $template ) {
-                $blog_templates_ids[] = $template['blog_id'];
-            }
-
-            foreach ( $blogs as $key => $blog ) {
-                if ( in_array( $blog['blog_id'], $blog_templates_ids ) )
-                    unset( $blogs[$key] );
-            }
-
-            return $blogs;
-        }
+        
 
         
         function maybe_add_template_hidden_field() {
