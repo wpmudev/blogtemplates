@@ -3,7 +3,7 @@
 Plugin Name: New Blog Templates
 Plugin URI: http://premium.wpmudev.org/project/new-blog-template
 Description: Allows the site admin to create new blogs based on templates, to speed up the blog creation process
-Author: Jason DeVelvis, Ulrich Sossou (Incsub), Ignacio Cruz (Incsub)
+Author: WPMU DEV
 Author URI: http://premium.wpmudev.org/
 Version: 2.5.1
 Network: true
