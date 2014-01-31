@@ -261,6 +261,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             $settings = nbt_get_settings();
 
+            $default = false;
+            
             /* Start special Multi-Domain feature */
             if( !empty( $multi_dm ) ) {
                 $bloginfo = get_blog_details( (int) $blog_id, false );
