@@ -384,38 +384,46 @@ class NBT_Template_copier {
 
 		$new_prefix = $wpdb->prefix;
 
-		switch_to_blog( $this->template_blog_id );
-        $template_prefix = $wpdb->prefix;
-        restore_current_blog();
+		$template_prefix = $wpdb->get_blog_prefix( $this->template_blog_id );
 
         foreach ( $this->settings['additional_tables'] as $add ) {
-            $add = mysql_escape_string( $add ); //Just in case
+            $add = esc_sql( $add );
 
-            $result = $wpdb->get_results( "SHOW TABLES LIKE '" . str_replace( $template_prefix, $new_prefix, $add) . "'", ARRAY_N );
+            if ( is_a( $wpdb, 'm_wpdb' ) )
+                $add_tablebase = end( explode( '.', $add, 2 ) );
+            else
+                $add_tablebase = $add;
+
+            $new_add_table = $new_prefix . substr( $add_tablebase, strlen( $template_prefix ) );
+            $result = $wpdb->get_results( "SHOW TABLES LIKE '{$new_add_table}'", ARRAY_N );
+
             if (!empty($result)) { //Is the table present? Clear it, then copy
                 //echo ("table exists: $add<br/>");
-                $this->clear_table($add);
+                $this->clear_table($add_tablebase);
                 //Copy the DB
-                $this->copy_table($template['blog_id'],str_replace($template_prefix,'',$add));
+                $this->copy_table($template['blog_id'],str_replace($template_prefix,'',$add_tablebase));
             } else { //The table's not present, add it and copy the data from the old one
                 //echo ('table doesn\'t exist<br/>');
 /* -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
-                // Changed
-                if (class_exists("m_wpdb")) {
-                    $conns = $wpdb->dbh_connections;
-                    //$multi_db = $conns['global']['name'] . '.';
-                    unset($conns['global']);
-                    $current = current($conns);
-                    $current_db = $current['name'] . '.';
-                    $add_table = explode('.', $add);
-                    $add_table = $add_table[1];
-                } else {
-                    $multi_db = $current_db = '';
-                    $add_table = $add;
+                $create_script = current( $wpdb->get_col( 'SHOW CREATE TABLE ' . $add, 1 ) );
+                if ( $create_script ) {
+                    // greedy matching
+                    if ( preg_match( '/\(.*\)/s', $create_script, $match ) ) {
+                        $table_body = $match[0];
+                        $wpdb->query( "CREATE TABLE IF NOT EXISTS {$new_add_table} {$table_body}" );
+
+                        if ( is_a( $wpdb, 'm_wpdb' ) ) {
+                            // not perfect solution, but will work fine if there are not too many rows in the table
+                            $rows = $wpdb->get_results( "SELECT * FROM {$add}", ARRAY_A );
+                            foreach ( $rows as $row ) {
+                                $wpdb->insert( $new_add_table, $row );
+                            }
+                        } else {
+                            $wpdb->query( "INSERT INTO {$new_add_table} SELECT * FROM {$add}" );
+                        }
+                    }
                 }
-                $wpdb->query("CREATE TABLE IF NOT EXISTS {$current_db}" . str_replace($template_prefix,$new_prefix,$add_table) . " LIKE {$add}");
-                $wpdb->query("INSERT {$current_db}" . str_replace($template_prefix,$new_prefix,$add_table) . " SELECT * FROM {$add}");
-                // End changed
+                
 /* -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
 
                 if (!empty($wpdb->last_error)) {
