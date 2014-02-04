@@ -8,7 +8,9 @@ class NBT_Template_copier {
 	private $user_id;
 
 	public function __construct( $src_blog_id, $new_blog_id, $user_id, $args ) {
-		$this->settings = wp_parse_args( $args, $this->get_default_args() );
+        $defaults = $this->get_default_args();
+        $args['to_copy'] = wp_parse_args( $args['to_copy'], $defaults['to_copy'] );
+		$this->settings = wp_parse_args( $args, $defaults );
 
 		$this->template_blog_id = $src_blog_id;
 		$this->new_blog_id = $new_blog_id;
@@ -231,6 +233,7 @@ class NBT_Template_copier {
         do_action( 'blog_templates-copy-pagemeta', $this->template, $this->new_blog_id, $this->user_id );
 	}
 
+
 	public function copy_terms() {
 		global $wpdb;
 
@@ -292,6 +295,12 @@ class NBT_Template_copier {
 
 	public function copy_files() {
 		global $wp_filesystem, $wpdb;
+
+        if ( ! $this->settings['to_copy']['posts'] ) {
+            // We need to copy the attachment post type from posts table
+            $this->copy_posts_table( $this->template_blog_id, 'attachment' );
+            $this->copy_posts_table( $this->template_blog_id, 'attachmentmeta' );
+        }
 
 		$new_content_url = get_bloginfo('wpurl');
 
@@ -513,7 +522,7 @@ class NBT_Template_copier {
             case 'postmeta': $table = 'postmeta'; break;
             case 'pages': $table = 'posts'; break;
             case 'pagemeta': $table = 'postmeta'; break;
-            case 'attachment': $table = 'post'; break;
+            case 'attachment': $table = 'posts'; break;
             case 'attachmentmeta': $table = 'postmeta'; break;
         }
         
@@ -553,6 +562,12 @@ class NBT_Template_copier {
             if ( is_array( $pages_ids ) && count( $pages_ids ) > 0 ) {
                 $query .= " AND t2.ID IN (" . implode( ',', $pages_ids ) . ")";
             }
+        }
+        elseif ( 'attachment' == $type ) {
+            $query .= "WHERE t1.post_type = 'attachment'";
+        }
+        elseif ( 'attachmentmeta' == $type ) {
+            $query .= "INNER JOIN $wpdb->posts t2 ON t1.post_id = t2.ID WHERE t2.post_type = 'attachment'";
         }
 
         $templated = $wpdb->get_results( $query );
