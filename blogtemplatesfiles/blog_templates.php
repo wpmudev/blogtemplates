@@ -470,6 +470,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             nbt_render_theme_selection_scripts( $settings );
 
+            $templates = apply_filters( 'nbt_signup_templates', $templates );
+
             @include $theme_file;
 
         }
