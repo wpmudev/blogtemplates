@@ -111,44 +111,83 @@ function nbt_display_page_showcase( $content ) {
 }
 add_filter( 'the_content', 'nbt_display_page_showcase' );
 
+function nbt_get_showcase_redirection_location( $location = false ) {
+	$settings = nbt_get_settings();
+
+	if ( 'page_showcase' !== $settings['registration-templates-appearance'] )
+		return $location;
+
+	$redirect_to = get_permalink( $settings['page-showcase-id'] );
+	if ( ! $redirect_to )
+		return $location;
+
+	if ( isset( $_REQUEST['blog_template'] ) && 'just_user' == $_REQUEST['blog_template'] )
+		return $location;
+
+	$model = nbt_get_model();
+	$default_template_id = $model->get_default_template_id();
+
+	if ( empty( $_REQUEST['blog_template'] ) && ! $default_template_id ) {
+		return $redirect_to;
+	}
+
+	$_REQUEST['blog_template'] = ! empty( $_REQUEST['blog_template'] ) ? absint( $_REQUEST['blog_template'] ) : $default_template_id;
+
+	$model = nbt_get_model();
+	$template = $model->get_template( $_REQUEST['blog_template'] );
+
+	if ( ! $template ) {
+		return $redirect_to;
+	}
+
+	return $location;
+}
+
 function nbt_redirect_signup() {
 	global $pagenow;
 
 	if ( 'wp-signup.php' == $pagenow ) {
-		$settings = nbt_get_settings();
-
-		if ( 'page_showcase' !== $settings['registration-templates-appearance'] )
-			return false;
-
-		$redirect_to = get_permalink( $settings['page-showcase-id'] );
-		if ( ! $redirect_to )
-			return false;
-
-		if ( isset( $_REQUEST['blog_template'] ) && 'just_user' == $_REQUEST['blog_template'] )
-			return false;
-
-		$model = nbt_get_model();
-		$default_template_id = $model->get_default_template_id();
-
-		if ( empty( $_REQUEST['blog_template'] ) && ! $default_template_id ) {
+		$redirect_to = nbt_get_showcase_redirection_location();
+		if ( $redirect_to ) {
 			wp_redirect( $redirect_to );
 			exit();
 		}
 
-		$_REQUEST['blog_template'] = ! empty( $_REQUEST['blog_template'] ) ? absint( $_REQUEST['blog_template'] ) : $default_template_id;
-
-		
-		$model = nbt_get_model();
-		$template = $model->get_template( $_REQUEST['blog_template'] );
-
-		if ( ! $template ) {
-			wp_redirect( $redirect_to );
-			exit();
-		}
-
-	}
+	}	
 }
-add_action( 'init', 'nbt_redirect_signup' );
+add_action( 'init', 'nbt_redirect_signup', 5 );
+
+function nbt_bp_redirect_signup_location() {
+	if ( is_admin() || ! bp_has_custom_signup_page() )
+		return;
+
+	$signup_slug = bp_get_signup_slug();
+	if ( ! $signup_slug )
+		return;
+
+	$page = get_posts( 
+		array(
+			'name' => $signup_slug,
+			'post_type' => 'page'
+		)
+	);
+
+	if ( empty( $page ) )
+		return;
+
+	$page = $page[0];
+	$is_bp_signup_page = is_page( $page->ID );
+
+	if ( $is_bp_signup_page ) {
+		$redirect_to = nbt_get_showcase_redirection_location();
+		if ( $redirect_to ) {
+			wp_redirect( $redirect_to );
+			exit();
+		}
+	}
+	
+}
+add_filter( 'template_redirect', 'nbt_bp_redirect_signup_location', 15 );
 
 function nbt_render_theme_selection_item( $type, $tkey, $template, $options = array() ) {
 	if ( 'previewer' == $type ) {
@@ -183,8 +222,13 @@ function nbt_render_theme_selection_item( $type, $tkey, $template, $options = ar
 		$default = @$options['default'] == $tkey ? "blog_template-default_item" : "";
 		$blog_url = get_site_url( $template['blog_id'] );
 
-		$sign_up_url = network_site_url( 'wp-signup.php' );
-		$sign_up_url = apply_filters( 'wp_signup_location', $sign_up_url );
+		if ( class_exists( 'BuddyPress' ) ) {
+			$sign_up_url = bp_get_signup_page();
+		}
+		else {
+			$sign_up_url = network_site_url( 'wp-signup.php' );
+			$sign_up_url = apply_filters( 'wp_signup_location', $sign_up_url );
+		}
 		$sign_up_url = add_query_arg( 'blog_template', $tkey, $sign_up_url );
 		?>
 			<div class="template-signup-item theme-page-showcase-wrap <?php echo $default; ?>" data-tkey="<?php echo $tkey; ?>" id="theme-page-showcase-wrap-<?php echo $tkey;?>">

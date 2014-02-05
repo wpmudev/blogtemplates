@@ -1,8 +1,13 @@
 <div id="blog_template-selection">
 	<h3><?php _e('Select a template', 'blog_templates') ?></h3>
 	<?php
-		$sign_up_url = network_site_url( 'wp-signup.php' );
-		$sign_up_url = apply_filters( 'wp_signup_location', $sign_up_url );
+		if ( class_exists( 'BuddyPress' ) ) {
+			$sign_up_url = bp_get_signup_page();
+		}
+		else {
+			$sign_up_url = network_site_url( 'wp-signup.php' );
+			$sign_up_url = apply_filters( 'wp_signup_location', $sign_up_url );
+		}
 		$sign_up_url = add_query_arg( 'blog_template', 'just_user', $sign_up_url );
 	?>
 	<p><a href="<?php echo esc_url( $sign_up_url ); ?>"><?php _e('Just a username, please.') ?></a></p>
