@@ -5,6 +5,14 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+2.6 - 2013-02-05
+----------------------------------------------------------------------
+- Fixed: MultiDB integration.
+- Added: Themes showcase and BuddyPress integration.
+- Fixed: Attachments were not copied when posts option were not checked.
+- New filter for signup templates
+- Removed some warnings/notices.
+
 2.5.1 - 2013-12-29
 ----------------------------------------------------------------------
 - Added integration with FrameMarket Theme.
