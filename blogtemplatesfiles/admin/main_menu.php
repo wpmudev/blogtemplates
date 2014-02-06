@@ -225,6 +225,7 @@ class blog_templates_main_menu {
 			            } else {
 			            	$model = nbt_get_model();
 			                $template = $model->get_template( $t );
+			                echo '<!-- TEMPLATE SETTINGS' . ( print_r($template,true) ) . '-->';
 			        ?>
 			            
 			            <h2><?php _e('Edit Blog Template', 'blog_templates'); ?></h2>
@@ -348,6 +349,7 @@ class blog_templates_main_menu {
 						                //Grab all non-core tables and display them as options
 						                // Changed
 						                $pfx = class_exists("m_wpdb") ? $wpdb->prefix : str_replace('_','\_',$wpdb->prefix);
+						               
 						                
 
 						                //$results = $wpdb->get_results("SHOW TABLES LIKE '" . str_replace('_','\_',$wpdb->prefix) . "%'", ARRAY_N);
@@ -361,8 +363,14 @@ class blog_templates_main_menu {
 						                            if (class_exists("m_wpdb")) {
 						                                $db = $wpdb->analyze_query("SHOW TABLES LIKE '{$pfx}%'");
 						                                $dataset = $db['dataset'];
-						                                $current_db = $wpdb->dbh_connections[$dataset];
-						                                $val = $current_db['name'] . '.' . $result[0];
+						                                $current_db = '';
+						                                foreach ( $wpdb->dbh_connections as $connection ) {
+						                                	if ( $connection['ds'] == $dataset ) {
+						                                		$current_db = $connection['name'];
+						                                		break;
+						                                	}
+						                                }
+						                                $val = $current_db . '.' . $result[0];
 						                            } else {
 						                                $val =  $result[0];
 						                            }

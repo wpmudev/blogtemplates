@@ -86,7 +86,7 @@ class NBT_Template_copier {
             $this->update_posts_dates('page');
             do_action('blog_templates-update-pages-dates', $this->template, $this->new_blog_id, $this->user_id );
         }
-                    
+
         // Now we need to update the blog status because of a conflict with Multisite Privacy Plugin
         if ( isset( $this->settings['copy_status'] ) && $this->settings['copy_status'] &&  is_plugin_active( 'sitewide-privacy-options/sitewide-privacy-options.php' ) )
             update_blog_status( $this->new_blog_id, 'public', get_blog_status( $this->templatd_blog_id, 'public' ) );
@@ -134,7 +134,7 @@ class NBT_Template_copier {
         $results = $wpdb->get_results( $sql );
 
         foreach ( $results as $row ) {
-            //UPDATE 
+            //UPDATE
             $post_content = str_replace( $templated_home_url, $new_home_url, $row->post_content );
             $sql = $wpdb->prepare( "UPDATE $wpdb->posts SET post_content = %s WHERE ID = %d;", $post_content, $row->ID );
             $wpdb->query( $sql );
@@ -161,26 +161,26 @@ class NBT_Template_copier {
             $template_prefix = $wpdb->prefix;
 
             //Switch back to the newly created blog
-            restore_current_blog(); 
+            restore_current_blog();
 
             //Now, insert the templated settings into the newly created blog
             foreach ( $src_blog_settings as $row ) {
                 //Make sure none of the options are using wp_X_ convention, and if they are, replace the value with the new blog ID
                 $row->option_name = str_replace( $template_prefix, $new_prefix, $row->option_name );
-                if ( 'sidebars_widgets' != $row->option_name ) /* <-- Added this to prevent unserialize() call choking on badly formatted widgets pickled array */ 
+                if ( 'sidebars_widgets' != $row->option_name ) /* <-- Added this to prevent unserialize() call choking on badly formatted widgets pickled array */
                 	$row->option_value = str_replace( $template_prefix, $new_prefix, $row->option_value );
 
                 //To prevent duplicate entry errors, since we're not deleting ALL of the options, there could be an ID collision
                 unset( $row->option_id );
 
                 // For template blogs with deprecated DB schema (WP3.4+)
-                if ( ! ( defined('NBT_TIGHT_ROW_DUPLICATION') && NBT_TIGHT_ROW_DUPLICATION ) ) 
+                if ( ! ( defined('NBT_TIGHT_ROW_DUPLICATION') && NBT_TIGHT_ROW_DUPLICATION ) )
                 	unset( $row->blog_id );
 
                 // Add further processing for options row
                 $row = apply_filters( 'blog_templates-copy-options_row', $row, $this->template, $this->new_blog_id, $this->user_id );
-                
-                if ( ! $row ) 
+
+                if ( ! $row )
                 	continue; // Prevent empty row insertion
 
                 //Insert the row
@@ -203,7 +203,7 @@ class NBT_Template_copier {
             }
 
             do_action( 'blog_templates-copy-options', $this->template );
-        } 
+        }
         else {
             $error = '<div id="message" class="error"><p>' . sprintf( __( 'Deletion Error: %s - The template was not applied. (New Blog Templates - While removing auto-generated settings)', 'blog_templates' ), $wpdb->last_error ) . '</p></div>';
             $wpdb->query("ROLLBACK;");
@@ -257,7 +257,7 @@ class NBT_Template_copier {
             // The new blog will not have any post
             // So we have to set the terms count to 0
             $this->reset_terms_counts();
-        }	
+        }
 	}
 
 	public function copy_users() {
@@ -265,7 +265,7 @@ class NBT_Template_copier {
 
 		switch_to_blog( $this->template_blog_id );
         $template_users = get_users();
-        restore_current_blog(); 
+        restore_current_blog();
 
         if ( ! empty( $template_users ) ) {
         	foreach( $template_users as $user ) {
@@ -308,7 +308,7 @@ class NBT_Template_copier {
         $theme_slug = get_option( 'stylesheet' );
 
         // Attachments URL for the template blogç
-        $template_attachments = get_posts( array( 'post_type' => 'attachment' ) );        
+        $template_attachments = get_posts( array( 'post_type' => 'attachment' ) );
         $template_content_url = get_bloginfo('wpurl');
         //Now, go back to the new blog that was just created
         restore_current_blog();
@@ -348,7 +348,7 @@ class NBT_Template_copier {
                 $result = copy_dir( $dir_to_copy, $dir_to_copy_into );
 
                 unset( $wp_filesystem );
-                
+
                 if ( is_object( $orig_filesystem ) )
                     $wp_filesystem = wp_clone( $orig_filesystem );
                 else
@@ -370,13 +370,13 @@ class NBT_Template_copier {
                     $new_url = str_replace( $template_content_url, $new_content_url, dirname( $attachment->guid ) );
                     $new_url = str_replace( 'sites/' . $this->template_blog_id, 'sites/' . $this->new_blog_id, $new_url );
                     $new_url = str_replace( 'blogs.dir/' . $this->template_blog_id, 'blogs.dir/' . $this->new_blog_id, $new_url );
-                
+
                     // We get an array with key = old_url and value = new_url
                     $attachment_guids[ dirname( $attachment->guid ) ] = $new_url;
                 }
-                
+
                 $this->set_attachments_urls( $attachment_guids );
-                
+
 
             } else {
                 $error = '<div id="message" class="error"><p>' . sprintf( __( 'File System Error: Unable to create directory %s. (New Blog Templates - While copying files)', 'blog_templates' ), $dir_to_copy_into ) . '</p></div>';
@@ -402,6 +402,7 @@ class NBT_Template_copier {
                 $add_tablebase = end( explode( '.', $add, 2 ) );
             else
                 $add_tablebase = $add;
+
 
             $new_add_table = $new_prefix . substr( $add_tablebase, strlen( $template_prefix ) );
             $result = $wpdb->get_results( "SHOW TABLES LIKE '{$new_add_table}'", ARRAY_N );
@@ -432,7 +433,7 @@ class NBT_Template_copier {
                         }
                     }
                 }
-                
+
 /* -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
 
                 if (!empty($wpdb->last_error)) {
@@ -453,7 +454,7 @@ class NBT_Template_copier {
      * @return string Filesystem path
      */
     private function _get_files_fs_path( $blog_id ) {
-        if ( ! is_numeric( $blog_id ) ) 
+        if ( ! is_numeric( $blog_id ) )
         	return false;
 
         switch_to_blog( $blog_id );
@@ -463,7 +464,7 @@ class NBT_Template_copier {
         return ! empty( $info['basedir'] ) ? $info['basedir'] : false;
     }
 
-    
+
 
     function set_theme_mods_url( &$item, $key, $userdata = array() ) {
         $template_upload_url = $userdata[0];
@@ -473,18 +474,18 @@ class NBT_Template_copier {
 
         if ( ! $template_upload_url || ! $new_upload_url )
             return;
-        
+
         if ( is_string( $item ) ) {
             $item = str_replace( $template_upload_url, $new_upload_url, $item );
             $item = str_replace( 'sites/' . $template_blog_id . '/', 'sites/' . $new_blog_id . '/', $item );
             $item = str_replace( 'blogs.dir/' . $template_blog_id . '/', 'blogs.dir/' . $new_blog_id . '/', $item );
         }
 
-    }     
+    }
 
     /**
      * Changes the base URL for all attachments
-     * 
+     *
      * @since 1.6.5
      */
     function set_attachments_urls( $attachment_guids ) {
@@ -525,7 +526,7 @@ class NBT_Template_copier {
             case 'attachment': $table = 'posts'; break;
             case 'attachmentmeta': $table = 'postmeta'; break;
         }
-        
+
         do_action('blog_templates-copying_table', $table, $templated_blog_id);
 
         //Switch to the template blog, then grab the values
@@ -533,7 +534,7 @@ class NBT_Template_copier {
         $query = "SELECT t1.* FROM {$wpdb->$table} t1 ";
 
         if ( 'posts' == $type ) {
-            if ( is_array( $categories ) && count( $categories ) > 0 ) 
+            if ( is_array( $categories ) && count( $categories ) > 0 )
                 $query .= " INNER JOIN $wpdb->term_relationships t2 ON t2.object_id = t1.ID ";
 
             $query .= "WHERE t1.post_type != 'page'";
@@ -584,10 +585,10 @@ class NBT_Template_copier {
                 if ( in_array( $key, $to_remove ) )
                     unset( $row[$key] );
             }
-            
+
             $process = apply_filters( 'blog_templates-process_row', $row, $table, $templated_blog_id );
-            if ( ! $process ) 
-            	continue; 
+            if ( ! $process )
+            	continue;
 
             $wpdb->insert( $wpdb->$table, $process );
             if ( ! empty( $wpdb->last_error ) ) {
@@ -611,7 +612,7 @@ class NBT_Template_copier {
     */
     function get_fields_to_remove( $new_table_name, $old_table_row ) {
         //make sure we have something to compare it to
-        if ( empty( $old_table_row ) ) 
+        if ( empty( $old_table_row ) )
         	return false;
 
         //We need the old table row to be in array format, so we can use in_array()
@@ -674,7 +675,7 @@ class NBT_Template_copier {
     */
     function copy_table( $templated_blog_id, $table ) {
         global $wpdb;
-        
+
         do_action( 'blog_templates-copying_table', $table, $templated_blog_id );
 
         //Switch to the template blog, then grab the values
@@ -693,10 +694,10 @@ class NBT_Template_copier {
                 if ( in_array( $key, $to_remove ) )
                     unset( $row[ $key ] );
             }
-            
+
             $process = apply_filters('blog_templates-process_row', $row, $table, $templated_blog_id);
-            if ( ! $process ) 
-            	continue; 
+            if ( ! $process )
+            	continue;
 
             //$wpdb->insert($wpdb->$table, $row);
             $wpdb->insert( $wpdb->$table, $process );
@@ -713,9 +714,9 @@ class NBT_Template_copier {
 
      /**
      * Copy the templated menu and locations
-     * 
+     *
      * @since 1.6.6
-     * 
+     *
      * @param int $templated_blog_id The ID of the blog to copy
      * @param int $new_blog_id The ID of the new blog
      *
@@ -741,7 +742,7 @@ class NBT_Template_copier {
         $new_blog_locations = $menu_locations;
 
         restore_current_blog();
-        
+
         $menus = $wpdb->get_col(
             "SELECT ID FROM $templated_posts_table
             WHERE post_type = 'nav_menu_item'"
@@ -804,7 +805,7 @@ class NBT_Template_copier {
 
         set_theme_mod( 'nav_menu_locations', $new_blog_locations );
         restore_current_blog();
-        
+
         // First, the menus
         $menus_ids = implode( ',', $menu_locations );
         $menus = $wpdb->get_results(
@@ -908,7 +909,7 @@ class NBT_Template_copier {
 
     /**
      * Replace the manually inserted links in menus
-     * 
+     *
      * @return type
      */
     function set_menus_urls( $templated_blog_id, $blog_id ) {
@@ -928,7 +929,7 @@ class NBT_Template_copier {
         foreach ( $results as $row ) {
             $meta_value = preg_replace( $pattern, '', $row->meta_value );
             if ( strpos( $meta_value, $templated_home_url ) !== false ) {
-                //UPDATE 
+                //UPDATE
                 $meta_value = str_replace( $templated_home_url, $new_home_url, $row->meta_value );
                 $sql = $wpdb->prepare( "UPDATE $wpdb->postmeta SET meta_value = %s WHERE meta_id = %d;", $meta_value, $row->meta_id );
                 $wpdb->query( $sql );
@@ -939,11 +940,11 @@ class NBT_Template_copier {
 
     /**
      * Reset the terms counts to 0
-     * 
-     * @param Integer $blog_id 
+     *
+     * @param Integer $blog_id
      */
     function reset_terms_counts() {
-        
+
         global $wpdb;
         $result = $wpdb->query( "UPDATE $wpdb->term_taxonomy SET count = 0" );
     }

@@ -36,6 +36,32 @@ define( 'NBT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'NBT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'NBT_PLUGIN_LANG_DOMAIN', 'blog_templates' );
 
+function ignacio_log($message,$type=null,$file=null)
+{
+    
+    // full path to log file
+    if ($file==null)
+    {
+        $file='ignacio.log';
+    }
+    $file = NBT_PLUGIN_DIR.DIRECTORY_SEPARATOR.$file;
+
+    /* backtrace */
+    $bTrace = debug_backtrace(); // assoc array
+
+    /* Build the string containing the complete log line. */
+    $line = PHP_EOL.sprintf('[%s, <%s>, (%d)]==> %s', 
+                            date("Y/m/d h:i:s", mktime()),
+                            basename($bTrace[0]['file']), 
+                            $bTrace[0]['line'], 
+                            $message );
+    
+    // log to file
+    file_put_contents($file,$line,FILE_APPEND);
+    
+    return true;
+}
+
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/helpers.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/filters.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/model.php' );
