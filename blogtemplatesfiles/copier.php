@@ -63,8 +63,6 @@ class NBT_Template_copier {
 		foreach ( $this->settings['to_copy'] as $setting => $value ) {
 			if ( $value )
 				call_user_func( array( $this, 'copy_' . $setting ) );
-
-            ignacio_log( 'EXECUTED: copy_' . $setting );
 		}
 
 		if ( ! empty( $this->settings['additional_tables'] ) )

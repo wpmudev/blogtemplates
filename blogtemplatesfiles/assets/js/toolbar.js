@@ -7,8 +7,8 @@ jQuery(document).ready(function($) {
 		var cat_id = this_item.data('cat-id');
 
 		var rest_of_items = toolbar.find( 'a:not(#item-' + cat_id + ')');
-		this_item.css( 'opacity', '1' );
-		rest_of_items.css('opacity','0.62');
+		this_item.addClass('toolbar-item-selected');
+		rest_of_items.removeClass('toolbar-item-selected');
 
 
 		var data = {

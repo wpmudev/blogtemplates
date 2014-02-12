@@ -12,10 +12,8 @@
 	<h3><?php _e('Select a template', 'blog_templates') ?></h3>
 
 	<?php
-		if ( $settings['show-categories-selection'] ) {
-			$toolbar = new blog_templates_theme_selection_toolbar( $settings['registration-templates-appearance'] );
-		    $toolbar->display();
-		}
+		if ( $settings['show-categories-selection'] )
+			$templates = nbt_theme_selection_toolbar( $templates );
     ?>
 
     <div class="blog_template-option" style="text-align:center;margin-bottom:30px;">

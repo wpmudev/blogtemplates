@@ -23,3 +23,17 @@ function nbt_get_default_settings() {
 	return $handler->get_default_settings();
 }
 
+function nbt_theme_selection_toolbar( $templates ) {
+	$settings = nbt_get_settings();
+	$toolbar = new blog_templates_theme_selection_toolbar( $settings['registration-templates-appearance'] );
+	$toolbar->display();
+	$category_id = $toolbar->default_category_id; 
+
+	if ( $category_id !== 0 ) {
+		$model = nbt_get_model();
+		$templates = $model->get_templates_by_category( $category_id );
+	}
+
+	return $templates;
+}
+

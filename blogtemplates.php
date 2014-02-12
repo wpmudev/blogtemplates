@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/new-blog-template
 Description: Allows the site admin to create new blogs based on templates, to speed up the blog creation process
 Author: WPMU DEV
 Author URI: http://premium.wpmudev.org/
-Version: 2.6
+Version: 2.6.1
 Network: true
 Text Domain: blog_templates
 WDP ID: 130
@@ -28,7 +28,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-define( 'NBT_PLUGIN_VERSION', '2.6' );
+define( 'NBT_PLUGIN_VERSION', '2.6.1' );
 if ( ! is_multisite() )
 	exit( __( 'The New Blog Template plugin is only compatible with WordPress Multisite.', 'blog_templates' ) );
 
@@ -36,40 +36,19 @@ define( 'NBT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'NBT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'NBT_PLUGIN_LANG_DOMAIN', 'blog_templates' );
 
-function ignacio_log($message,$type=null,$file=null)
-{
-    
-    // full path to log file
-    if ($file==null)
-    {
-        $file='ignacio.log';
-    }
-    $file = NBT_PLUGIN_DIR.DIRECTORY_SEPARATOR.$file;
-
-    /* backtrace */
-    $bTrace = debug_backtrace(); // assoc array
-
-    /* Build the string containing the complete log line. */
-    $line = PHP_EOL.sprintf('[%s, <%s>, (%d)]==> %s', 
-                            date("Y/m/d h:i:s", mktime()),
-                            basename($bTrace[0]['file']), 
-                            $bTrace[0]['line'], 
-                            $message );
-    
-    // log to file
-    file_put_contents($file,$line,FILE_APPEND);
-    
-    return true;
-}
 
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/helpers.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/filters.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/model.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/upgrade.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/blog_templates_theme_selection_toolbar.php' );
-require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/admin/main_menu.php' );
-require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/admin/categories_menu.php' );
-require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/admin/settings_menu.php' );
+
+if ( is_network_admin() ) {
+	require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/admin/main_menu.php' );
+	require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/admin/categories_menu.php' );
+	require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/admin/settings_menu.php' );
+}
+
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/blog_templates.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/blog_templates_lock_posts.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/integration.php' );
@@ -82,32 +61,6 @@ if ( is_network_admin() ) {
 	global $wpmudev_notices;
 	$wpmudev_notices[] = array( 'id'=> 130,'name'=> 'New Blog Templates', 'screens' => array( 'toplevel_page_blog_templates_main-network', 'blog-templates_page_blog_templates_categories-network', 'blog-templates_page_blog_templates_settings-network' ) );
 	include_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/externals/wpmudev-dash-notification.php' );
-}
-
-function ignacio_log($message,$type=null,$file=null)
-{
-    
-    // full path to log file
-    if ($file==null)
-    {
-        $file='ignacio.log';
-    }
-    $file = NBT_PLUGIN_DIR.DIRECTORY_SEPARATOR.$file;
-
-    /* backtrace */
-    $bTrace = debug_backtrace(); // assoc array
-
-    /* Build the string containing the complete log line. */
-    $line = PHP_EOL.sprintf('[%s, <%s>, (%d)]==> %s', 
-                            date("Y/m/d h:i:s", mktime()),
-                            basename($bTrace[0]['file']), 
-                            $bTrace[0]['line'], 
-                            $message );
-    
-    // log to file
-    file_put_contents($file,$line,FILE_APPEND);
-    
-    return true;
 }
 
 /**

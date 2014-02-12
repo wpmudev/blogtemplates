@@ -73,3 +73,5 @@ function nbt_remove_blogs_from_directory( $blogs ) {
 	}
 	return $new_blogs;
 }
+
+

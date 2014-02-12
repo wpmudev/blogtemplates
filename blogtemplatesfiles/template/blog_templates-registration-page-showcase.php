@@ -12,10 +12,8 @@
 	?>
 	<p><a href="<?php echo esc_url( $sign_up_url ); ?>"><?php _e('Just a username, please.') ?></a></p>
 	<?php
-		if ( $settings['show-categories-selection'] ) {
-			$toolbar = new blog_templates_theme_selection_toolbar( $settings['registration-templates-appearance'] );
-		    $toolbar->display();
-		}
+		if ( $settings['show-categories-selection'] )
+			$templates = nbt_theme_selection_toolbar( $templates );
     ?>
     
 	<div class="blog_template-option">

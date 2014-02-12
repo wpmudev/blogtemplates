@@ -5,6 +5,14 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+2.6.1 - 2013-02-12
+----------------------------------------------------------------------
+- Fixed issue with MultiDB systems
+- Improved theme selector toolbar
+- Added filters to manage tabs in theme selection toolbar
+- Fixed issue when displaying default templates
+
+
 2.6 - 2013-02-05
 ----------------------------------------------------------------------
 - Fixed: MultiDB integration.

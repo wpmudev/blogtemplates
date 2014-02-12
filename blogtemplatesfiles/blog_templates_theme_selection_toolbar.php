@@ -3,6 +3,7 @@
 class blog_templates_theme_selection_toolbar {
 
 	public $categories;
+	public $default_category_id;
 
 	public function __construct( $type ) {
 		$this->type = $type;
@@ -27,11 +28,24 @@ class blog_templates_theme_selection_toolbar {
 
 	public function display() {
 		$this->render_css();
+
+		$tabs = array();
+		$tabs[0] = __( 'ALL', 'blog_templates' );
+
+		foreach ( $this->categories as $category ) {
+			$tabs[ $category['ID'] ] = $category['name'];
+		}
+
+		$tabs = apply_filters( 'nbt_selection_toolbar_tabs', $tabs );
+		$default_tab = apply_filters( 'nbt_selection_toolbar_default_tab', key( $tabs ) );
+
+		// Default tab should be a category ID
+		$this->default_category_id = $default_tab;
+
 		?>
 			<div id="nbt-toolbar" data-toolbar-type="<?php echo $this->type; ?>">
-				<a href="#" id="item-0" class="toolbar-item" data-cat-id="0"><?php _e( 'ALL', 'blog_templates' ); ?></a>
-				<?php foreach ( $this->categories as $category ): ?>
-					<a href="#" id="item-<?php echo $category['ID']; ?>" class="toolbar-item" style="opacity: 0.62;" data-cat-id="<?php echo $category['ID']; ?>"><?php echo $category['name']; ?></a>
+				<?php foreach ( $tabs as $tab_key => $tab_name ): ?>
+					<a href="#" id="item-<?php echo $tab_key; ?>" class="toolbar-item <?php echo $default_tab == $tab_key ? 'toolbar-item-selected' : ''; ?>" data-cat-id="<?php echo $tab_key; ?>"><?php echo $tab_name; ?></a>
 				<?php endforeach; ?>
 				<div style="clear:both"></div>
 			</div>
@@ -72,6 +86,10 @@ class blog_templates_theme_selection_toolbar {
 
 			#nbt-toolbar a:hover {
 				opacity:1 !important;
+			}
+
+			#nbt-toolbar .toolbar-item-selected {
+				opacity:0.62;
 			}
 
 			#toolbar-loader {

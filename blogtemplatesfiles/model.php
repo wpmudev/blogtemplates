@@ -498,16 +498,33 @@ class blog_templates_model {
 
 			$where = " WHERE " . implode( " AND ", $where );
 			$query = "SELECT t.* FROM $this->templates_table t $join $where";
-			
+
 			$results = $wpdb->get_results( $query, ARRAY_A );
+
+			if ( (boolean)$this->is_default_category( $cat_id ) ) {
+				// If we are searching by default category we need to merge
+				// those templates without category assigned
+				$templates_with_no_cat = $wpdb->get_results( 
+					"SELECT t.* FROM $this->templates_table t
+					WHERE t.ID NOT IN
+					( SELECT DISTINCT( tr.template_id ) FROM $this->categories_relationships_table tr )",
+					ARRAY_A
+				);
+
+				$results = array_merge( $results, $templates_with_no_cat );
+			}
+
 
 			if ( ! empty( $results ) ) {
 				$new_results = array();
 				foreach ( $results as $template ) {
+
 					$tmp_template = $template;
 					$tmp_template = array_merge( maybe_unserialize( $template['options'] ), $tmp_template );
+
 					unset( $tmp_template['options'] );
 					$new_results[] = $tmp_template;
+
 				}
 				$results = $new_results;
 			}
