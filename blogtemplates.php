@@ -43,6 +43,7 @@ require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/model.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/upgrade.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/blog_templates_theme_selection_toolbar.php' );
 
+require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/ajax.php' );
 if ( is_network_admin() ) {
 	require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/admin/main_menu.php' );
 	require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/admin/categories_menu.php' );
