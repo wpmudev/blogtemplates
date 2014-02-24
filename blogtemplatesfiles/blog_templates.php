@@ -5,15 +5,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
     class blog_templates {
 
         /**
-        * PHP 4 Compatible Constructor
-        *
-        * @since 1.0
-        */
-        function blog_templates() {
-            $this->__construct();
-        }
-
-        /**
         * PHP 5 Constructor
         *
         * @since 1.0
