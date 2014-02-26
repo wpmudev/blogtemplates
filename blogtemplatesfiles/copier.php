@@ -810,6 +810,10 @@ class NBT_Template_copier {
 
         // First, the menus
         $menus_ids = implode( ',', $menu_locations );
+
+        if ( empty( $menus_ids ) )
+            return;
+
         $menus = $wpdb->get_results(
             "SELECT * FROM $templated_terms_table
             WHERE term_id IN ( $menus_ids )"
@@ -826,15 +830,17 @@ class NBT_Template_copier {
             foreach ( $menus as $menu ) {
 
                 // Inserting the menu
-                $wpdb->insert(
-                    $new_terms_table,
-                    array(
-                        'term_id' => $menu->term_id,
-                        'name' => $menu->name,
-                        'slug' => $menu->slug,
-                        'term_group' => $menu->term_group
-                    ),
-                    array( '%d', '%s', '%s', '%d' )
+                $wpdb->query(
+                    $wpdb->prepare(
+                        "INSERT IGNORE INTO $new_terms_table
+                        (term_id, name, slug, term_group)
+                        VALUES
+                        (%d, %s, %s, %d)",
+                        $menu->term_id,
+                        $menu->name,
+                        $menu->slug,
+                        $menu->term_group
+                    )
                 );
 
                 // Terms taxonomies
@@ -851,17 +857,19 @@ class NBT_Template_copier {
                     $terms_taxonomies_ids[] = $term_taxonomy->term_taxonomy_id;
 
                     // Inserting terms taxonomies
-                    $wpdb->insert(
-                        $new_term_taxonomy_table,
-                        array(
-                            'term_taxonomy_id' => $term_taxonomy->term_taxonomy_id,
-                            'term_id' => $term_taxonomy->term_id,
-                            'taxonomy' => $term_taxonomy->taxonomy,
-                            'description' => empty( $term_taxonomy->description ) ? '' : $term_taxonomy->description,
-                            'parent' => $term_taxonomy->parent,
-                            'count' => $term_taxonomy->count
-                        ),
-                        array( '%d', '%d', '%s', '%d', '%d' )
+                    $wpdb->query(
+                        $wpdb->prepare(
+                            "INSERT IGNORE INTO $new_term_taxonomy_table
+                            (term_taxonomy_id, term_id, taxonomy, description, parent, count)
+                            VALUES
+                            (%d, %d, %s, %s, %d, %d)",
+                            $term_taxonomy->term_taxonomy_id,
+                            $term_taxonomy->term_id,
+                            $term_taxonomy->taxonomy,
+                            empty( $term_taxonomy->description ) ? '' : $term_taxonomy->description,
+                            $term_taxonomy->parent,
+                            $term_taxonomy->count
+                        )
                     );
                 }
 
@@ -877,14 +885,16 @@ class NBT_Template_copier {
                     $objects_ids[] = $term_relationship->object_id;
 
                     // Inserting terms relationships
-                    $wpdb->insert(
-                        $new_term_relationships_table,
-                        array(
-                            'object_id' => $term_relationship->object_id,
-                            'term_taxonomy_id' => $term_relationship->term_taxonomy_id,
-                            'term_order' => $term_relationship->term_order,
-                        ),
-                        array( '%d', '%d', '%d' )
+                    $wpdb->query(
+                        $wpdb->prepare(
+                            "INSERT IGNORE INTO $new_term_relationships_table
+                            (object_id, term_taxonomy_id, term_order)
+                            VALUES
+                            (%d, %d, %d)",
+                            $term_relationship->object_id,
+                            $term_relationship->term_taxonomy_id,
+                            $term_relationship->term_order
+                        )
                     );
                 }
 
