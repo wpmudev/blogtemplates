@@ -50,9 +50,9 @@ if ( is_network_admin() ) {
 	require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/admin/settings_menu.php' );
 }
 
+require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/integration.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/blog_templates.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/blog_templates_lock_posts.php' );
-require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/integration.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/settings-handler.php' );
 
 
@@ -71,6 +71,7 @@ if ( is_network_admin() ) {
  * or the plugin one
  */
 function nbt_load_text_domain() {
+
 	$locale = apply_filters( 'plugin_locale', get_locale(), NBT_PLUGIN_LANG_DOMAIN );
 
 	load_textdomain( NBT_PLUGIN_LANG_DOMAIN, WP_LANG_DIR . '/' . NBT_PLUGIN_LANG_DOMAIN . '/' . NBT_PLUGIN_LANG_DOMAIN . '-' . $locale . '.mo' );

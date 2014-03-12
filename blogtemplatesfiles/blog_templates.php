@@ -43,8 +43,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
             
             // Signup: WordPress            
             add_action( 'signup_hidden_fields', array( &$this, 'maybe_add_template_hidden_field' ) );
-            add_action('signup_blogform', array($this, 'registration_template_selection'));
-            add_filter('add_signup_meta', array($this, 'registration_template_selection_add_meta'));
+            add_action( 'signup_blogform', array( $this, 'registration_template_selection' ) );
+            add_filter( 'add_signup_meta', array( $this, 'registration_template_selection_add_meta' ) );
 
             // Signup: BuddyPress
             add_action( 'bp_blog_details_fields', array( &$this, 'maybe_add_template_hidden_field' ) );
@@ -60,9 +60,12 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             add_action( 'delete_blog', array( &$this, 'maybe_delete_template' ), 10, 1 );
 
+            do_action( 'nbt_object_create', $this );
+
         }
 
         function maybe_upgrade() {
+
             // Split posts option into posts and pages options
             $saved_version = get_site_option( 'nbt_plugin_version', false );
 
@@ -298,7 +301,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 $template = $default;
             }
             $template = apply_filters('blog_templates-blog_template', $template, $blog_id, $user_id );
-
             if ( ! $template || 'none' == $template )
                 return; //No template, lets leave
 
@@ -485,6 +487,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
     } // End Class
 
     // instantiate the class
+    global $blog_templates;
     $blog_templates = new blog_templates();
 
 } // End if blog_templates class exists statement

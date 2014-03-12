@@ -240,19 +240,19 @@ class NBT_Template_copier {
 		global $wpdb;
 
 		$this->clear_table( $wpdb->links );
-        $this->copy_table( $this->template_blog_id, "links" );
+        $this->copy_table( $this->template_blog_id, $wpdb->links );
         do_action( 'blog_templates-copy-links', $this->template, $this->new_blog_id, $this->user_id );
 
         $this->clear_table( $wpdb->terms );
-        $this->copy_table( $this->template_blog_id, "terms");
+        $this->copy_table( $this->template_blog_id, $wpdb->terms );
         do_action( 'blog_templates-copy-terms', $this->template, $this->new_blog_id, $this->user_id );
 
         $this->clear_table( $wpdb->term_relationships );
-        $this->copy_table( $this->template_blog_id, "term_relationships");
+        $this->copy_table( $this->template_blog_id, $wpdb->term_relationships );
         do_action( 'blog_templates-copy-term_relationships', $this->template, $this->new_blog_id, $this->user_id );
 
         $this->clear_table( $wpdb->term_taxonomy );
-        $this->copy_table( $this->template_blog_id, "term_taxonomy");
+        $this->copy_table( $this->template_blog_id, $wpdb->term_taxonomy );
         do_action( 'blog_templates-copy-term_taxonomy', $this->template, $this->new_blog_id, $this->user_id );
 
         if ( ! $this->settings['to_copy']['posts'] ) {
@@ -340,7 +340,7 @@ class NBT_Template_copier {
                 else
                     $orig_filesystem = $wp_filesystem;
 
-                $wp_filesystem = new WP_Filesystem_Direct( false );
+                $wp_filesystem = new WP_Filesystem( false );
 
                 if ( ! defined('FS_CHMOD_DIR') )
                     define('FS_CHMOD_DIR', 0755 );
@@ -409,11 +409,11 @@ class NBT_Template_copier {
             $new_add_table = $new_prefix . substr( $add_tablebase, strlen( $template_prefix ) );
             $result = $wpdb->get_results( "SHOW TABLES LIKE '{$new_add_table}'", ARRAY_N );
 
-            if (!empty($result)) { //Is the table present? Clear it, then copy
+            if ( ! empty( $result ) ) { //Is the table present? Clear it, then copy
                 //echo ("table exists: $add<br/>");
                 $this->clear_table($add_tablebase);
                 //Copy the DB
-                $this->copy_table($template['blog_id'],str_replace($template_prefix,'',$add_tablebase));
+                $this->copy_table($this->template['blog_id'],str_replace($template_prefix,'',$add_tablebase));
             } else { //The table's not present, add it and copy the data from the old one
                 //echo ('table doesn\'t exist<br/>');
 /* -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
@@ -682,7 +682,8 @@ class NBT_Template_copier {
 
         //Switch to the template blog, then grab the values
         switch_to_blog( $templated_blog_id );
-        $templated = $wpdb->get_results( "SELECT * FROM {$wpdb->$table}" );
+
+        $templated = $wpdb->get_results( "SELECT * FROM {$table}" );
         restore_current_blog(); //Switch back to the newly created blog
 
         if ( count( $templated ) )
@@ -702,7 +703,7 @@ class NBT_Template_copier {
             	continue;
 
             //$wpdb->insert($wpdb->$table, $row);
-            $wpdb->insert( $wpdb->$table, $process );
+            $wpdb->insert( $table, $process );
             if ( ! empty( $wpdb->last_error ) ) {
                 $error = '<div id="message" class="error"><p>' . sprintf( __( 'Insertion Error: %1$s - The template was not applied. (New Blog Templates - While copying %2$s)', 'blog_templates' ), $wpdb->last_error, $table ) . '</p></div>';
                 $wpdb->query("ROLLBACK;");

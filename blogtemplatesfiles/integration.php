@@ -74,4 +74,74 @@ function nbt_remove_blogs_from_directory( $blogs ) {
 	return $new_blogs;
 }
 
+/** GRAVITY FORMS **/
+/*
+ * Rightt now, hooking New Blog Templates into GF is not possible
+ * GF overrides the meta values passed to wpmu_create_blog.
+ * I submitted a ticket asking about adding a new filter for that
+ */
+/** 
+add_action( 'nbt_object_create', 'set_gravity_forms_hooks' );
 
+function set_gravity_forms_hooks( $blog_templates ) {
+	add_filter( 'gform_get_form_filter', 'nbt_render_user_registration_form', 15, 2 );
+	add_filter( 'gform_user_registration_add_option_section', 'nbt_add_blog_templates_user_registration_option', 15, 3 );
+	add_filter( "gform_user_registration_save_config", "nbt_save_multisite_user_registration_config" );
+}
+
+function nbt_add_blog_templates_user_registration_option( $config, $form, $is_validation_error ) {
+
+	$multisite_options = rgar($config['meta'], 'multisite_options');
+
+	?>
+		<div id="nbt-integration">
+			<h3><?php _e( "New Blog Templates", 'blog_templates' ); ?></h3>
+			<div class="margin_vertical_10">
+                <label class="left_header"><?php _e( 'Display Templates Selector', 'blog_templates' ); ?></label>
+                <input type="checkbox" id="gf_user_registration_multisite_blog_templates" name="gf_user_registration_multisite_blog_templates" value="1" <?php echo rgar( $multisite_options, 'blog_templates' ) ? "checked='checked'" : "" ?> />
+            </div>
+		</div>
+	<?php
+}
+
+function nbt_save_multisite_user_registration_config( $config ) {
+	$config['meta']['multisite_options']['blog_templates'] = RGForms::post("gf_user_registration_multisite_blog_templates");
+
+	return $config;
+}
+
+
+function nbt_render_user_registration_form( $form_html, $form ) {
+	global $blog_templates;
+
+	$config = GFUserData::get_feed( $form['id'] );
+	$multisite_options = rgar( $config['meta'], 'multisite_options' );
+
+	if ( isset( $multisite_options['blog_templates'] ) && absint( $multisite_options['blog_templates'] ) ) {
+		ob_start();
+		$blog_templates->registration_template_selection();
+		$nbt_selection = ob_get_clean();
+		
+		$form_html .= $nbt_selection;
+
+		$form_id = $form['id'];
+
+		// Adding some Javascript
+		ob_start();
+		?>
+			<script type="text/javascript">
+				jQuery(document).ready(function($) {
+					var submit_button = $( '#gform_submit_button_' + <?php echo $form_id; ?> );
+
+					$('#blog_template-selection').insertBefore( submit_button );
+					console.log(submit_button);
+				});
+			</script>
+		<?php
+		$form_html .= ob_get_clean();
+
+	}
+
+	return $form_html;
+}
+*/
