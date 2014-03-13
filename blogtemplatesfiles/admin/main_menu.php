@@ -27,7 +27,6 @@ class blog_templates_main_menu {
 
         add_action( 'admin_enqueue_scripts', array( $this, 'add_javascript' ) );
 
-       
 	}
 
 
@@ -277,11 +276,7 @@ class blog_templates_main_menu {
 											</p>
 					                    <?php $this->render_row( __( 'Screenshot', 'blog_templates' ), ob_get_clean() ); ?>
 									</table>
-				                    <?php
-						                global $wpdb;
 
-						                switch_to_blog($template['blog_id']);
-						            ?>
 						            <br/><br/>
 						            <h2><?php _e('Advanced Options','blog_templates'); ?></h2>
 						            
@@ -289,81 +284,53 @@ class blog_templates_main_menu {
 
 						                <?php ob_start(); ?>
 
-						                <p><?php printf(__('The tables listed here were likely created by plugins you currently have or have had running on this blog. If you want the data from these tables copied over to your new blogs, add a checkmark next to the table. Note that the only tables displayed here begin with %s, which is the standard table prefix for this specific blog. Plugins not following this convention will not have their tables listed here.','blog_templates'),$wpdb->prefix); ?></p>
+						                <p><?php printf( __( 'The tables listed here were likely created by plugins you currently have or have had running on this blog. If you want the data from these tables copied over to your new blogs, add a checkmark next to the table. Note that the only tables displayed here begin with %s, which is the standard table prefix for this specific blog. Plugins not following this convention will not have their tables listed here.','blog_templates' ), $wpdb->prefix ); ?></p><br/>
 
 						                <?php
 
-						                //Grab all non-core tables and display them as options
-						                // Changed
-						                $pfx = class_exists("m_wpdb") ? $wpdb->prefix : str_replace('_','\_',$wpdb->prefix);
-						               
-						                
+						                $additional_tables = nbt_get_additional_tables( $template['blog_id'] );
 
-						                //$results = $wpdb->get_results("SHOW TABLES LIKE '" . str_replace('_','\_',$wpdb->prefix) . "%'", ARRAY_N);
-						                $results = $wpdb->get_results("SHOW TABLES LIKE '{$pfx}%'", ARRAY_N);
-
-						                if (!empty($results)) {
-
-						                    foreach($results as $result) {
-						                        if (!in_array(str_replace($wpdb->prefix,'',$result['0']),array( 'posts', 'comments', 'links', 'options', 'postmeta', 'terms', 'term_taxonomy', 'term_relationships', 'commentmeta' ))) {
-
-						                            if (class_exists("m_wpdb")) {
-						                                $db = $wpdb->analyze_query("SHOW TABLES LIKE '{$pfx}%'");
-						                                $dataset = $db['dataset'];
-						                                $current_db = '';
-						                                foreach ( $wpdb->dbh_connections as $connection ) {
-						                                	if ( $connection['ds'] == $dataset ) {
-						                                		$current_db = $connection['name'];
-						                                		break;
-						                                	}
-						                                }
-						                                $val = $current_db . '.' . $result[0];
-						                            } else {
-						                                $val =  $result[0];
-						                            }
-						                            if ( stripslashes_deep( $pfx ) == $wpdb->base_prefix ) {
-						                                // If we are on the main blog, we'll have to avoid those tables from other blogs
-						                                $pattern = '/^' . stripslashes_deep( $pfx ) . '[0-9]/';
-						                                if ( preg_match( $pattern, $result[0] ) )
-						                                    continue;
-						                            }
-						                            //echo "<input type='checkbox' name='additional_template_tables[]' value='$result[0]'";
-						                            echo "<input type='checkbox' name='additional_template_tables[]' value='{$val}'";
-						                            if ( isset( $template['additional_tables'] ) && is_array( $template['additional_tables'] ) )
-						                                //if ( in_array( $result[0], $template['additional_tables']'] ) )
-						                                if ( in_array( $val, $template['additional_tables'] ) )
-						                                    echo ' checked="CHECKED"';
-						                            echo " id='nbt-{$val}'>&nbsp;<label for='nbt-{$val}'>{$result[0]}</label><br/>";
-						                        }
-						                    }
-						                } else {
-						                    _e('There are no additional tables to display for this blog','blog_templates');
+						                if ( ! empty( $additional_tables ) ) {
+						                	foreach ( $additional_tables as $table ) {
+						                		$table_name = $table['name'];
+						                		$value = $table['prefix.name'];
+						                		$checked = isset( $template['additional_tables'] ) && is_array( $template['additional_tables'] ) && in_array( $value, $template['additional_tables'] );
+						                		?>
+						                			<input type='checkbox' name='additional_template_tables[]' <?php checked( $checked ); ?> id="nbt-<?php echo esc_attr( $value ); ?>" value="<?php echo esc_attr( $value ); ?>">
+						                			<label for="nbt-<?php echo esc_attr( $value ); ?>"><?php echo $table_name; ?></label>
+						                		<?php
+						                	}
+						                			
 						                }
-						                // End changed
-						                
+						                else {
+						                	?>
+						                		<p><?php _e('There are no additional tables to display for this blog','blog_templates'); ?></p>
+						                	<?php
+						                }
+
 						                
 						                $this->render_row( __( 'Additional Tables', 'blog_templates' ), ob_get_clean() ); ?>
-							            <?php restore_current_blog(); ?>
 
 
 					            	</table>
 					            	
 					            </div>
 
-					            <?php 
-					            	$model = nbt_get_model();
-					            	$categories = $model->get_templates_categories(); 
-					            	$template_categories_tmp = $model->get_template_categories( $t );
+					            <?php if ( apply_filters( 'nbt_activate_categories_feature', true ) ): ?>
+						            <?php 
+						            	$model = nbt_get_model();
+						            	$categories = $model->get_templates_categories(); 
+						            	$template_categories_tmp = $model->get_template_categories( $t );
 
-					            	$template_categories = array();
-					            	foreach ( $template_categories_tmp as $row ) {
-					            		$template_categories[] = absint( $row['ID'] );
-					            	}
-					            ?>
-					            <div id="postbox-container-1" class="postbox-container">
-									<div id="side-sortables" class="meta-box-sortables ui-sortable">
-										<div id="categorydiv" class="postbox ">
-											<div class="handlediv" title=""><br></div><h3 class="hndle"><span><?php _e( 'Template categories' ); ?></span></h3>
+						            	$template_categories = array();
+						            	foreach ( $template_categories_tmp as $row ) {
+						            		$template_categories[] = absint( $row['ID'] );
+						            	}
+						            ?>
+						            <div id="postbox-container-1" class="postbox-container">
+										<div id="side-sortables" class="meta-box-sortables ui-sortable">
+											<div id="categorydiv" class="postbox ">
+												<div class="handlediv" title=""><br></div><h3 class="hndle"><span><?php _e( 'Template categories' ); ?></span></h3>
 												<div class="inside">
 													<div id="taxonomy-category" class="categorydiv">
 														<div id="category-all" class="tabs-panel">
@@ -378,16 +345,17 @@ class blog_templates_main_menu {
 											</div>
 										</div>			
 									</div>
-								</div>
-					        </div>
-			            </div>
-			            <div class="clear"></div>
-			            <?php submit_button( __( 'Save template', 'blog_templates' ), 'primary', 'save_updated_template' ); ?>		            
-			        <?php } ?>
-			        
-			        
-			    </form>
-			<?php
+								<?php endif; ?>
+							</div>
+				        </div>
+		            </div>
+		            <div class="clear"></div>
+		            <?php submit_button( __( 'Save template', 'blog_templates' ), 'primary', 'save_updated_template' ); ?>		            
+		        <?php } ?>
+		        
+		        
+		    </form>
+		<?php
 	    }
 
         /**

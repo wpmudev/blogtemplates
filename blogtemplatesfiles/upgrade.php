@@ -7,7 +7,9 @@ function blog_templates_upgrade_19() {
 	$options = get_site_option( 'blog_templates_options', array( 'templates' => array() ) );
 	$default = isset( $options['default'] ) ? absint( $options['default'] ) : false;
 
+
 	foreach ( $options['templates'] as $key => $template ) {
+
 		$tmp_template = $template;
 		
 		$blog_id = $tmp_template['blog_id'];
@@ -37,12 +39,12 @@ function blog_templates_upgrade_19() {
 		);
 
 		$template_id = $wpdb->insert_id;
-
+		
 		if ( $default === $key ) {
 			$wpdb->update(
 				$wpdb->base_prefix . 'nbt_templates',
 				array( 'is_default' => 1 ),
-				array( 'ID' => $id ),
+				array( 'ID' => $template_id ),
 				array( '%d' ),
 				array( '%d' )
 			);
@@ -93,19 +95,113 @@ function blog_templates_upgrade_191() {
 }
 
 function blog_templates_upgrade_20() {
-	$model = nbt_get_model();
-	$model->upgrade_20();
+		global $wpdb, $current_site;
+
+		$current_site_id = ! empty ( $current_site ) ? $current_site->id : 1;
+
+		// Reseting categories as it has been never used
+
+		$templates_table = $wpdb->base_prefix . 'nbt_templates';
+		$categories_table = $wpdb->base_prefix . 'nbt_templates_categories';
+		$categories_relationships_table = $wpdb->base_prefix . 'nbt_categories_relationships_table';
+
+		$wpdb->query( "DELETE FROM $categories_table" );
+		$wpdb->query( "DELETE FROM $categories_relationships_table" );
+
+		$current_site_id = ! empty ( $current_site ) ? $current_site->id : 1;
+
+		$default_cat = $wpdb->get_row( "SELECT * FROM $categories_table WHERE is_default = 1" );
+
+		if ( ! empty( $default_cat ) ) {
+			$wpdb->query( "UPDATE $categories_table SET is_default = 0 WHERE is_default = 1 AND ID != $default_cat->ID" );
+		}
+
+		// Adding default category
+		if ( empty( $default_cat ) ) {
+			$wpdb->insert( 
+				$categories_table, 
+				array( 
+					'name' => __( 'Default category', 'blog_templates' ), 
+					'description' => '',
+					'is_default' => 1
+				), 
+				array( 
+					'%s', 
+					'%s',
+					'%d'
+				) 
+			);
+
+		}
+
+	
+		// check_for_uncategorized_templates
+		$uncategorized_templates = $wpdb->get_results( 
+			"SELECT t.ID 
+			FROM  $templates_table t
+			LEFT OUTER JOIN $categories_relationships_table ct ON ct.template_id = t.ID
+			WHERE cat_id IS NULL"
+		);
+
+		if ( ! empty( $uncategorized_templates ) ) {
+ 			$default_cat_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $categories_table WHERE is_default = '1'", $current_site_id ) );
+			if ( ! empty( $default_cat_id ) ) {
+				foreach ( $uncategorized_templates as $template ) {
+					$wpdb->query( $wpdb->prepare( "DELETE FROM $categories_relationships_table WHERE template_id = %d", $template->ID ) );
+					$cats = array( $default_cat_id );
+					foreach ( $cats as $cat ) {
+						$query = $wpdb->prepare(
+							"INSERT INTO $categories_relationships_table (cat_id,template_id) VALUES (%d,%d)",
+							$cat,
+							$template->ID
+						);
+						$wpdb->query( $query );
+					}
+				}
+			}
+		}
+		
+		$templates = $wpdb->get_results( "SELECT cat_id, count(t.ID) the_count FROM $templates_table t
+			JOIN $categories_relationships_table r ON r.template_id = t.ID
+			GROUP BY cat_id" );
+
+		if ( ! empty( $templates ) ) {
+			foreach ( $templates as $template ) {
+				$wpdb->update(
+					$categories_table,
+					array( 'templates_count' => $template->the_count ),
+					array( 'ID' => $template->cat_id ),
+					array( '%d' ),
+					array( '%d' )
+				);
+			}
+		}
 
 }
 
 function blog_templates_upgrade_22() {
 	global $wpdb;
 
-	$model = nbt_get_model();
-	$model->upgrade_22();
+	$templates_table = $wpdb->base_prefix . 'nbt_templates';
+	if ( ! empty($wpdb->charset) )
+		$db_charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
+	if ( ! empty($wpdb->collate) )
+		$db_charset_collate .= " COLLATE $wpdb->collate";
 
-	$table = $model->templates_table;
-	$results = $wpdb->get_results( "SELECT * FROM $table" );
+	$sql = "CREATE TABLE $templates_table (
+		ID bigint(20) NOT NULL AUTO_INCREMENT,
+		blog_id bigint(20) NOT NULL,
+		name varchar(255) NOT NULL,
+		description mediumtext,
+		is_default int(1) DEFAULT 0,
+		options longtext NOT NULL,
+		network_id bigint(20) NOT NULL DEFAULT 1,
+		PRIMARY KEY  (ID)
+	      ) $db_charset_collate;";
+
+	dbDelta($sql);
+
+	$results = $wpdb->get_results( "SELECT * FROM $templates_table" );
 
 	if ( ! empty( $results ) ) {
 		foreach( $results as $template ) {
@@ -115,7 +211,7 @@ function blog_templates_upgrade_22() {
 			if ( ! empty( $blog_details ) ) {
 				$network_id = $blog_details->site_id;
 				$wpdb->update(
-					$table,
+					$templates_table,
 					array( 'network_id' => $network_id ),
 					array( 'ID' => $template->ID ),
 					array( '%d' ),
@@ -126,7 +222,6 @@ function blog_templates_upgrade_22() {
 	}
 
 	$settings = nbt_get_settings();
-	$model = nbt_get_model();
 
 	if ( empty( $settings['templates'] ) ) {
 		$settings['default'] = '';
@@ -141,4 +236,15 @@ function blog_templates_upgrade_22() {
 	}
 
 	nbt_update_settings( $settings );
+}
+
+function blog_templates_upgrade_262() {
+	global $wpdb;
+
+	$templates_table = $wpdb->base_prefix . 'nbt_templates';
+
+	// remove all main sites. This is a solution for Edublogs/CampusPress more than WPMUDEV, but just in case :)
+	$main_blog_id = BLOG_ID_CURRENT_SITE;
+	$wpdb->query( "DELETE FROM $templates_table WHERE blog_id = $main_blog_id" );
+
 }

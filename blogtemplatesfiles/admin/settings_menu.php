@@ -73,39 +73,31 @@ class blog_templates_settings_menu {
 			            
 			            <?php ob_start(); ?>
 
-                        <?php $appearance_template = $settings['registration-templates-appearance']; ?>
-                        <label for="registration-templates-appearance-select">
-                            <input type="radio" <?php checked( empty( $appearance_template ) ); ?> name="registration-templates-appearance" id="registration-templates-appearance-select" value=""/>
-                            <?php _e('As simple selection box', 'blog_templates'); ?>
-                        </label><br/>
-                        <label for="registration-templates-appearance-description">
-                            <input type="radio" <?php checked( $appearance_template, 'description' ); ?> name="registration-templates-appearance" id="registration-templates-appearance-description" value="description"/>
-                            <?php _e('As radio-box selection with descriptions', 'blog_templates'); ?>
-                        </label><br/>
-                        <label for="registration-templates-appearance-screenshot">
-                            <input type="radio" <?php checked( $appearance_template, 'screenshot' ); ?> name="registration-templates-appearance" id="registration-templates-appearance-screenshot" value="screenshot" />
-                            <?php _e('As theme screenshot selection', 'blog_templates'); ?>
-                        </label><br/>
-                        <label for="registration-templates-appearance-screenshot_plus">
-                            <input type="radio" <?php checked( $appearance_template, 'screenshot_plus' ); ?> name="registration-templates-appearance" id="registration-templates-appearance-screenshot_plus" value="screenshot_plus" />
-                            <?php _e('As theme screenshot selection with titles and description', 'blog_templates'); ?>
-                        </label><br/>
-                        <label for="registration-templates-appearance-previewer">
-                            <input type="radio" <?php checked( 'previewer' == $appearance_template ); ?> name="registration-templates-appearance" id="registration-templates-appearance-previewer" value="previewer" />
-                            <?php _e('As a theme previewer', 'blog_templates'); ?>
-                        </label><br/>
-                        <label for="registration-templates-appearance-page-showcase">
-                            <input type="radio" <?php checked( 'page_showcase' == $appearance_template ); ?> name="registration-templates-appearance" id="registration-templates-appearance-page-showcase" value="page_showcase" />
-                            <?php _e('As a showcase inside a page', 'blog_templates'); ?>
-                        </label>
                         <?php 
-                            wp_dropdown_pages( array( 
-                                'selected' => $settings['page-showcase-id'],
-                                'name' => 'page-showcase-id',
-                                'show_option_none' => 'true',
-                                'option_none_value' => ''
-                            ) ); 
+                            $appearance_template = $settings['registration-templates-appearance']; 
+                            if ( empty( $appearance_template ) )
+                                $appearance_template = 0;
+
+                            $selection_types = nbt_get_template_selection_types();
                         ?>
+
+                        <?php foreach ( $selection_types as $type => $label ): ?>
+                            <label for="registration-templates-appearance-<?php echo $type; ?>">
+                                <input type="radio" <?php checked( $appearance_template, $type ); ?> name="registration-templates-appearance" id="registration-templates-appearance-<?php echo $type; ?>" value="<?php echo $type; ?>"/>
+                                <?php echo $label ?>
+                            </label>
+                            <?php if ( $type === 'page_showcase' ) {
+                                wp_dropdown_pages( array( 
+                                    'selected' => $settings['page-showcase-id'],
+                                    'name' => 'page-showcase-id',
+                                    'show_option_none' => 'true',
+                                    'option_none_value' => ''
+                                ) );
+                            }
+                            ?>
+                            <br/>
+                        <?php endforeach; ?>
+
 
                         <div class="previewer-hidden-fields page_showcase-hidden-fields selection-type-hidden-fields">
                             <label style="margin-left:20px;margin-top:20px;display:block;" for="registration-templates-appearance-button-text">
@@ -138,57 +130,44 @@ class blog_templates_settings_menu {
                         <?php $this->render_row( __('Type of selection', 'blog_templates'), ob_get_clean() ); ?>
 			        </table>
                     
-                    <h3><?php _e( 'Categories Toolbar', 'blog_templates' ); ?></h3>
-                    <table class="form-table">
-                        <?php ob_start(); ?>
-                            <label for="show-categories-selection">
-                                <input type="checkbox" <?php checked( !empty($settings['show-categories-selection']) ); ?> name="show-categories-selection" id="show-categories-selection" value="1"/> 
-                                <?php _e( 'A new toolbar will appear on to on the selection screen. Users will be able to filter by templates categories.', 'blog_templates'); ?>
-                            </label><br/>
-                            <?php $this->render_row( __('Show categories menu', 'blog_templates'), ob_get_clean() ); ?>
-                        
-                        <?php ob_start(); ?>
+                    <?php if ( apply_filters( 'nbt_activate_categories_feature', true ) ): ?>
+                        <h3><?php _e( 'Categories Toolbar', 'blog_templates' ); ?></h3>
+                        <table class="form-table">
+                            <?php ob_start(); ?>
+                                <label for="show-categories-selection">
+                                    <input type="checkbox" <?php checked( !empty($settings['show-categories-selection']) ); ?> name="show-categories-selection" id="show-categories-selection" value="1"/> 
+                                    <?php _e( 'A new toolbar will appear on to on the selection screen. Users will be able to filter by templates categories.', 'blog_templates'); ?>
+                                </label><br/>
+                                <?php $this->render_row( __('Show categories menu', 'blog_templates'), ob_get_clean() ); ?>
+                            
+                            <?php ob_start(); ?>
 
-                        <?php ob_start(); ?>
-                            <label for="toolbar-color">
-                                <input type="text" class="color-field" name="toolbar-color" id="toolbar-color" value="<?php echo $settings['toolbar-color']; ?>"/> 
-                            </label>
-                            <?php $this->render_row( __( 'Toolbar background color', 'blog_templates' ), ob_get_clean() ); ?>
-                        
-                        <?php ob_start(); ?>
+                            <?php ob_start(); ?>
+                                <label for="toolbar-color">
+                                    <input type="text" class="color-field" name="toolbar-color" id="toolbar-color" value="<?php echo $settings['toolbar-color']; ?>"/> 
+                                </label>
+                                <?php $this->render_row( __( 'Toolbar background color', 'blog_templates' ), ob_get_clean() ); ?>
+                            
+                            <?php ob_start(); ?>
 
-                        <?php ob_start(); ?>
-                            <label for="toolbar-text-color">
-                                <input type="text" class="color-field" name="toolbar-text-color" id="toolbar-text-color" value="<?php echo $settings['toolbar-text-color']; ?>"/> 
-                            </label>
-                            <?php $this->render_row( __( 'Toolbar text color', 'blog_templates' ), ob_get_clean() ); ?>
-                        
-                        <?php ob_start(); ?>
+                            <?php ob_start(); ?>
+                                <label for="toolbar-text-color">
+                                    <input type="text" class="color-field" name="toolbar-text-color" id="toolbar-text-color" value="<?php echo $settings['toolbar-text-color']; ?>"/> 
+                                </label>
+                                <?php $this->render_row( __( 'Toolbar text color', 'blog_templates' ), ob_get_clean() ); ?>
+                            
+                            <?php ob_start(); ?>
 
-                        <?php ob_start(); ?>
-                            <label for="toolbar-border-color">
-                                <input type="text" class="color-field" name="toolbar-border-color" id="toolbar-border-color" value="<?php echo $settings['toolbar-border-color']; ?>"/> 
-                            </label>
-                            <?php $this->render_row( __( 'Toolbar border color', 'blog_templates' ), ob_get_clean() ); ?>
-                        
-                    </table>
+                            <?php ob_start(); ?>
+                                <label for="toolbar-border-color">
+                                    <input type="text" class="color-field" name="toolbar-border-color" id="toolbar-border-color" value="<?php echo $settings['toolbar-border-color']; ?>"/> 
+                                </label>
+                                <?php $this->render_row( __( 'Toolbar border color', 'blog_templates' ), ob_get_clean() ); ?>
+                            
+                        </table>
+                    <?php endif; ?>
 		            <p><div class="submit"><input type="submit" name="save_options" class="button-primary" value="<?php esc_attr_e(__('Save Settings', 'blog_templates'));?>" /></div></p>
                 </form>
-                <form method="post">
-                    <table class="form-table">
-                        <h3><?php _e( 'Repair Database', 'blog_templates' ); ?></h3>
-                        <p><?php _e( 'Check the option and click on the button if some of the plugin tables have not been created', 'blog_templates' ); ?></p>
-                        <?php ob_start(); ?>
-                            <label for="repair-tables">
-                                <input type="checkbox" name="repair-tables" id="repair-tables" /> 
-                                <?php _e( 'No data will be deleted from the existent tables.', 'blog_templates'); ?>
-                            </label><br/>
-                            <?php $this->render_row( __( 'Repair tables?', 'blog_templates'), ob_get_clean() ); ?>
-                    </table>
-                    <input type="hidden" name="action" value="repair_database">
-                    <?php wp_nonce_field( 'repair-database' ); ?>
-                    <p><div class="submit"><input type="submit" name="submit_repair_database" class="button-primary" value="<?php esc_attr_e(__('Repair now!', 'blog_templates'));?>" /></div></p>
-			    </form>
 			   </div>
 			<?php
 	    }
@@ -247,7 +226,11 @@ class blog_templates_settings_menu {
 
                 $defaults = nbt_get_default_settings();
                 $settings['show-registration-templates'] = isset($_POST['show-registration-templates']) ? (int)$_POST['show-registration-templates'] : 0;
-                $appearance = isset($_POST['registration-templates-appearance']) ? $_POST['registration-templates-appearance'] : '';
+
+                $selection_types = nbt_get_template_selection_types();
+                $appearance = isset( $_POST['registration-templates-appearance'] ) && array_key_exists( $_POST['registration-templates-appearance'], $selection_types) 
+                    ? $_POST['registration-templates-appearance'] 
+                    : key( $selection_types );
                 if ( 'page_showcase' == $appearance && ! empty( $_POST['page-showcase-id'] ) && $page = get_post( absint( $_POST['page-showcase-id'] ) ) ) {
 
                     $settings['registration-templates-appearance'] = $appearance;

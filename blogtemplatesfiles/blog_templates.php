@@ -14,7 +14,10 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             if ( is_network_admin() ) {
                 new blog_templates_main_menu();
-                new blog_templates_categories_menu();
+
+                if ( apply_filters( 'nbt_activate_categories_feature', true ) )
+                    new blog_templates_categories_menu();
+                
                 new blog_templates_settings_menu();
             }
 
@@ -82,7 +85,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 }
 
                 update_site_option( 'blog_templates_options', $new_options );
-                update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );
+                update_site_option( 'nbt_plugin_version', '1.7.2' );
             }
             
 
@@ -96,7 +99,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 }
                 
                 update_site_option( 'blog_templates_options', $new_options );
-                update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );
+                update_site_option( 'nbt_plugin_version', '1.7.6' );
             }
 
 
@@ -104,12 +107,12 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 $model = nbt_get_model();
                 $model->create_tables();
                 blog_templates_upgrade_19();
-                update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );
+                update_site_option( 'nbt_plugin_version', '1.9' );
             }
 
             if ( version_compare( $saved_version, '1.9.1', '<' ) ) {
                 blog_templates_upgrade_191();
-                update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );
+                update_site_option( 'nbt_plugin_version', '1.9.1' );
             }
 
             if ( version_compare( $saved_version, '2.0', '<' ) ) {
@@ -120,12 +123,17 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 blog_templates_upgrade_191();
 
                 blog_templates_upgrade_20();
-                update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );
+                update_site_option( 'nbt_plugin_version', '2.0' );
             }
 
             if ( version_compare( $saved_version, '2.2', '<' ) ) {
                 blog_templates_upgrade_22();
-                update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );   
+                update_site_option( 'nbt_plugin_version', '2.2' );   
+            }
+
+            if ( version_compare( $saved_version, '2.6.2', '<' ) ) {
+                blog_templates_upgrade_262();
+                update_site_option( 'nbt_plugin_version', '2.6.2' );   
             }
 
         }

@@ -73,7 +73,7 @@ class blog_templates_model {
 			$wpdb->query( "DROP TABLE $this->categories_relationships_table;" );
 		}
 
-		private function create_templates_table() {
+		public function create_templates_table() {
 			global $wpdb;
 
 			$sql = "CREATE TABLE $this->templates_table (
@@ -90,7 +90,7 @@ class blog_templates_model {
 			dbDelta($sql);
 		}
 
-		private function create_templates_categories_table() {
+		public function create_templates_categories_table() {
 			global $wpdb;
 
 			$sql = "CREATE TABLE $this->categories_table (
@@ -105,7 +105,7 @@ class blog_templates_model {
 			dbDelta($sql);
 		}
 
-		private function create_templates_categories_relationships() {
+		public function create_templates_categories_relationships() {
 			global $wpdb;
 
 			$sql = "CREATE TABLE $this->categories_relationships_table (
@@ -118,18 +118,7 @@ class blog_templates_model {
 			dbDelta($sql);
 		}
 
-		public function upgrade_20() {
-			global $wpdb;
-
-			// Reseting categories as it has been never used
-			$wpdb->query( "DELETE FROM $this->categories_table" );
-			$wpdb->query( "DELETE FROM $this->categories_relationships_table" );
-			$this->add_default_template_category();
-
-			$this->check_for_uncategorized_templates();
-			$this->recount_categories();
-
-		}
+		
 
 		public function upgrade_22() {
 			require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );

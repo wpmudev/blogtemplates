@@ -65,8 +65,7 @@ class NBT_Template_copier {
 				call_user_func( array( $this, 'copy_' . $setting ) );
 		}
 
-		if ( ! empty( $this->settings['additional_tables'] ) )
-			$this->copy_additional_tables();
+		$this->copy_additional_tables();
 
         if ( $this->settings['block_posts_pages'] ) {
             $wpdb->query( "DELETE FROM $wpdb->postmeta WHERE meta_key = 'nbt_block_post'" );
@@ -390,63 +389,80 @@ class NBT_Template_copier {
         }
 	}
 
+    /**
+     * Copy additional tables. Tables can be only created 
+     * @param type $copy_empty 
+     * @return type
+     */
 	public function copy_additional_tables() {
 		global $wpdb;
 
+        // Prefixes
 		$new_prefix = $wpdb->prefix;
-
 		$template_prefix = $wpdb->get_blog_prefix( $this->template_blog_id );
 
-        foreach ( $this->settings['additional_tables'] as $add ) {
-            $add = esc_sql( $add );
+        $tables_to_copy = $this->settings['additional_tables'];
 
+        // If we have copied the settings, we'll need at least to create all the tables
+        // Empty or not
+        $settings_copied = $this->settings['to_copy']['settings'];
+        if ( $settings_copied )
+            $all_source_tables = wp_list_pluck( nbt_get_additional_tables( $this->template_blog_id ), 'prefix.name' );
+        else
+            $all_source_tables = $tables_to_copy;
+
+        foreach ( $all_source_tables as $table ) {
+            $add = in_array( $table, $tables_to_copy );
+            $table = esc_sql( $table );
+
+            // MultiDB Hack
             if ( is_a( $wpdb, 'm_wpdb' ) )
-                $add_tablebase = end( explode( '.', $add, 2 ) );
+                $tablebase = end( explode( '.', $table, 2 ) );
             else
-                $add_tablebase = $add;
+                $tablebase = $table;
 
+            $new_table = $new_prefix . substr( $tablebase, strlen( $template_prefix ) );
 
-            $new_add_table = $new_prefix . substr( $add_tablebase, strlen( $template_prefix ) );
-            $result = $wpdb->get_results( "SHOW TABLES LIKE '{$new_add_table}'", ARRAY_N );
+            $result = $wpdb->get_results( "SHOW TABLES LIKE '{$new_table}'", ARRAY_N );
+            if ( ! empty( $result ) ) {
+                // The table is already present in the new blog
+                // Clear it
+                $this->clear_table( $tablebase );
 
-            if ( ! empty( $result ) ) { //Is the table present? Clear it, then copy
-                //echo ("table exists: $add<br/>");
-                $this->clear_table($add_tablebase);
-                //Copy the DB
-                $this->copy_table($this->template['blog_id'],str_replace($template_prefix,'',$add_tablebase));
-            } else { //The table's not present, add it and copy the data from the old one
-                //echo ('table doesn\'t exist<br/>');
-/* -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
-                $create_script = current( $wpdb->get_col( 'SHOW CREATE TABLE ' . $add, 1 ) );
-                if ( $create_script ) {
-                    // greedy matching
-                    if ( preg_match( '/\(.*\)/s', $create_script, $match ) ) {
-                        $table_body = $match[0];
-                        $wpdb->query( "CREATE TABLE IF NOT EXISTS {$new_add_table} {$table_body}" );
+                if ( $add ) {
+                    // And copy the content if needed
+                    $this->copy_table( $this->template['blog_id'], str_replace( $template_prefix, '', $tablebase ) );
+                }
+            }
+            else {
+                // The table does not exist in the new blog
+                // Let's create it
+                $create_script = current( $wpdb->get_col( 'SHOW CREATE TABLE ' . $table, 1 ) );
+                if ( $create_script && preg_match( '/\(.*\)/s', $create_script, $match ) ) {
+                    $table_body = $match[0];
+                    $wpdb->query( "CREATE TABLE IF NOT EXISTS {$new_table} {$table_body}" );
 
+                    if ( $add ) {
+                        // And copy the content if needed
                         if ( is_a( $wpdb, 'm_wpdb' ) ) {
-                            // not perfect solution, but will work fine if there are not too many rows in the table
-                            $rows = $wpdb->get_results( "SELECT * FROM {$add}", ARRAY_A );
+                            $rows = $wpdb->get_results( "SELECT * FROM {$table}", ARRAY_A );
                             foreach ( $rows as $row ) {
-                                $wpdb->insert( $new_add_table, $row );
+                                $wpdb->insert( $new_table, $row );
                             }
                         } else {
-                            $wpdb->query( "INSERT INTO {$new_add_table} SELECT * FROM {$add}" );
+                            $wpdb->query( "INSERT INTO {$new_table} SELECT * FROM {$table}" );
                         }
                     }
+
                 }
 
-/* -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
-
-                if (!empty($wpdb->last_error)) {
+                if ( ! empty( $wpdb->last_error ) ) {
                     $error = '<div id="message" class="error"><p>' . sprintf( __( 'Insertion Error: %s - The template was not applied. (New Blog Templates - With CREATE TABLE query for Additional Tables)', 'blog_templates' ), $wpdb->last_error ) . '</p></div>';
                     $wpdb->query("ROLLBACK;");
-
-                    //We've rolled it back and thrown an error, we're done here
-                    restore_current_blog();
                     wp_die($error);
                 }
             }
+
         }
 	}
 
