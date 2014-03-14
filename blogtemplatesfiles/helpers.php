@@ -24,6 +24,7 @@ function nbt_get_default_settings() {
 }
 
 function nbt_theme_selection_toolbar( $templates ) {
+    require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/blog_templates_theme_selection_toolbar.php' );
 	$settings = nbt_get_settings();
 	$toolbar = new blog_templates_theme_selection_toolbar( $settings['registration-templates-appearance'] );
 	$toolbar->display();

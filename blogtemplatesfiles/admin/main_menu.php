@@ -141,7 +141,7 @@ class blog_templates_main_menu {
 			                <?php $this->render_row( __( 'Template Name:', 'blog_templates' ), ob_get_clean() ); ?>
 
 			                <?php ob_start(); ?>
-			                    <input name="copy_blog_id" type="text" id="copy_blog_id" class="small-text" placeholder="<?php _e( 'Blog ID', 'blog_templates' ); ?>"/>
+			                    <input name="copy_blog_id" type="text" id="copy_blog_id" size="10" placeholder="<?php _e( 'Blog ID', 'blog_templates' ); ?>"/>
 			                    <div class="ui-widget">
 				                    <label for="search_for_blog"> <?php _e( 'Or search by blog path', 'blog_templates' ); ?> 
 										<input type="text" id="search_for_blog" class="medium-text">
@@ -248,8 +248,8 @@ class blog_templates_main_menu {
 						                <?php if ( apply_filters( 'nbt_activate_block_posts_feature', true ) ): ?>
 							                <?php ob_start(); ?>
 						                        <input type='checkbox' name='block_posts_pages' id='nbt-block-posts-pages' <?php checked( $template['block_posts_pages'] ); ?>>
-						                        <label for='nbt-block-posts-pages'><?php _e( 'Check if you want to block for edition (even for the blog administrator) the posts/pages created by the template by default', 'blog_templates' ); ?></label>
-						                    <?php $this->render_row( __( 'Block Posts/Pages', 'blog_templates' ), ob_get_clean() ); ?>
+						                        <label for='nbt-block-posts-pages'><?php _e( 'If selected, pages and posts included in the template will not be allowed to be edited (even for the blog administrator). Only Super Admins will be able to edit the text of copied posts/pages.', 'blog_templates' ); ?></label>
+						                    <?php $this->render_row( __( 'Lock Posts/Pages', 'blog_templates' ), ob_get_clean() ); ?>
 						                <?php endif; ?>
 
 					                    <?php ob_start(); ?>
@@ -286,6 +286,7 @@ class blog_templates_main_menu {
 
 						                <?php ob_start(); ?>
 
+						                <?php global $wpdb; ?>
 						                <p><?php printf( __( 'The tables listed here were likely created by plugins you currently have or have had running on this blog. If you want the data from these tables copied over to your new blogs, add a checkmark next to the table. Note that the only tables displayed here begin with %s, which is the standard table prefix for this specific blog. Plugins not following this convention will not have their tables listed here.','blog_templates' ), $wpdb->prefix ); ?></p><br/>
 
 						                <?php
@@ -299,7 +300,7 @@ class blog_templates_main_menu {
 						                		$checked = isset( $template['additional_tables'] ) && is_array( $template['additional_tables'] ) && in_array( $value, $template['additional_tables'] );
 						                		?>
 						                			<input type='checkbox' name='additional_template_tables[]' <?php checked( $checked ); ?> id="nbt-<?php echo esc_attr( $value ); ?>" value="<?php echo esc_attr( $value ); ?>">
-						                			<label for="nbt-<?php echo esc_attr( $value ); ?>"><?php echo $table_name; ?></label>
+						                			<label for="nbt-<?php echo esc_attr( $value ); ?>"><?php echo $table_name; ?></label><br/>
 						                		<?php
 						                	}
 						                			

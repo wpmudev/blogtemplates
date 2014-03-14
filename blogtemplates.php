@@ -8,6 +8,7 @@ Author URI: http://premium.wpmudev.org/
 Version: 2.6.2
 Network: true
 Text Domain: blog_templates
+Domain Path: lang
 WDP ID: 130
 */
 
@@ -55,13 +56,14 @@ require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/blog_templates.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/blog_templates_lock_posts.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/settings-handler.php' );
 
+include_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/externals/wpmudev-dash-notification.php' );
+global $wpmudev_notices;
+$wpmudev_notices[] = array( 'id'=> 130,'name'=> 'New Blog Templates', 'screens' => array( 'toplevel_page_blog_templates_main-network', 'blog-templates_page_blog_templates_categories-network', 'blog-templates_page_blog_templates_settings-network' ) );
 
 if ( is_network_admin() ) {
 	require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/tables/templates_table.php' );
 	require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/tables/categories_table.php' );
-	global $wpmudev_notices;
-	$wpmudev_notices[] = array( 'id'=> 130,'name'=> 'New Blog Templates', 'screens' => array( 'toplevel_page_blog_templates_main-network', 'blog-templates_page_blog_templates_categories-network', 'blog-templates_page_blog_templates_settings-network' ) );
-	include_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/externals/wpmudev-dash-notification.php' );
+	
 }
 
 /**
@@ -214,7 +216,7 @@ function nbt_render_theme_selection_item( $type, $tkey, $template, $options = ar
 				</a>
 				<div class="theme-previewer-overlay">
 					<div class="template-name"><?php echo $tplid; ?></div><br/>
-					<button class="view-demo-button" data-blog-url="<?php echo $blog_url;?>"><?php _e( 'View demo', 'blog_templates' ); ?></button><br/><br/>
+					<button rel="nofollow" class="view-demo-button" data-blog-url="<?php echo $blog_url;?>"><?php _e( 'View demo', 'blog_templates' ); ?></button><br/><br/>
 					<button class="select-theme-button" data-theme-key="<?php echo $tkey;?>"><?php echo $options['previewer_button_text']; ?></button>
 				</div>
 				
@@ -248,7 +250,7 @@ function nbt_render_theme_selection_item( $type, $tkey, $template, $options = ar
 				</a>
 				<div class="theme-page-showcase-overlay">
 					<div class="template-name"><?php echo $tplid; ?></div><br/>
-					<button class="view-demo-button" data-blog-url="<?php echo $blog_url;?>"><?php _e( 'View demo', 'blog_templates' ); ?></button><br/><br/>
+					<button rel="nofollow" class="view-demo-button" data-blog-url="<?php echo $blog_url;?>"><?php _e( 'View demo', 'blog_templates' ); ?></button><br/><br/>
 					<button class="select-theme-button" data-signup-url="<?php echo esc_url( $sign_up_url );?>"><?php echo $options['previewer_button_text']; ?></button>
 				</div>
 				

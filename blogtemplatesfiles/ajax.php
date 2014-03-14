@@ -42,7 +42,7 @@ function nbt_get_sites_search() {
 			$details = get_blog_details( $row->blog_id );
 			$returning[] = array( 
 				'blog_name' => $details->blogname,
-				'path' => $row->path, 
+				'path' => is_subdomain_install() ? $row->domain : $row->path, 
 				'blog_id' => $row->blog_id 
 			);
 		}
