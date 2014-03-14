@@ -33,7 +33,6 @@ class blog_templates_main_menu {
 
     public function add_javascript($hook) {
 
-    	wp_enqueue_style( 'nbt-icon-styles', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/css/icon-styles.css' );
     	if ( get_current_screen()->id == $this->page_id . '-network' ) {
     		wp_enqueue_script( 'nbt-templates-js', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/js/nbt-templates.js', array( 'jquery' ) );
     		

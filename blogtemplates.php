@@ -3,7 +3,7 @@
 Plugin Name: New Blog Templates
 Plugin URI: http://premium.wpmudev.org/project/new-blog-template
 Description: Allows the site admin to create new blogs based on templates, to speed up the blog creation process
-Author: WPMU DEV
+Author: WPMUDEV
 Author URI: http://premium.wpmudev.org/
 Version: 2.6.2
 Network: true
@@ -41,7 +41,6 @@ define( 'NBT_PLUGIN_LANG_DOMAIN', 'blog_templates' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/helpers.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/filters.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/model.php' );
-require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/upgrade.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/blog_templates_theme_selection_toolbar.php' );
 
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/ajax.php' );
@@ -349,7 +348,6 @@ function nbt_render_theme_selection_scripts( $options ) {
 				background:<?php echo $selected_color; ?> !important;
 			}
 			.theme-previewer-wrap:nth-child(even),
-			.theme-page-showcase-wrap:nth-child(even),
 			.theme-screenshot-wrap:nth-child(even),
 			.theme-screenshot-plus-wrap:nth-child(even) {
 				margin-right:0px;
@@ -600,6 +598,13 @@ function nbt_render_theme_selection_scripts( $options ) {
 			</style>
 		<?php
 	}
+}
+
+register_activation_hook( __FILE__, 'nbt_activate_plugin' );
+function nbt_activate_plugin() {
+	$model = nbt_get_model();
+	$model->create_tables();
+	update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );
 }
 
 

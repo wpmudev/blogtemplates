@@ -90,7 +90,7 @@ class blog_templates_settings_menu {
                                 wp_dropdown_pages( array( 
                                     'selected' => $settings['page-showcase-id'],
                                     'name' => 'page-showcase-id',
-                                    'show_option_none' => 'true',
+                                    'show_option_none' => __( 'Select a page', 'blog_templates' ),
                                     'option_none_value' => ''
                                 ) );
                             }

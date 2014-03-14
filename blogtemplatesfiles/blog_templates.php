@@ -63,8 +63,26 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             add_action( 'delete_blog', array( &$this, 'maybe_delete_template' ), 10, 1 );
 
+            add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_styles' ) );
+
+
             do_action( 'nbt_object_create', $this );
 
+        }
+
+        public function enqueue_styles() {
+            global $wp_version;
+            
+            if ( version_compare( $wp_version, '3.8', '>=' ) ) {
+                ?>
+                    <style>
+                        #adminmenu #toplevel_page_blog_templates_main div.wp-menu-image:before { content: "\f175"; }
+                    </style>
+                <?php
+            }
+            else {
+                wp_enqueue_style( 'mcc-icons', MULTISTE_CC_ASSETS_URL . 'css/icons.css' );
+            }
         }
 
         function maybe_upgrade() {
@@ -74,6 +92,11 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             if ( ! $saved_version )
                 $saved_version = '1.7.2';
+
+            if ( $saved_version == NBT_PLUGIN_VERSION )
+                return;
+
+            require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/upgrade.php' );
 
             if ( version_compare( $saved_version, '1.7.2', '<=' ) ) {
                 $options = get_site_option( 'blog_templates_options', array( 'templates' => array() ) );
@@ -428,6 +451,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                     <?php
                 }
                 else {
+                    $value = isset( $_REQUEST['blog_template'] ) ? $_REQUEST['blog_template'] : '';
                     ?>
                         <input type="hidden" name="blog_template" value="<?php echo absint( $_REQUEST['blog_template'] ); ?>">
                     <?php

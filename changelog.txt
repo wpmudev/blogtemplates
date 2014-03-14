@@ -1,11 +1,22 @@
 Plugin Name: New Blog Templates
-Author: Jason DeVelvis, Ulrich Sossou, Ignacio Cruz
+Author: WPMUDEV
 
 Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
-2.6.1 - 2013-02-12
+2.6.2 - 2014-03-14
+----------------------------------------------------------------------
+- Updated 3.8 icon.
+- Improved showcase styles
+- Fixed Search Blog By URL autocomplete in admin main page.
+- Fixed error on MultiDB Sites
+- Fixed signup notice
+- Some performance improvements
+- Copier was trying to copy twice when menus were selected
+- Othe minor improvements
+
+2.6.1 - 2014-02-12
 ----------------------------------------------------------------------
 - Fixed issue with MultiDB systems
 - Improved theme selector toolbar
