@@ -245,10 +245,12 @@ class blog_templates_main_menu {
 						                    <?php $this->render_row( __( 'Copy Status?', 'blog_templates' ), ob_get_clean() ); ?>
 						                <?php endif; ?>
 
-						                <?php ob_start(); ?>
-					                        <input type='checkbox' name='block_posts_pages' id='nbt-block-posts-pages' <?php checked( $template['block_posts_pages'] ); ?>>
-					                        <label for='nbt-block-posts-pages'><?php _e( 'Check if you want to block for edition (even for the blog administrator) the posts/pages created by the template by default', 'blog_templates' ); ?></label>
-					                    <?php $this->render_row( __( 'Block Posts/Pages', 'blog_templates' ), ob_get_clean() ); ?>
+						                <?php if ( apply_filters( 'nbt_activate_block_posts_feature', true ) ): ?>
+							                <?php ob_start(); ?>
+						                        <input type='checkbox' name='block_posts_pages' id='nbt-block-posts-pages' <?php checked( $template['block_posts_pages'] ); ?>>
+						                        <label for='nbt-block-posts-pages'><?php _e( 'Check if you want to block for edition (even for the blog administrator) the posts/pages created by the template by default', 'blog_templates' ); ?></label>
+						                    <?php $this->render_row( __( 'Block Posts/Pages', 'blog_templates' ), ob_get_clean() ); ?>
+						                <?php endif; ?>
 
 					                    <?php ob_start(); ?>
 							            	<label>

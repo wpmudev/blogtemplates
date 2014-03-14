@@ -20,6 +20,10 @@ class NBT_Lock_Posts {
 	 *
 	 */
 	function __construct() {
+
+		if ( ! apply_filters( 'nbt_activate_block_posts_feature', true ) )
+			return;
+		
 		add_action( 'init', array( &$this, 'check' ) );
 
 		// Lock the posts good.
