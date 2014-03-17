@@ -339,7 +339,7 @@ class NBT_Template_copier {
                 else
                     $orig_filesystem = $wp_filesystem;
 
-                $wp_filesystem = new WP_Filesystem( false );
+                $wp_filesystem = new WP_Filesystem_Direct( false );
 
                 if ( ! defined('FS_CHMOD_DIR') )
                     define('FS_CHMOD_DIR', 0755 );
