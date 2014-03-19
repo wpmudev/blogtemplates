@@ -221,6 +221,8 @@ class blog_templates_main_menu {
 						                        )
 						                    );
 
+											$options_to_copy = apply_filters( 'nbt_template_selection', $options_to_copy );
+
 						                    foreach ( $options_to_copy as $key => $value ) : ?>
 						                            <div id="nbt-<?php echo $key; ?>-to-copy" class="postbox">
 														<h3 class="hndle">

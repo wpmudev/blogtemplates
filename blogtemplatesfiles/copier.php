@@ -12,7 +12,7 @@ class NBT_Template_copier {
 	public function __construct( $src_blog_id, $new_blog_id, $user_id, $args ) {
         $defaults = $this->get_default_args();
         $args['to_copy'] = wp_parse_args( $args['to_copy'], $defaults['to_copy'] );
-		$this->settings = wp_parse_args( $args, $defaults );
+		$this->settings = apply_filters( 'nbt_copier_settings', wp_parse_args( $args, $defaults ) );
 
 		$this->template_blog_id = $src_blog_id;
 		$this->new_blog_id = $new_blog_id;
@@ -559,7 +559,7 @@ class NBT_Template_copier {
             if ( is_array( $categories ) && count( $categories ) > 0 )
                 $query .= " INNER JOIN $wpdb->term_relationships t2 ON t2.object_id = t1.ID ";
 
-            $query .= "WHERE t1.post_type != 'page'";
+            $query .= "WHERE t1.post_type != 'page' AND t1.post_type != 'attachment'";
 
             if ( is_array( $categories ) && count( $categories ) > 0 ) {
                 $categories_list = '(' . implode( ',', $categories ) . ')';
@@ -568,7 +568,7 @@ class NBT_Template_copier {
 
         }
         elseif ( 'postmeta' == $type ) {
-            $query .= "INNER JOIN $wpdb->posts t2 ON t1.post_id = t2.ID WHERE t2.post_type != 'page'";
+            $query .= "INNER JOIN $wpdb->posts t2 ON t1.post_id = t2.ID WHERE t2.post_type != 'page' AND t2.post_type != 'attachment'";
         }
         elseif ( 'pages' == $type ) {
             $query .= "WHERE t1.post_type = 'page'";
