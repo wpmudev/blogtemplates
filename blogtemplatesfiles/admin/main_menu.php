@@ -213,7 +213,7 @@ class blog_templates_main_menu {
 						                        ),
 						                        'menus'    => array(
 						                        	'title' => __( 'Menus', 'blog_templates' ),
-						                        	'content' => false
+						                        	'content' => '<span class="description">' . __( '<strong>Warning:</strong> if your menu includes categories or pages, make sure you have also selected "Copy Categories/Pages"', 'blog_templates' ) . '</span>'
 						                        ),
 						                        'files'    => array(
 						                        	'title' => __( 'Files', 'blog_templates' ),

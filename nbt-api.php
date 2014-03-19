@@ -36,6 +36,7 @@ function nbt_load_api() {
  * @return type
  */
 function nbt_api_copy_contents_to_new_blog( $source_blog_id, $new_blog_id, $new_user_id, $args ) {
+	nbt_load_api();
 	$copier = new NBT_Template_copier( $source_blog_id, $new_blog_id, $new_user_id, $args );
 	$copier->execute();
 }
