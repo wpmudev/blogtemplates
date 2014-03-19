@@ -80,7 +80,8 @@ class NBT_Template_copier {
             }
         }
 
-        $this->set_content_urls( $this->template_blog_id, $this->new_blog_id );
+        if ( apply_filters( 'nbt_copier_replace_content_url', true ) )
+            $this->set_content_urls( $this->template_blog_id, $this->new_blog_id );
 
         if ( ! empty( $this->settings['update_dates'] ) ) {
             $this->update_posts_dates('post');
