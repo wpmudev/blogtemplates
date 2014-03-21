@@ -205,7 +205,7 @@ function nbt_render_theme_selection_item( $type, $tkey, $template, $options = ar
 		$img = ( ! empty( $template['screenshot'] ) ) ? $template['screenshot'] : nbt_get_default_screenshot_url( $template['blog_id'] );
 		$tplid = $template['name'];
 		$default = @$options['default'] == $tkey ? "blog_template-default_item" : "";
-		$blog_url = get_site_url( $template['blog_id'] );
+		$blog_url = get_site_url( $template['blog_id'], '', 'http' );
 		?>
 			<div class="template-signup-item theme-previewer-wrap <?php echo $default; ?>" data-tkey="<?php echo $tkey; ?>" id="theme-previewer-wrap-<?php echo $tkey;?>">
 				
@@ -231,7 +231,7 @@ function nbt_render_theme_selection_item( $type, $tkey, $template, $options = ar
 		$img = ( ! empty( $template['screenshot'] ) ) ? $template['screenshot'] : nbt_get_default_screenshot_url( $template['blog_id'] );
 		$tplid = $template['name'];
 		$default = @$options['default'] == $tkey ? "blog_template-default_item" : "";
-		$blog_url = get_site_url( $template['blog_id'] );
+		$blog_url = get_site_url( $template['blog_id'], '', 'http' );
 
 		if ( class_exists( 'BuddyPress' ) ) {
 			$sign_up_url = bp_get_signup_page();
