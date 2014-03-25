@@ -12,20 +12,17 @@ class NBT_Template_copier {
 	public function __construct( $src_blog_id, $new_blog_id, $user_id, $args ) {
         $defaults = $this->get_default_args();
         $args['to_copy'] = wp_parse_args( $args['to_copy'], $defaults['to_copy'] );
-		$this->settings = apply_filters( 'nbt_copier_settings', wp_parse_args( $args, $defaults ) );
+		$this->settings = wp_parse_args( $args, $defaults );
 
 		$this->template_blog_id = $src_blog_id;
 		$this->new_blog_id = $new_blog_id;
 		$this->user_id = $user_id;
 
 		$model = nbt_get_model();
-
-        if ( ! empty( $this->settings['template_id'] ) )
-            $this->template = $model->get_template( $this->settings['template_id'] );
+		$this->template = $model->get_template( $this->settings['template_id'] );
 
         if ( empty( $this->template ) )
             $this->template = array();
-
 	}
 
 	private function get_default_args() {
@@ -80,8 +77,7 @@ class NBT_Template_copier {
             }
         }
 
-        if ( apply_filters( 'nbt_copier_replace_content_url', true ) )
-            $this->set_content_urls( $this->template_blog_id, $this->new_blog_id );
+        $this->set_content_urls( $this->template['blog_id'], $this->new_blog_id );
 
         if ( ! empty( $this->settings['update_dates'] ) ) {
             $this->update_posts_dates('post');
@@ -229,7 +225,6 @@ class NBT_Template_copier {
 	}
 
 	public function copy_pages() {
-
 		$pages_ids = in_array( 'all-pages', $this->settings['pages_ids'] ) ? false : $this->settings['pages_ids'];
 
         $this->copy_posts_table( $this->template_blog_id, "pages", $pages_ids );
@@ -244,19 +239,19 @@ class NBT_Template_copier {
 		global $wpdb;
 
 		$this->clear_table( $wpdb->links );
-        $this->copy_table( $this->template_blog_id, 'links' );
+        $this->copy_table( $this->template_blog_id, $wpdb->links );
         do_action( 'blog_templates-copy-links', $this->template, $this->new_blog_id, $this->user_id );
 
         $this->clear_table( $wpdb->terms );
-        $this->copy_table( $this->template_blog_id, 'terms' );
+        $this->copy_table( $this->template_blog_id, $wpdb->terms );
         do_action( 'blog_templates-copy-terms', $this->template, $this->new_blog_id, $this->user_id );
 
         $this->clear_table( $wpdb->term_relationships );
-        $this->copy_table( $this->template_blog_id, 'term_relationships' );
+        $this->copy_table( $this->template_blog_id, $wpdb->term_relationships );
         do_action( 'blog_templates-copy-term_relationships', $this->template, $this->new_blog_id, $this->user_id );
 
         $this->clear_table( $wpdb->term_taxonomy );
-        $this->copy_table( $this->template_blog_id, 'term_taxonomy' );
+        $this->copy_table( $this->template_blog_id, $wpdb->term_taxonomy );
         do_action( 'blog_templates-copy-term_taxonomy', $this->template, $this->new_blog_id, $this->user_id );
 
         if ( ! $this->settings['to_copy']['posts'] ) {
@@ -436,7 +431,7 @@ class NBT_Template_copier {
 
                 if ( $add ) {
                     // And copy the content if needed
-                    $this->copy_table( $this->template_blog_id, str_replace( $template_prefix, '', $tablebase ) );
+                    $this->copy_table( $this->template['blog_id'], str_replace( $template_prefix, '', $tablebase ) );
                 }
             }
             else {
@@ -560,7 +555,7 @@ class NBT_Template_copier {
             if ( is_array( $categories ) && count( $categories ) > 0 )
                 $query .= " INNER JOIN $wpdb->term_relationships t2 ON t2.object_id = t1.ID ";
 
-            $query .= "WHERE t1.post_type != 'page' AND t1.post_type != 'attachment'";
+            $query .= "WHERE t1.post_type != 'page'";
 
             if ( is_array( $categories ) && count( $categories ) > 0 ) {
                 $categories_list = '(' . implode( ',', $categories ) . ')';
@@ -569,7 +564,7 @@ class NBT_Template_copier {
 
         }
         elseif ( 'postmeta' == $type ) {
-            $query .= "INNER JOIN $wpdb->posts t2 ON t1.post_id = t2.ID WHERE t2.post_type != 'page' AND t2.post_type != 'attachment'";
+            $query .= "INNER JOIN $wpdb->posts t2 ON t1.post_id = t2.ID WHERE t2.post_type != 'page'";
         }
         elseif ( 'pages' == $type ) {
             $query .= "WHERE t1.post_type = 'page'";
@@ -703,15 +698,12 @@ class NBT_Template_copier {
 
         //Switch to the template blog, then grab the values
         switch_to_blog( $templated_blog_id );
-        $templated_table = $wpdb->prefix . $table;
-        $templated = $wpdb->get_results( "SELECT * FROM {$templated_table}" );
+
+        $templated = $wpdb->get_results( "SELECT * FROM {$table}" );
         restore_current_blog(); //Switch back to the newly created blog
 
-        if ( count( $templated ) ) {
+        if ( count( $templated ) )
             $to_remove = $this->get_fields_to_remove($table, $templated[0]);
-        }
-
-        $destination_table = $wpdb->prefix . $table;
 
         //Now, insert the templated settings into the newly created blog
         foreach ($templated as $row) {
@@ -722,14 +714,14 @@ class NBT_Template_copier {
                     unset( $row[ $key ] );
             }
 
-            $process = apply_filters('blog_templates-process_row', $row, $destination_table, $templated_blog_id);
+            $process = apply_filters('blog_templates-process_row', $row, $table, $templated_blog_id);
             if ( ! $process )
             	continue;
 
             //$wpdb->insert($wpdb->$table, $row);
-            $wpdb->insert( $destination_table, $process );
+            $wpdb->insert( $table, $process );
             if ( ! empty( $wpdb->last_error ) ) {
-                $error = '<div id="message" class="error"><p>' . sprintf( __( 'Insertion Error: %1$s - The template was not applied. (New Blog Templates - While copying %2$s)', 'blog_templates' ), $wpdb->last_error, $destination_table ) . '</p></div>';
+                $error = '<div id="message" class="error"><p>' . sprintf( __( 'Insertion Error: %1$s - The template was not applied. (New Blog Templates - While copying %2$s)', 'blog_templates' ), $wpdb->last_error, $table ) . '</p></div>';
                 $wpdb->query("ROLLBACK;");
 
                 //We've rolled it back and thrown an error, we're done here
@@ -843,6 +835,7 @@ class NBT_Template_copier {
             "SELECT * FROM $templated_terms_table
             WHERE term_id IN ( $menus_ids )"
         );
+
 
         //$menus = $wpdb->get_col(
         //    "SELECT ID FROM $templated_posts_table

@@ -213,15 +213,13 @@ class blog_templates_main_menu {
 						                        ),
 						                        'menus'    => array(
 						                        	'title' => __( 'Menus', 'blog_templates' ),
-						                        	'content' => '<span class="description">' . __( '<strong>Warning:</strong> if your menu includes categories or pages, make sure you have also selected "Copy Categories/Pages"', 'blog_templates' ) . '</span>'
+						                        	'content' => false
 						                        ),
 						                        'files'    => array(
 						                        	'title' => __( 'Files', 'blog_templates' ),
 						                        	'content' => false
 						                        )
 						                    );
-
-											$options_to_copy = apply_filters( 'nbt_template_selection', $options_to_copy );
 
 						                    foreach ( $options_to_copy as $key => $value ) : ?>
 						                            <div id="nbt-<?php echo $key; ?>-to-copy" class="postbox">
