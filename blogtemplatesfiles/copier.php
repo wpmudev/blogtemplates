@@ -836,12 +836,6 @@ class NBT_Template_copier {
             WHERE term_id IN ( $menus_ids )"
         );
 
-
-        //$menus = $wpdb->get_col(
-        //    "SELECT ID FROM $templated_posts_table
-        //    WHERE post_type = 'nav_menu_item'"
-        //);
-
         if ( ! empty( $menus ) ) {
 
             foreach ( $menus as $menu ) {
@@ -860,6 +854,9 @@ class NBT_Template_copier {
                     )
                 );
 
+
+
+
                 // Terms taxonomies
                 $term_taxonomies = $wpdb->get_results(
                     $wpdb->prepare(
@@ -868,6 +865,7 @@ class NBT_Template_copier {
                         $menu->term_id
                     )
                 );
+
 
                 $terms_taxonomies_ids = array();
                 foreach ( $term_taxonomies as $term_taxonomy ) {
@@ -890,12 +888,15 @@ class NBT_Template_copier {
                     );
                 }
 
+
                 $terms_taxonomies_ids = implode( ',', $terms_taxonomies_ids );
 
                 $term_relationships = $wpdb->get_results(
                     "SELECT * FROM $templated_term_relationships_table
                     WHERE term_taxonomy_id IN ( $terms_taxonomies_ids )"
                 );
+
+
 
                 $objects_ids = array();
                 foreach ( $term_relationships as $term_relationship ) {
@@ -915,21 +916,28 @@ class NBT_Template_copier {
                     );
                 }
 
-                $objects_ids = implode( ',', $objects_ids );
+                // We need to split the queries here due to MultiDB issues
 
                 // Inserting the objects
-                $objects = $wpdb->get_results(
-                    "INSERT IGNORE INTO $new_posts_table
-                    SELECT * FROM $templated_posts_table
-                    WHERE ID IN ( $objects_ids )"
-                );
+                $objects_ids = implode( ',', $objects_ids );
+
+                $objects = $wpdb->get_results( "SELECT * FROM $templated_posts_table
+                    WHERE ID IN ( $objects_ids )", ARRAY_N );
+
+                foreach ( $objects as $object ) {
+                    $values = '("' . implode( '","', $object ) . '")';
+                    $wpdb->query( "INSERT IGNORE INTO $new_posts_table VALUES $values" );
+                }
+
 
                 // Inserting the objects meta
-                $objects_meta = $wpdb->get_results(
-                    "INSERT IGNORE INTO $new_postmeta_table
-                    SELECT * FROM $templated_postmeta_table
-                    WHERE post_id IN ( $objects_ids )"
-                );
+                $objects_meta = $wpdb->get_results( "SELECT * FROM $templated_postmeta_table
+                    WHERE post_id IN ( $objects_ids )", ARRAY_N );
+
+                foreach ( $objects_meta as $object_meta ) {
+                    $values = '("' . implode( '","', $object_meta ) . '")';
+                    $wpdb->query( "INSERT IGNORE INTO $new_postmeta_table VALUES $values" );
+                }
 
             }
 
@@ -978,3 +986,6 @@ class NBT_Template_copier {
         $result = $wpdb->query( "UPDATE $wpdb->term_taxonomy SET count = 0" );
     }
 }
+
+
+
