@@ -147,7 +147,7 @@ function nbt_copy_autoblog_feeds( $template ) {
  * GF overrides the meta values passed to wpmu_create_blog.
  * I submitted a ticket asking about adding a new filter for that
  */
-/** 
+
 add_action( 'nbt_object_create', 'set_gravity_forms_hooks' );
 
 function set_gravity_forms_hooks( $blog_templates ) {
@@ -173,17 +173,17 @@ function nbt_add_blog_templates_user_registration_option( $config, $form, $is_va
 
 function nbt_save_multisite_user_registration_config( $config ) {
 	$config['meta']['multisite_options']['blog_templates'] = RGForms::post("gf_user_registration_multisite_blog_templates");
-
 	return $config;
 }
 
 
 function nbt_render_user_registration_form( $form_html, $form ) {
+
 	global $blog_templates;
 
 	$config = GFUserData::get_feed( $form['id'] );
 	$multisite_options = rgar( $config['meta'], 'multisite_options' );
-
+	var_dump($_POST);
 	if ( isset( $multisite_options['blog_templates'] ) && absint( $multisite_options['blog_templates'] ) ) {
 		ob_start();
 		$blog_templates->registration_template_selection();
@@ -192,16 +192,14 @@ function nbt_render_user_registration_form( $form_html, $form ) {
 		$form_html .= $nbt_selection;
 
 		$form_id = $form['id'];
-
-		// Adding some Javascript
 		ob_start();
+		// Adding some Javascript
 		?>
 			<script type="text/javascript">
 				jQuery(document).ready(function($) {
 					var submit_button = $( '#gform_submit_button_' + <?php echo $form_id; ?> );
 
 					$('#blog_template-selection').insertBefore( submit_button );
-					console.log(submit_button);
 				});
 			</script>
 		<?php
@@ -211,4 +209,4 @@ function nbt_render_user_registration_form( $form_html, $form ) {
 
 	return $form_html;
 }
-*/
+

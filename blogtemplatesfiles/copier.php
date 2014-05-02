@@ -21,8 +21,11 @@ class NBT_Template_copier {
 		$model = nbt_get_model();
 		$this->template = $model->get_template( $this->settings['template_id'] );
 
-        if ( empty( $this->template ) )
+        if ( empty( $this->template ) ) {
             $this->template = array();
+            $this->template['blog_id'] = $this->template_blog_id;
+            $this->template['to_copy'] = $args['to_copy'];
+        }
 	}
 
 	private function get_default_args() {
@@ -242,6 +245,7 @@ class NBT_Template_copier {
         $this->copy_table( $this->template_blog_id, $wpdb->links );
         do_action( 'blog_templates-copy-links', $this->template, $this->new_blog_id, $this->user_id );
 
+        var_dump("CLEAR TABLE: " . $wpdb->terms );
         $this->clear_table( $wpdb->terms );
         $this->copy_table( $this->template_blog_id, $wpdb->terms );
         do_action( 'blog_templates-copy-terms', $this->template, $this->new_blog_id, $this->user_id );
@@ -431,7 +435,7 @@ class NBT_Template_copier {
 
                 if ( $add ) {
                     // And copy the content if needed
-                    $this->copy_table( $this->template['blog_id'], str_replace( $template_prefix, '', $tablebase ) );
+                    $this->copy_table( $this->template['blog_id'], $tablebase );
                 }
             }
             else {
@@ -593,7 +597,7 @@ class NBT_Template_copier {
         restore_current_blog(); //Switch back to the newly created blog
 
         if ( count( $templated ) )
-            $to_remove = $this->get_fields_to_remove( $table, $templated[0] );
+            $to_remove = $this->get_fields_to_remove( $wpdb->$table, $templated[0] );
 
         //Now, insert the templated settings into the newly created blog
         foreach ( $templated as $row ) {
@@ -639,7 +643,7 @@ class NBT_Template_copier {
         global $wpdb;
 
         //Get the new table structure
-        $new_table = (array)$wpdb->get_results( "SHOW COLUMNS FROM {$wpdb->$new_table_name}" );
+        $new_table = (array)$wpdb->get_results( "SHOW COLUMNS FROM {$new_table_name}" );
 
         $new_fields = array();
         foreach( $new_table as $row ) {
@@ -686,24 +690,27 @@ class NBT_Template_copier {
     /**
     * Copy the templated blog table
     *
-    * @param int $templated_blog_id The ID of the blog to copy
-    * @param string $table The name of the table to copy
+    * @param int $templated_blog_id The ID of the blog to copy from
+    * @param string $dest_table The name of the table to copy to
     *
     * @since 1.0
     */
-    function copy_table( $templated_blog_id, $table ) {
+    function copy_table( $templated_blog_id, $dest_table ) {
         global $wpdb;
 
-        do_action( 'blog_templates-copying_table', $table, $templated_blog_id );
+        do_action( 'blog_templates-copying_table', $dest_table, $templated_blog_id );
+
+        $destination_prefix = $wpdb->prefix;
 
         //Switch to the template blog, then grab the values
         switch_to_blog( $templated_blog_id );
-
-        $templated = $wpdb->get_results( "SELECT * FROM {$table}" );
+        $template_prefix = $wpdb->prefix;
+        $source_table = str_replace( $destination_prefix, $template_prefix, $dest_table );
+        $templated = $wpdb->get_results( "SELECT * FROM {$source_table}" );
         restore_current_blog(); //Switch back to the newly created blog
 
         if ( count( $templated ) )
-            $to_remove = $this->get_fields_to_remove($table, $templated[0]);
+            $to_remove = $this->get_fields_to_remove($dest_table, $templated[0]);
 
         //Now, insert the templated settings into the newly created blog
         foreach ($templated as $row) {
@@ -714,12 +721,11 @@ class NBT_Template_copier {
                     unset( $row[ $key ] );
             }
 
-            $process = apply_filters('blog_templates-process_row', $row, $table, $templated_blog_id);
+            $process = apply_filters('blog_templates-process_row', $row, $dest_table, $templated_blog_id);
             if ( ! $process )
             	continue;
 
-            //$wpdb->insert($wpdb->$table, $row);
-            $wpdb->insert( $table, $process );
+            $wpdb->insert( $dest_table, $process );
             if ( ! empty( $wpdb->last_error ) ) {
                 $error = '<div id="message" class="error"><p>' . sprintf( __( 'Insertion Error: %1$s - The template was not applied. (New Blog Templates - While copying %2$s)', 'blog_templates' ), $wpdb->last_error, $table ) . '</p></div>';
                 $wpdb->query("ROLLBACK;");
