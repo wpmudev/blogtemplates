@@ -245,7 +245,6 @@ class NBT_Template_copier {
         $this->copy_table( $this->template_blog_id, $wpdb->links );
         do_action( 'blog_templates-copy-links', $this->template, $this->new_blog_id, $this->user_id );
 
-        var_dump("CLEAR TABLE: " . $wpdb->terms );
         $this->clear_table( $wpdb->terms );
         $this->copy_table( $this->template_blog_id, $wpdb->terms );
         do_action( 'blog_templates-copy-terms', $this->template, $this->new_blog_id, $this->user_id );
