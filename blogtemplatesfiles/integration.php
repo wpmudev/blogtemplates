@@ -147,7 +147,7 @@ function nbt_copy_autoblog_feeds( $template ) {
  * GF overrides the meta values passed to wpmu_create_blog.
  * I submitted a ticket asking about adding a new filter for that
  */
-
+/**
 add_action( 'nbt_object_create', 'set_gravity_forms_hooks' );
 
 function set_gravity_forms_hooks( $blog_templates ) {
@@ -209,4 +209,4 @@ function nbt_render_user_registration_form( $form_html, $form ) {
 
 	return $form_html;
 }
-
+**/
