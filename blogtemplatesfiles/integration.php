@@ -183,7 +183,6 @@ function nbt_render_user_registration_form( $form_html, $form ) {
 
 	$config = GFUserData::get_feed( $form['id'] );
 	$multisite_options = rgar( $config['meta'], 'multisite_options' );
-	var_dump($_POST);
 	if ( isset( $multisite_options['blog_templates'] ) && absint( $multisite_options['blog_templates'] ) ) {
 		ob_start();
 		$blog_templates->registration_template_selection();
