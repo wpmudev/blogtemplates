@@ -74,14 +74,10 @@ if ( ! class_exists( 'blog_templates' ) ) {
             global $wp_version;
             
             if ( version_compare( $wp_version, '3.8', '>=' ) ) {
-                ?>
-                    <style>
-                        #adminmenu #toplevel_page_blog_templates_main div.wp-menu-image:before { content: "\f175"; }
-                    </style>
-                <?php
+                wp_enqueue_style( 'mcc-icons', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/css/icons-38.css' );
             }
             else {
-                wp_enqueue_style( 'mcc-icons', MULTISTE_CC_ASSETS_URL . 'css/icons.css' );
+                wp_enqueue_style( 'mcc-icons', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/css/icon-styles.css' );
             }
         }
 
