@@ -167,7 +167,6 @@ function nbt_copy_easy_google_fonts_controls( $template, $destination_blog_id ) 
 		switch_to_blog( $destination_blog_id );
 		foreach ( $posts_results as $row ) {
             $row = (array)$row;
-            var_dump($row);
             $wpdb->insert( $wpdb->posts, $row );
         }
 
