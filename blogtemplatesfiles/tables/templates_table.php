@@ -86,7 +86,7 @@ class NBT_Templates_Table extends WP_List_Table {
         $name = get_bloginfo( 'name' );
         $url = admin_url();
         restore_current_blog();
-        return $name . ' <a href="' . $url . '">Go to Dashboard</a>';
+        return $name . ' <a href="' . $url . '">' . __( 'Go to Dashboard', $this->localization_domain ); . '</a>';
     }
 
     function column_screenshot( $item ) {

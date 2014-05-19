@@ -21,13 +21,10 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 new blog_templates_settings_menu();
             }
 
-            $model = nbt_get_model();
-            $categories_count = $model->get_categories_count();
-            if ( empty( $categories_count ) ) {
-                $model->add_default_template_category();
-            }
+            
 
             add_action( 'init', array( &$this, 'maybe_upgrade' ) );
+            add_action( 'init', array( &$this, 'init' ) );
 
 
             // Actions
@@ -81,10 +78,22 @@ if ( ! class_exists( 'blog_templates' ) ) {
             }
         }
 
+        public function init() {
+            $model = nbt_get_model();
+            $categories_count = $model->get_categories_count();
+            if ( empty( $categories_count ) ) {
+                $model->add_default_template_category();
+            }
+        }
+
         function maybe_upgrade() {
 
             // Split posts option into posts and pages options
             $saved_version = get_site_option( 'nbt_plugin_version', false );
+
+            if ( $saved_version === false ) {
+                nbt_activate_plugin();
+            }
 
             if ( ! $saved_version )
                 $saved_version = '1.7.2';
@@ -369,7 +378,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 <th scope="row"><label for="blog_template"><?php _e( 'Default Blog Template', 'blog_templates' ) ?>:</label></th>
                 <td>
                     <select id="blog_template" name="blog_template">
-                        <option value="">Default</option>
+                        <option value=""><?php _e( 'Default', 'blog_templates' ); ?></option>
                         <?php
                         foreach( $settings['templates'] as $key => $blog_template ) {
                             $selected = isset( $domain['blog_template'] ) ? selected( $key, $domain['blog_template'], false ) : '';
