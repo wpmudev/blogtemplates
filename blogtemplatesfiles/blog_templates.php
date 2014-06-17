@@ -73,6 +73,21 @@ if ( ! class_exists( 'blog_templates' ) ) {
          * here's when everything will be copied
          */
         public function maybe_template() {
+
+            if ( get_current_blog_id() != 55 )
+                return;
+
+            include_once( 'copier/class.copier-pages.php' );
+            include_once( 'copier/class.copier-posts.php' );
+            $args = array(
+                'update_date' => true,
+                'block' => false
+            );
+            $copier = new NBT_Template_Copier_Posts( 2, $args, $template );
+            $result = $copier->copy();
+
+
+            var_dump($result);
             if ( ! $option = get_option( 'nbt-pending-template' ) )
                 return;
 
@@ -83,7 +98,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 delete_option( 'nbt-pending-template' );
                 return;
             }
-wp_die(var_dump($option));
+
             $blog_id = get_current_blog_id();
 
             include_once( 'copier.php' );
@@ -361,6 +376,7 @@ wp_die(var_dump($option));
             } elseif ( $default ) { //If they haven't chosen a template, use the default if it exists
                 $template = $default;
             }
+
             $template = apply_filters('blog_templates-blog_template', $template, $blog_id, $user_id );
             if ( ! $template || 'none' == $template )
                 return; //No template, lets leave
@@ -369,13 +385,25 @@ wp_die(var_dump($option));
 
             $copier_args = array();
             foreach( $template['to_copy'] as $value ) {
-                $copier_args['to_copy'][ $value ] = true;
+                $to_copy_args = true;
+
+                if ( $value === 'posts' ) {
+                    $to_copy_args = array();
+                    $to_copy_args['categories'] = isset( $template['post_category'] ) && in_array( 'all-categories', $template['post_category'] ) ? 'all' : $template['post_category'];
+                    $to_copy_args['block'] = isset( $template['block_posts_pages'] ) && $template['block_posts_pages'] === true ? true : false;
+                    $to_copy_args['update_dates'] = isset( $template['update_dates'] ) && $template['update_dates'] === true ? true : false;
+                }
+                elseif( $value === 'pages') {
+                    $to_copy_args = array();
+                    $to_copy_args['pages'] = isset( $template['pages_ids'] ) && in_array( 'all-pages', $template['pages_ids'] ) ? 'all' : $template['pages_ids'];
+                    $to_copy_args['block'] = isset( $template['block_posts_pages'] ) && $template['block_posts_pages'] === true ? true : false;
+                    $to_copy_args['update_dates'] = isset( $template['update_dates'] ) && $template['update_dates'] === true ? true : false;
+                }
+
+                $copier_args['to_copy'][ $value ] = $to_copy_args;
             }
-            $copier_args['post_category'] = $template['post_category'];
-            $copier_args['pages_ids'] = $template['pages_ids'];
+
             $copier_args['template_id'] = $template['ID'];
-            $copier_args['block_posts_pages'] = $template['block_posts_pages'];
-            $copier_args['update_dates'] = $template['update_dates'];
             $copier_args['additional_tables'] = ( isset( $template['additional_tables'] ) && is_array( $template['additional_tables'] ) ) ? $template['additional_tables'] : array();
 
             $args = array(
@@ -387,7 +415,6 @@ wp_die(var_dump($option));
             // We leave the pending changes "enqueued"
             add_option( 'nbt-pending-template', $args, null, 'no' );
             
-
             restore_current_blog(); //Switch back to our current blog
 
         }
