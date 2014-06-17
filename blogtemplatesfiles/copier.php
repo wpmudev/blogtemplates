@@ -51,74 +51,19 @@ class NBT_Template_copier {
 	public function execute() {
 		global $wpdb;
 
-        if ( ! current_user_can( 'manage_options' ) )
-            return;
-
-        $finish_url = admin_url();
-        $ajax_url = admin_url( 'admin-ajax.php' );
-        $nonce = wp_create_nonce( 'wpmu_cloner_clone' );
-
-        nocache_headers();
-        @header( 'Content-Type: ' . get_option( 'html_type' ) . '; charset=' . get_option( 'blog_charset' ) );
-        ?>
-            <!DOCTYPE html>
-            <html xmlns="http://www.w3.org/1999/xhtml" <?php language_attributes(); ?>>
-            <head>
-                <meta name="viewport" content="width=device-width" />
-                <meta http-equiv="Content-Type" content="<?php bloginfo( 'html_type' ); ?>; charset=<?php echo get_option( 'blog_charset' ); ?>" />
-                <script type="text/javascript" src="<?php echo includes_url(  'wp-includes/js/jquery/jquery.js' ); ?>"></script>
-                <title><?php _e( 'New blog Setup' ); ?></title>
-                <?php
-                wp_admin_css( 'install', true );
-                wp_admin_css( 'ie', true );
-                ?>
-            </head>
-            <body class="wp-core-ui">
-            <h1>We're setting up your new blog. Please wait... <span id="spinner"><img style="width:15px;height:15px;" src="<?php echo admin_url( 'images/spinner.gif' ); ?>" /></span></h1>
-            <p class="redirect" style="display:none"><a class="button-primary" href="<?php echo esc_url($finish_url); ?>">Click here to return to dashboard</a></p>
-            <ul id="steps"></ul>
-            <p class="redirect" style="display:none"><a class="button-primary" href="<?php echo esc_url($finish_url); ?>">Click here to return to dashboard</a></p>
-        </body>
-        <script>
-            jQuery(document).ready(function($) {
-                
-                nbt_process_template();
-                
-
-                function nbt_process_template() {
-                    $.ajax({
-                        url: '<?php echo $ajax_url; ?>',
-                        type: 'POST',
-                        data: {
-                            action: 'wpmu_cloner_clone',
-                            security: '<?php echo $nonce; ?>'
-                        },
-                    })
-                    .done(function( data ) {
-                        var list = $('#steps');
-
-                        var list_item = $('<li></li>').text(data.data.message);
-                        list_item.appendTo(list);
-                        if ( ! data.success ) {
-                            $('#spinner').hide();
-                            $('.redirect').show();
-                        }
-                        else {
-                            nbt_process_template();
-                        }
-
-                    });
-                }
-            });
-        </script>
-        <?php
-        wp_die();
-    
+        set_time_limit( 30 );
+        
+        switch_to_blog( $this->new_blog_id );
         //Begin the transaction
         $wpdb->query("BEGIN;");
 
 		// In case we are not copying posts, we'll have to reset the terms count to 0
-        
+        if ( $this->settings['to_copy']['posts'] || $this->settings['to_copy']['pages'] ) {
+            $this->clear_table($wpdb->posts);
+            $this->clear_table($wpdb->postmeta);
+            $this->clear_table($wpdb->comments);
+            $this->clear_table($wpdb->commentmeta);
+        }
 
 		foreach ( $this->settings['to_copy'] as $setting => $value ) {
 			if ( $value )
@@ -127,7 +72,15 @@ class NBT_Template_copier {
 
 		$this->copy_additional_tables();
 
-        
+        if ( $this->settings['block_posts_pages'] ) {
+            $wpdb->query( "DELETE FROM $wpdb->postmeta WHERE meta_key = 'nbt_block_post'" );
+            $posts_ids = $wpdb->get_col( "SELECT ID FROM $wpdb->posts" );
+            if ( $posts_ids ) {
+                foreach ( $posts_ids as $post_id ) {
+                    update_post_meta( $post_id, 'nbt_block_post', true );
+                }
+            }
+        } 
 
 
         if ( apply_filters( 'nbt_change_attachments_urls', true ) )
@@ -149,6 +102,7 @@ class NBT_Template_copier {
         $wpdb->query("COMMIT;"); //If we get here, everything's fine. Commit the transaction
 
         do_action( "blog_templates-copy-after_copying", $this->template, $this->new_blog_id, $this->user_id );
+        restore_current_blog();
 
 
 	}
@@ -266,17 +220,9 @@ class NBT_Template_copier {
         }
 	}
 
-	public function copy_posts( $args = array() ) {
+	public function copy_posts() {
 
-        $defaults = array(
-            'post_category' => array( 'all-categories' )
-        );
-
-        $args = wp_parse_args( $args, $defaults );
-
-        extract( $args );
-
-		$categories = in_array( 'all-categories', $post_category ) ? false : $post_category;
+		$categories = in_array( 'all-categories', $this->settings['post_category'] ) ? false : $this->settings['post_category'];
 
         $this->copy_posts_table( $this->template_blog_id, 'posts', $categories );
         do_action( 'blog_templates-copy-posts', $this->template, $this->new_blog_id, $this->user_id );
@@ -286,16 +232,7 @@ class NBT_Template_copier {
 	}
 
 	public function copy_pages() {
-
-        $defaults = array(
-            'pages_ids' => array( 'all-pages' )
-        );
-
-        $args = wp_parse_args( $args, $defaults );
-
-        extract( $args );
-
-		$pages_ids = in_array( 'all-pages', $pages_ids ) ? false : $pages_ids;
+		$pages_ids = in_array( 'all-pages', $this->settings['pages_ids'] ) ? false : $this->settings['pages_ids'];
 
         $this->copy_posts_table( $this->template_blog_id, "pages", $pages_ids );
         do_action( 'blog_templates-copy-pages', $this->template, $this->new_blog_id, $this->user_id );
@@ -304,29 +241,9 @@ class NBT_Template_copier {
         do_action( 'blog_templates-copy-pagemeta', $this->template, $this->new_blog_id, $this->user_id );
 	}
 
-    public function block_post_pages() {
-        global $wpdb;
 
-        $wpdb->query( "DELETE FROM $wpdb->postmeta WHERE meta_key = 'nbt_block_post'" );
-        $posts_ids = $wpdb->get_col( "SELECT ID FROM $wpdb->posts" );
-        if ( $posts_ids ) {
-            foreach ( $posts_ids as $post_id ) {
-                update_post_meta( $post_id, 'nbt_block_post', true );
-            }
-        }
-    }
-
-
-	public function copy_terms( $args = array() ) {
+	public function copy_terms() {
 		global $wpdb;
-
-        $defaults = array(
-            'copy_posts' => true
-        );
-
-        $args = wp_parse_args( $args, $defaults );
-
-        extract( $args );
 
 		$this->clear_table( $wpdb->links );
         $this->copy_table( $this->template_blog_id, $wpdb->links );
