@@ -180,56 +180,19 @@ function nbt_copy_easy_google_fonts_controls( $template, $destination_blog_id ) 
 	}
 }
 
-
-/** MARKETPRESS **/
-add_action( 'blog_templates-copy-after_copying', 'nbt_set_marketpress_email', 10, 2 );
-function nbt_set_marketpress_email( $template, $destination_blog_id ) {
-
-	if ( ! function_exists( 'is_plugin_active' ) )
-		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
-
-	switch_to_blog( $destination_blog_id );
-	if ( ! is_plugin_active( 'marketpress/marketpress.php' ) ) {
-		restore_current_blog();
-		return;
-	}
-	restore_current_blog();
-
-	$source_blog_id = $template['blog_id'];
-
-	if ( in_array( 'settings', $template['to_copy'] ) && get_blog_details( $source_blog_id ) && get_blog_details( $destination_blog_id ) ) {
-		switch_to_blog( $destination_blog_id );
-		$marketpress_options = get_option( 'mp_settings', array() );
-		$marketpress_options['store_email'] = get_option( 'admin_email' );
-		update_option( 'mp_settings', $marketpress_options );
-		restore_current_blog();
-	}
-	
-}
-
-
-
 /** GRAVITY FORMS **/
 /*
  * Rightt now, hooking New Blog Templates into GF is not possible
  * GF overrides the meta values passed to wpmu_create_blog.
  * I submitted a ticket asking about adding a new filter for that
  */
-
+/**
 add_action( 'nbt_object_create', 'set_gravity_forms_hooks' );
 
 function set_gravity_forms_hooks( $blog_templates ) {
 	add_filter( 'gform_get_form_filter', 'nbt_render_user_registration_form', 15, 2 );
 	add_filter( 'gform_user_registration_add_option_section', 'nbt_add_blog_templates_user_registration_option', 15, 3 );
 	add_filter( "gform_user_registration_save_config", "nbt_save_multisite_user_registration_config" );
-	add_filter( 'gform_site_registration_signup_meta', 'nbt_save_new_blog_meta' );
-}
-
-function nbt_save_new_blog_meta( $meta ) {
-	if ( isset( $_POST['blog_template' ] ) ) {
-		$meta['blog_template'] = absint( $_POST['blog_template'] );
-	}
-	return $meta;
 }
 
 function nbt_add_blog_templates_user_registration_option( $config, $form, $is_validation_error ) {
@@ -284,4 +247,4 @@ function nbt_render_user_registration_form( $form_html, $form ) {
 
 	return $form_html;
 }
-
+**/
