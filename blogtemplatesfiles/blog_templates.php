@@ -25,6 +25,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             add_action( 'init', array( &$this, 'maybe_upgrade' ) );
             add_action( 'init', array( &$this, 'init' ) );
+            add_action( 'wp_loaded', array( $this, 'maybe_template' ) );
 
 
             // Actions
@@ -65,6 +66,30 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             do_action( 'nbt_object_create', $this );
 
+        }
+
+        /**
+         * If there's something pending to template for the current blog
+         * here's when everything will be copied
+         */
+        public function maybe_template() {
+            if ( ! $option = get_option( 'nbt-pending-template' ) )
+                return;
+
+            $source_blog_id = absint( $option['source_blog_id'] );
+
+            $src_blog_details = get_blog_details( $source_blog_id );
+            if ( ! $src_blog_details ) {
+                delete_option( 'nbt-pending-template' );
+                return;
+            }
+wp_die(var_dump($option));
+            $blog_id = get_current_blog_id();
+
+            include_once( 'copier.php' );
+
+            $copier = new NBT_Template_copier( $source_blog_id, $blog_id, $option['user_id'], $option['copier_args'] );
+            $copier->execute();
         }
 
         public function enqueue_styles() {
@@ -342,8 +367,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             switch_to_blog( $blog_id ); //Switch to the blog that was just created            
 
-            include( 'copier.php' );
-
             $copier_args = array();
             foreach( $template['to_copy'] as $value ) {
                 $copier_args['to_copy'][ $value ] = true;
@@ -355,8 +378,15 @@ if ( ! class_exists( 'blog_templates' ) ) {
             $copier_args['update_dates'] = $template['update_dates'];
             $copier_args['additional_tables'] = ( isset( $template['additional_tables'] ) && is_array( $template['additional_tables'] ) ) ? $template['additional_tables'] : array();
 
-            $copier = new NBT_Template_copier( $template['blog_id'], $blog_id, $user_id, $copier_args );
-            $copier->execute();
+            $args = array(
+                'source_blog_id' => $template['blog_id'],
+                'user_id' => $user_id,
+                'copier_args' => $copier_args
+            );
+
+            // We leave the pending changes "enqueued"
+            add_option( 'nbt-pending-template', $args, null, 'no' );
+            
 
             restore_current_blog(); //Switch back to our current blog
 
