@@ -186,13 +186,21 @@ function nbt_copy_easy_google_fonts_controls( $template, $destination_blog_id ) 
  * GF overrides the meta values passed to wpmu_create_blog.
  * I submitted a ticket asking about adding a new filter for that
  */
-/**
+
 add_action( 'nbt_object_create', 'set_gravity_forms_hooks' );
 
 function set_gravity_forms_hooks( $blog_templates ) {
 	add_filter( 'gform_get_form_filter', 'nbt_render_user_registration_form', 15, 2 );
 	add_filter( 'gform_user_registration_add_option_section', 'nbt_add_blog_templates_user_registration_option', 15, 3 );
 	add_filter( "gform_user_registration_save_config", "nbt_save_multisite_user_registration_config" );
+	add_filter( 'gform_site_registration_signup_meta', 'nbt_save_new_blog_meta' );
+}
+
+function nbt_save_new_blog_meta( $meta ) {
+	if ( isset( $_POST['blog_template' ] ) ) {
+		$meta['blog_template'] = absint( $_POST['blog_template'] );
+	}
+	return $meta;
 }
 
 function nbt_add_blog_templates_user_registration_option( $config, $form, $is_validation_error ) {
@@ -247,4 +255,4 @@ function nbt_render_user_registration_form( $form_html, $form ) {
 
 	return $form_html;
 }
-**/
+
