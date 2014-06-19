@@ -127,9 +127,10 @@ class NBT_Template_copier {
 
         
 
-
+// FALTA
         if ( apply_filters( 'nbt_change_attachments_urls', true ) )
             $this->set_content_urls( $this->template['blog_id'], $this->new_blog_id );
+// FALTA
 
         if ( ! empty( $this->settings['update_dates'] ) ) {
             $this->update_posts_dates('post');
@@ -146,7 +147,9 @@ class NBT_Template_copier {
 
         $wpdb->query("COMMIT;"); //If we get here, everything's fine. Commit the transaction
 
+// FALTA
         do_action( "blog_templates-copy-after_copying", $this->template, $this->new_blog_id, $this->user_id );
+// FALTA
 
 
 	}

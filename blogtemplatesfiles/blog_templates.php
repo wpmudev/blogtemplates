@@ -79,15 +79,34 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             include_once( 'copier/class.copier-pages.php' );
             include_once( 'copier/class.copier-posts.php' );
+            include_once( 'copier/class.copier-terms.php' );
+
+
+            
+            $taxonomies = get_taxonomies();
+            
+            if ( isset( $taxonomies['nav_menu'] ) )
+                unset( $taxonomies['nav_menu'] );
+            
+
             $args = array(
-                'update_date' => true,
-                'block' => false
+                'taxonomies' => $taxonomies
             );
-            $copier = new NBT_Template_Copier_Posts( 2, $args, $template );
+
+            $copier = new NBT_Template_Copier_Terms( 2, $args, array() );
             $result = $copier->copy();
 
+            /** CODE FOR TERMS 
+                $taxonomies = get_taxonomies();
+            
+            if ( isset( $taxonomies['nav_menu'] ) )
+                unset( $taxonomies['nav_menu'] );
+            
 
-            var_dump($result);
+            $args = array(
+                'taxonomies' => $taxonomies
+            );
+            **/
             if ( ! $option = get_option( 'nbt-pending-template' ) )
                 return;
 

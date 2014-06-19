@@ -152,8 +152,7 @@ function blog_template_reassign_post_authors ( $template, $blog_id, $user_id ) {
 		$wpdb->query($wpdb->prepare( "UPDATE {$wpdb->posts} SET post_author=%d", $user_id ) );
 	}
 }
-add_action('blog_templates-copy-posts', 'blog_template_reassign_post_authors', 10, 3);
-add_action('blog_templates-copy-pages', 'blog_template_reassign_post_authors', 10, 3);
+
 
 
 // Play nice with Multisite Privacy, if requested so
