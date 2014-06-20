@@ -74,13 +74,12 @@ if ( ! class_exists( 'blog_templates' ) ) {
          */
         public function maybe_template() {
 
-            if ( get_current_blog_id() != 55 )
+            if ( get_current_blog_id() != 63 )
                 return;
 
             include_once( 'copier/class.copier-pages.php' );
             include_once( 'copier/class.copier-posts.php' );
             include_once( 'copier/class.copier-terms.php' );
-
 
             
             $taxonomies = get_taxonomies();
@@ -88,9 +87,17 @@ if ( ! class_exists( 'blog_templates' ) ) {
             if ( isset( $taxonomies['nav_menu'] ) )
                 unset( $taxonomies['nav_menu'] );
             
+            $args = array(
+                'taxonomies' => $taxonomies,
+                'update_relationships' => 'all'
+            );
+
+            $copier = new NBT_Template_Copier_Posts( 2, array(), array() );
+            $result = $copier->copy();
 
             $args = array(
-                'taxonomies' => $taxonomies
+                'taxonomies' => $taxonomies,
+                'update_relationships' => 'all'
             );
 
             $copier = new NBT_Template_Copier_Terms( 2, $args, array() );
@@ -104,7 +111,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
             
 
             $args = array(
-                'taxonomies' => $taxonomies
+                'taxonomies' => $taxonomies,
+                'update_relationships' => 'all'
             );
             **/
             if ( ! $option = get_option( 'nbt-pending-template' ) )
