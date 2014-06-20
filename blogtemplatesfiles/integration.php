@@ -207,7 +207,6 @@ function set_gravity_forms_hooks( $blog_templates ) {
 function nbt_save_new_blog_meta( $meta ) {
 	if ( isset( $_POST['blog_template' ] ) ) {
 		$meta['blog_template'] = absint( $_POST['blog_template'] );
-
 	}
 	return $meta;
 }
