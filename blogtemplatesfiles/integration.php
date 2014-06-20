@@ -256,7 +256,13 @@ function nbt_render_user_registration_form( $form_html, $form ) {
 	global $blog_templates;
 
 	// Let's check if the option for New Blog Templates is activated in this form
-	$config = GFUserData::get_feed( $form['id'] );
+	$config = GFUserData::get_feed_by_form( $form['id'] );
+
+	if ( empty( $config ) )
+		return;
+
+	$config = current( $config );
+	
 	$multisite_options = rgar( $config['meta'], 'multisite_options' );
 	if ( isset( $multisite_options['blog_templates'] ) && absint( $multisite_options['blog_templates'] ) ) {
 		ob_start();
