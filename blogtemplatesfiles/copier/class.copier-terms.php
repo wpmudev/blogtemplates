@@ -20,7 +20,7 @@ class NBT_Template_Copier_Terms extends NBT_Template_Copier {
 	public function copy() {
 		global $wpdb;
 
-		$tables = array($wpdb->terms, $wpdb->term_taxonomy );
+		$tables = array( $wpdb->terms, $wpdb->term_taxonomy, $wpdb->links );
 
 		foreach ( $tables as $table ) {
 			$result = $this->clear_table( $wpdb->terms );
