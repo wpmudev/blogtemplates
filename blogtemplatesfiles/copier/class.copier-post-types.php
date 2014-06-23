@@ -51,33 +51,25 @@ class NBT_Template_Copier_Post_Types extends NBT_Template_Copier {
 		if ( is_wp_error( $result ) )
 			return $result;
 
-		switch_to_blog( $this->source_blog_id );
+		
 
 		// Posts
+        switch_to_blog( $this->source_blog_id );
 		$select = "SELECT p.* FROM {$wpdb->posts} p";
+        restore_current_blog();
 
-		if ( $this->type == 'page' )
-			$where = "WHERE p.post_type = 'page'";
-		else
-			$where = "WHERE p.post_type NOT IN ( 'page', 'attachment', 'revision', 'nav_menu_item' )";
+        
+		$join = apply_filters( 'blog_templates_copy_post_table_query_join', "" );
+        $group = apply_filters( 'blog_templates_copy_post_table_query_group', "" );
+        $where = apply_filters( 'blog_templates_copy_post_table_query_where', "" );
 
-		$join = "";
-        $group = "";
-		if ( isset( $this->args['categories'] ) && is_array( $this->args['categories'] ) && count( $this->args['categories'] ) > 0 ) {
-            $join = "INNER JOIN $wpdb->term_relationships tr ON tr.object_id = p.ID ";
-
-            $categories_list = '(' . implode( ',', $this->args['categories'] ) . ')';
-            $where .= " AND tr.term_taxonomy_id IN $categories_list";
-            $group = "GROUP BY p.ID";
-        }
-        elseif ( isset( $this->args['pages_ids'] ) && is_array( $this->args['pages_ids'] ) && count( $this->args['pages_ids'] ) > 0 ) {
-            $pages_ids = '(' . implode( ',', $this->args['pages_ids'] ) . ')';
-            $where .= " AND p.ID IN $pages_ids";
-        }
-
+        // Deprecated
         $where = apply_filters( 'nbt_copy_posts_table_where', $where, $this->type );
 
+        switch_to_blog( $this->source_blog_id );
+
         $query = "$select $join $where $group";
+
         $results = $wpdb->get_results( $query );    
 
         restore_current_blog();
@@ -138,7 +130,7 @@ class NBT_Template_Copier_Post_Types extends NBT_Template_Copier {
                     unset( $row[$key] );
             }
 
-            if ( $table == $wpdb->posts && $this->args['update_date'] ) {
+            if ( $table == $wpdb->posts && isset( $this->args['update_date'] ) && $this->args['update_date'] ) {
             	$current_time = current_time( 'mysql', false );
         		$current_gmt_time = current_time( 'mysql', false );
 
@@ -154,7 +146,7 @@ class NBT_Template_Copier_Post_Types extends NBT_Template_Copier {
 
             $wpdb->insert( $table, $process );
 
-            if ( $table == $wpdb->posts && $this->args['block'] ) {
+            if ( $table == $wpdb->posts && isset( $this->args['block'] ) && $this->args['block'] ) {
             	update_post_meta( $process['ID'], 'nbt_block_post', true );
             }
 

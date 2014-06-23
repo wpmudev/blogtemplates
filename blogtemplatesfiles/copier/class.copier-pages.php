@@ -9,7 +9,6 @@ class NBT_Template_Copier_Pages extends NBT_Template_Copier_Post_Types {
 		$this->args = wp_parse_args( $args, $this->get_default_args() );
 		
 		add_action( 'blog_templates-copying_table', array( $this, 'set_actions' ) );
-
 	}
 
 	public function get_default_args() {
@@ -21,7 +20,8 @@ class NBT_Template_Copier_Pages extends NBT_Template_Copier_Post_Types {
 	}
 
 	public function set_actions() {
-		add_filter( 'blog_templates-clear_table_where', array( $this, 'set_clear_table_where' ), 10, 2 );
+		add_filter( 'blog_templates-clear_table_where', array( $this, 'set_clear_table_where' ), 1, 2 );
+		add_filter( 'blog_templates_copy_post_table_query_where', array( $this, 'set_copy_table_where' ), 1, 2 );
 	}
 
 	public function set_clear_table_where( $where, $table ) {
@@ -33,6 +33,17 @@ class NBT_Template_Copier_Pages extends NBT_Template_Copier_Post_Types {
 		elseif ( $wpdb->postmeta == $table ) {
 			return "WHERE post_id IN ( SELECT ID FROM $wpdb->posts p WHERE p.post_type = 'page' )";
 		}
+
+		return $where;
+	}
+
+	public function set_copy_table_where( $where ) {
+		$where = "WHERE p.post_type = 'page'";
+
+		if ( isset( $this->args['pages_ids'] ) && is_array( $this->args['pages_ids'] ) && count( $this->args['pages_ids'] ) > 0 ) {
+            $pages_ids = '(' . implode( ',', $this->args['pages_ids'] ) . ')';
+            $where .= " AND p.ID IN $pages_ids";
+        }
 
 		return $where;
 	}
