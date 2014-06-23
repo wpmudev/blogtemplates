@@ -77,31 +77,21 @@ if ( ! class_exists( 'blog_templates' ) ) {
             if ( get_current_blog_id() != 63 )
                 return;
 
-            include_once( 'copier/class.copier-pages.php' );
+            include_once( 'copier/class.copier-settings.php' );
             include_once( 'copier/class.copier-posts.php' );
             include_once( 'copier/class.copier-terms.php' );
-
-            
-            $taxonomies = get_taxonomies();
-            
-            if ( isset( $taxonomies['nav_menu'] ) )
-                unset( $taxonomies['nav_menu'] );
-            
-            $args = array(
-                'taxonomies' => $taxonomies,
-                'update_relationships' => 'all'
-            );
-
-            $copier = new NBT_Template_Copier_Posts( 2, array(), array() );
-            $result = $copier->copy();
+            include_once( 'copier/class.copier-attachment.php' );
 
             $args = array(
-                'taxonomies' => $taxonomies,
-                'update_relationships' => 'all'
+                'attachment_id' => 270,
+                'date' => '2014/06'
             );
-
-            $copier = new NBT_Template_Copier_Terms( 2, $args, array() );
+            $copier = new NBT_Template_Copier_Posts( 2, array() );
             $result = $copier->copy();
+            var_dump($result);
+            $copier = new NBT_Template_Copier_Attachment( 2, array(), $args );
+            $result = $copier->copy();
+            var_dump($result);
 
             /** CODE FOR TERMS 
                 $taxonomies = get_taxonomies();

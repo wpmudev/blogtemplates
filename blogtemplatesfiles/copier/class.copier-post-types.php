@@ -7,7 +7,7 @@ class NBT_Template_Copier_Post_Types extends NBT_Template_Copier {
     protected $posts_copied = array();
 
 	public function __construct( $source_blog_id, $template, $user_id = 0 ) {
-		parent::__construct( $source_blog_id, $template, $user_id = 0 );
+		parent::__construct( $source_blog_id, $template, $user_id );
 	}
 
 	public function get_default_args() {}
@@ -109,7 +109,7 @@ class NBT_Template_Copier_Post_Types extends NBT_Template_Copier {
 
         foreach ( $posts_meta as $post_id => $post_meta ) {
             foreach ( $post_meta as $meta_key => $meta_value ) {
-                update_post_meta( $post_id, $meta_key, maybe_unserialize( $meta_value ) );
+                update_post_meta( $post_id, $meta_key, maybe_unserialize( $meta_value[0] ) );
             }
         }
 

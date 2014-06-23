@@ -2,7 +2,11 @@
 
 // Other plugins integrations
 
-function nbt_add_membership_caps( $user_id, $blog_id ) {
+add_action( 'blog_templates-copy-options', 'nbt_add_membership_caps', 10, 3 );
+function nbt_add_membership_caps( $template, $blog_id, $user_id ) {
+	if ( ! class_exists( 'membershipadmin' ) )
+		return;
+
 	switch_to_blog( $blog_id );
 	$user = get_userdata( $user_id );
 	$user->add_cap('membershipadmin');

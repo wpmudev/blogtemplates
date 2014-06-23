@@ -2,8 +2,8 @@
 
 class NBT_Template_Copier_Terms extends NBT_Template_Copier {
 
-	public function __construct( $source_blog_id, $args, $template, $user_id = 0 ) {
-		parent::__construct( $source_blog_id, $template, $user_id = 0 );
+	public function __construct( $source_blog_id, $template, $args = array(), $user_id = 0 ) {
+		parent::__construct( $source_blog_id, $template, $user_id );
 		$this->type = 'post';
 		$this->args = wp_parse_args( $args, $this->get_default_args() );
 
@@ -186,7 +186,7 @@ class NBT_Template_Copier_Terms extends NBT_Template_Copier {
 		 * @param bool   $append     Whether to append new terms to the old terms.
 		 * @param array  $old_tt_ids Old array of term taxonomy IDs.
 		 */
-		do_action( 'set_object_terms', $object_id, $terms, $tt_ids, $taxonomy, $append, $old_tt_ids );
+		do_action( 'set_object_terms', $object_id, $terms, $tt_ids, $taxonomy, false, $old_tt_ids );
 		return $tt_ids;
 	}
 
