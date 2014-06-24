@@ -63,8 +63,57 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_styles' ) );
 
+            add_action( 'wp_ajax_nbt_process_template', array( $this, 'process_template' ) );
 
             do_action( 'nbt_object_create', $this );
+
+        }
+
+        public function process_template() {
+
+            if ( ! current_user_can( 'manage_options' ) )
+                wp_send_json_error( array( 'message' => "Security Error" ) );
+
+            check_ajax_referer( 'nbt_process_template', 'security' );
+
+            $option = get_option( 'nbt-pending-template' );
+
+            if ( $option === false )
+                wp_send_json_error( array( 'message' => "Error getting option" ) );
+
+            if ( empty( $option['to_copy'] ) ) {
+                delete_option( 'nbt-pending-template' );
+                wp_send_json_error( array( 'message' => "Process Finished" ) );
+            }
+
+            $copy = key( $option['to_copy'] );
+            unset( $option['to_copy'][ $copy ] );
+            update_option( 'nbt-pending-template', $option );
+
+            $copy_args = array();
+            $copy_args['source_blog_id'] = $source_blog_id;
+            $copy_args['template'] = $template;
+            $copy_args['args'] = empty( $to_copy[ $opy ] ) ? array() : $to_copy[ $copy ];
+            $copy_args['user_id'] = $user_id;
+
+            $copier = nbt_get_copier( $copy, $copy_args );
+
+            if ( ! $copier )
+                wp_send_json_success( array( 'message' => "Error getting class ($copy)" ) );
+
+            $copier_result = $copier->copy();
+
+            if ( is_wp_error( $copier_result ) ) {
+                $message = $copier_result->get_error_message();
+            }
+            else {
+                $message = ucfirst( $copy ) . ' Copied';
+            }
+
+            $data = array(
+                'message' => $message
+            );
+            wp_send_json_success( $data );
 
         }
 
@@ -74,46 +123,158 @@ if ( ! class_exists( 'blog_templates' ) ) {
          */
         public function maybe_template() {
 
+            if ( defined( 'DOING_AJAX' ) && DOING_AJAX )
+                return;
+
             if ( get_current_blog_id() != 63 )
                 return;
 
-            include_once( 'copier/class.copier-settings.php' );
-            include_once( 'copier/class.copier-posts.php' );
-            include_once( 'copier/class.copier-terms.php' );
-            include_once( 'copier/class.copier-menus.php' );
-
-            $copier = new NBT_Template_Copier_Menus( 2, array() );
-            $result = $copier->copy();
-
-            /** CODE FOR TERMS 
-                $taxonomies = get_taxonomies();
-            
-            if ( isset( $taxonomies['nav_menu'] ) )
-                unset( $taxonomies['nav_menu'] );
-            
-
-            $args = array(
-                'taxonomies' => $taxonomies,
-                'update_relationships' => 'all'
-            );
-            **/
-            if ( ! $option = get_option( 'nbt-pending-template' ) )
+            if ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) )
                 return;
 
-            $source_blog_id = absint( $option['source_blog_id'] );
+            if ( isset( $_GET['nbt'] ) ) {
+                switch_to_blog( 2 );
+                $attachments = get_posts( array(
+                    'posts_per_page' => -1,
+                    'post_type' => 'attachment',
+                    'fields' => 'ids',
+                    'ignore_sticky_posts' => true
+                ) );
 
-            $src_blog_details = get_blog_details( $source_blog_id );
-            if ( ! $src_blog_details ) {
-                delete_option( 'nbt-pending-template' );
+                restore_current_blog();
+                $option = array(
+                    'source_blog_id' => 2,
+                    'template' => array(),
+                    'to_copy' => array(
+                        'settings' => array(),
+                        'posts' => array( 'update_dates' => true ),
+                        'pages' => array(),
+                        'terms' => array( 'update_relationships' => true ),
+                        'menus' => array(),
+                        'users' => array(),
+                        'tables' => array(),
+                        'attachment' => array()
+                    ),
+                    'attachment_ids' => $attachments,
+                    'user_id' => get_current_user_id()
+                );
+
+                update_option( 'nbt-pending-template', $option );
                 return;
             }
 
-            $blog_id = get_current_blog_id();
 
-            include_once( 'copier.php' );
+            if ( ! $option = get_option( 'nbt-pending-template' ) )
+                return;
 
-            $copier = new NBT_Template_copier( $source_blog_id, $blog_id, $option['user_id'], $option['copier_args'] );
-            $copier->execute();
+            extract( $option );
+
+            if ( empty( $to_copy ) ) {
+                // Nothing to copy
+                //delete_option( 'nbt-pending-template' );
+                return;
+            }
+
+            if ( isset( $_REQUEST['nbt_step'] ) ) {
+
+                // We are not working with Ajax so let's start to copy
+
+                $copy = key( $to_copy );
+                $copy_args = array();
+                $copy_args['source_blog_id'] = $source_blog_id;
+                $copy_args['template'] = $template;
+                $copy_args['args'] = empty( $to_copy[ $copy ] ) ? array() : $to_copy[ $copy ];
+                $copy_args['user_id'] = $user_id;
+
+                $copier = nbt_get_copier( $copy, $copy_args );
+                $copier_result = $copier->copy();
+
+                unset( $option['to_copy'][ $copy ] );
+                update_option( 'nbt-pending-template', $option );
+
+                if ( is_wp_error( $copier_result ) ) {
+                    $message = $copier_result->get_error_message();
+                }
+                else {
+                    $message = ucfirst( $copy ) . ' Copied';
+                }
+
+            }
+
+
+            $ajax_url = admin_url( 'admin-ajax.php' );
+            $nonce = wp_create_nonce( 'nbt_process_template' );
+
+            nocache_headers();
+            @header( 'Content-Type: ' . get_option( 'html_type' ) . '; charset=' . get_option( 'blog_charset' ) );
+            ?>
+                <!DOCTYPE html>
+                <html xmlns="http://www.w3.org/1999/xhtml" <?php language_attributes(); ?>>
+                <head>
+                    <meta name="viewport" content="width=device-width" />
+                    <meta http-equiv="Content-Type" content="<?php bloginfo( 'html_type' ); ?>; charset=<?php echo get_option( 'blog_charset' ); ?>" />
+                    <script type="text/javascript" src="<?php echo includes_url(  'wp-includes/js/jquery/jquery.js' ); ?>"></script>
+                    <title><?php _e( 'New blog Setup' ); ?></title>
+                    <?php
+                    wp_admin_css( 'install', true );
+                    wp_admin_css( 'ie', true );
+                    ?>
+                </head>
+                <body class="wp-core-ui">
+                <h1>We're setting up your new blog. Please wait... <span id="spinner" style="display:none;"><img style="width:15px;height:15px;" src="<?php echo admin_url( 'images/spinner.gif' ); ?>" /></span></h1>
+                <p class="redirect" style="display:none"><a class="button-primary" href="<?php echo esc_url($finish_url); ?>">Click here to return to dashboard</a></p>
+                <ul id="steps">
+                    <?php if ( ! empty( $message ) ): ?>
+                        <li><?php echo $message; ?></li>
+                    <?php endif; ?>
+                </ul>
+                <p class="redirect" style="display:none"><a class="button-primary" href="<?php echo esc_url($finish_url); ?>">Click here to return to dashboard</a></p>
+                <?php if ( empty( $copier_result ) ): ?>
+                    <a class="button next_step_link" href="<?php echo esc_url( add_query_arg( 'nbt_step', 'true', admin_url() ) ); ?>">Start</a>   
+                <?php else: ?>
+                    <a class="button next_step_link" href="<?php echo esc_url( add_query_arg( 'nbt_step', 'true', admin_url() ) ); ?>">Next step</a>
+                <?php endif; ?>
+            </body>
+            <script>
+            jQuery(document).ready(function($) {
+                
+                nbt_process_template();
+
+                $('.next_step_link').detach();
+                $('#spinner').show();
+                
+
+                function nbt_process_template() {
+                    $.ajax({
+                        url: '<?php echo $ajax_url; ?>',
+                        type: 'POST',
+                        data: {
+                            action: 'nbt_process_template',
+                            security: '<?php echo $nonce; ?>'
+                        },
+                    })
+                    .done(function( data ) {
+                        var list = $('#steps');
+                        console.log(data);
+                        var list_item = $('<li></li>').text(data.data.message);
+                        list_item.appendTo(list);
+                        if ( ! data.success ) {
+                            $('#spinner').hide();
+                            $('.redirect').show();
+                        }
+                        else {
+                            nbt_process_template();
+                        }
+
+                    });
+                }
+            });
+        </script>
+            <?php
+            wp_die();
+
+            
+
         }
 
         public function enqueue_styles() {

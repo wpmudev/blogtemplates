@@ -1,6 +1,5 @@
 <?php
 
-include_once('class.copier2.php' );
 class NBT_Template_Copier_Attachment extends NBT_Template_Copier {
 
     public function __construct( $source_blog_id, $template, $args = array(), $user_id = 0 ) {

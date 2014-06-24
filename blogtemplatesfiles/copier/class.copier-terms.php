@@ -6,8 +6,6 @@ class NBT_Template_Copier_Terms extends NBT_Template_Copier {
 		parent::__construct( $source_blog_id, $template, $user_id );
 		$this->type = 'post';
 		$this->args = wp_parse_args( $args, $this->get_default_args() );
-
-		add_action( 'blog_templates-copying_table', array( $this, 'set_actions' ) );
 	}
 
 	public function get_default_args() {
@@ -29,7 +27,12 @@ class NBT_Template_Copier_Terms extends NBT_Template_Copier {
 		}
 
 		switch_to_blog( $this->source_blog_id );
-		$source_terms = get_terms( $this->args['taxonomies'], array( 'get' => 'all' ) );
+		$_taxonomies = $wpdb->get_col( "SELECT DISTINCT taxonomy FROM $wpdb->term_taxonomy" );
+        $taxonomies = array();
+        foreach ( $_taxonomies as $taxonomy )
+            $taxonomies[ $taxonomy ] = $taxonomy;
+		unset( $taxonomies['nav_menu'] );
+		$source_terms = get_terms( $taxonomies, array( 'get' => 'all' ) );
 		restore_current_blog();
 
 		$mapped_terms = array();
@@ -77,7 +80,7 @@ class NBT_Template_Copier_Terms extends NBT_Template_Copier {
 				$source_objects_terms = array();
 				switch_to_blog( $this->source_blog_id );
 				foreach ( $posts_ids as $post_id ) {
-					$object_terms = wp_get_object_terms( $post_id, $this->args['taxonomies'] );
+					$object_terms = wp_get_object_terms( $post_id, $taxonomies );
 					if ( ! empty( $object_terms ) )
 						$source_objects_terms[ $post_id ] = $object_terms;
 				}

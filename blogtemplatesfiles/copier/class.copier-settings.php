@@ -1,6 +1,5 @@
 <?php
 
-include_once('class.copier2.php' );
 class NBT_Template_Copier_Settings extends NBT_Template_Copier {
 
     public function __construct( $source_blog_id, $template, $args = array(), $user_id = 0 ) {
@@ -22,7 +21,8 @@ class NBT_Template_Copier_Settings extends NBT_Template_Copier {
             'db_version',
             'secret',
             'fileupload_url',
-            'nonce_salt'
+            'nonce_salt',
+            'nbt-pending-template'
         );
 
         $exclude_settings = apply_filters( 'blog_templates_exclude_settings', $exclude_settings );

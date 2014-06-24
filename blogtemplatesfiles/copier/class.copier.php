@@ -328,10 +328,11 @@ class NBT_Template_copier {
         $args = wp_parse_args( $args, $defaults );
 
         extract( $args );
-
+// FALTA
 		$this->clear_table( $wpdb->links );
         $this->copy_table( $this->template_blog_id, $wpdb->links );
         do_action( 'blog_templates-copy-links', $this->template, $this->new_blog_id, $this->user_id );
+    // FALTA
 
         $this->clear_table( $wpdb->terms );
         $this->copy_table( $this->template_blog_id, $wpdb->terms );

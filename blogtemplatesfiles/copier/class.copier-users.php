@@ -1,6 +1,5 @@
 <?php
 
-include_once('class.copier2.php' );
 class NBT_Template_Copier_Users extends NBT_Template_Copier {
 
     public function __construct( $source_blog_id, $template, $args = array(), $user_id = 0 ) {
@@ -32,6 +31,8 @@ class NBT_Template_Copier_Users extends NBT_Template_Copier {
         }
 
         do_action( 'blog_templates-copy-users', $this->template, $this->new_blog_id, $this->user_id );
+
+        return true;
 	}
 
 

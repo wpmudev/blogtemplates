@@ -1,6 +1,5 @@
 <?php
 
-include_once('class.copier2.php' );
 class NBT_Template_Copier_Post_Types extends NBT_Template_Copier {
 
 	protected $type;
