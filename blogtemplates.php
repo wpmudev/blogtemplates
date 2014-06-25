@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/new-blog-template
 Description: Allows the site admin to create new blogs based on templates, to speed up the blog creation process
 Author: WPMU DEV
 Author URI: http://premium.wpmudev.org/
-Version: 2.6.7
+Version: 2.6.8
 Network: true
 Text Domain: blog_templates
 Domain Path: lang

@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: New Blog Templates\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-05-04 09:27+0100\n"
-"PO-Revision-Date: 2014-05-04 09:27+0100\n"
+"POT-Creation-Date: 2014-06-25 17:04+0100\n"
+"PO-Revision-Date: 2014-06-25 17:04+0100\n"
 "Last-Translator: Ignacio <igmoweb@gmail.com>\n"
 "Language-Team: WPMU DEV\n"
 "MIME-Version: 1.0\n"
@@ -52,7 +52,7 @@ msgstr ""
 msgid "There are no additional tables to display for this blog"
 msgstr ""
 
-#: ../blogtemplatesfiles/blog_templates.php:212
+#: ../blogtemplatesfiles/blog_templates.php:217
 #, php-format
 msgid ""
 "<strong>New Blog Templates alert:</strong> The main site cannot be templated "
@@ -60,25 +60,29 @@ msgid ""
 "that template (will not be shown as a choice from now on)"
 msgstr ""
 
-#: ../blogtemplatesfiles/blog_templates.php:237
+#: ../blogtemplatesfiles/blog_templates.php:242
 #: ../blogtemplatesfiles/blog_templates_theme_selection_toolbar.php:127
 #: ../blogtemplatesfiles/template/blog_templates-registration.php:22
 msgid "None"
 msgstr ""
 
-#: ../blogtemplatesfiles/blog_templates.php:268
+#: ../blogtemplatesfiles/blog_templates.php:273
 msgid "Template"
 msgstr ""
 
-#: ../blogtemplatesfiles/blog_templates.php:373
+#: ../blogtemplatesfiles/blog_templates.php:378
 msgid "Default Blog Template"
 msgstr ""
 
-#: ../blogtemplatesfiles/blog_templates.php:384
+#: ../blogtemplatesfiles/blog_templates.php:381
+msgid "Default"
+msgstr ""
+
+#: ../blogtemplatesfiles/blog_templates.php:389
 msgid "Default Blog Template used for this domain."
 msgstr ""
 
-#: ../blogtemplatesfiles/blog_templates.php:411
+#: ../blogtemplatesfiles/blog_templates.php:416
 msgid "Blog Template"
 msgstr ""
 
@@ -90,42 +94,42 @@ msgstr ""
 msgid "Default category"
 msgstr ""
 
-#: ../blogtemplatesfiles/copier.php:195
+#: ../blogtemplatesfiles/copier.php:197
 #, php-format
 msgid ""
 "Insertion Error: %s - The template was not applied. (New Blog Templates - "
 "While inserting templated settings)"
 msgstr ""
 
-#: ../blogtemplatesfiles/copier.php:212
+#: ../blogtemplatesfiles/copier.php:214
 #, php-format
 msgid ""
 "Deletion Error: %s - The template was not applied. (New Blog Templates - "
 "While removing auto-generated settings)"
 msgstr ""
 
-#: ../blogtemplatesfiles/copier.php:387
+#: ../blogtemplatesfiles/copier.php:390
 #, php-format
 msgid ""
 "File System Error: Unable to create directory %s. (New Blog Templates - "
 "While copying files)"
 msgstr ""
 
-#: ../blogtemplatesfiles/copier.php:464
+#: ../blogtemplatesfiles/copier.php:470
 #, php-format
 msgid ""
 "Insertion Error: %s - The template was not applied. (New Blog Templates - "
 "With CREATE TABLE query for Additional Tables)"
 msgstr ""
 
-#: ../blogtemplatesfiles/copier.php:617 ../blogtemplatesfiles/copier.php:730
+#: ../blogtemplatesfiles/copier.php:623 ../blogtemplatesfiles/copier.php:736
 #, php-format
 msgid ""
 "Insertion Error: %1$s - The template was not applied. (New Blog Templates - "
 "While copying %2$s)"
 msgstr ""
 
-#: ../blogtemplatesfiles/copier.php:683
+#: ../blogtemplatesfiles/copier.php:689
 #, php-format
 msgid ""
 "Deletion Error: %1$s - The template was not applied. (New Blog Templates - "
@@ -135,6 +139,14 @@ msgstr ""
 #: ../blogtemplatesfiles/upgrade.php:58
 #: ../blogtemplatesfiles/settings-handler.php:26
 msgid "Select this theme"
+msgstr ""
+
+#: ../blogtemplatesfiles/integration.php:226
+msgid "New Blog Templates"
+msgstr ""
+
+#: ../blogtemplatesfiles/integration.php:228
+msgid "Display Templates Selector"
 msgstr ""
 
 #: ../blogtemplatesfiles/blog_templates_lock_posts.php:43
@@ -585,6 +597,10 @@ msgstr ""
 #: ../blogtemplatesfiles/tables/templates_table.php:77
 #, php-format
 msgid "<a href=\"%s\">Make default</a>"
+msgstr ""
+
+#: ../blogtemplatesfiles/tables/templates_table.php:89
+msgid "Go to Dashboard"
 msgstr ""
 
 #: ../blogtemplatesfiles/tables/templates_table.php:104
