@@ -95,6 +95,48 @@ class NBT_Template_Copier_Tables extends NBT_Template_Copier {
         return true;
 	}
 
+    function copy_table( $templated_blog_id, $dest_table ) {
+        global $wpdb;
+
+        do_action( 'blog_templates-copying_table', $dest_table, $templated_blog_id );
+
+        $destination_prefix = $wpdb->prefix;
+
+        //Switch to the template blog, then grab the values
+        switch_to_blog( $templated_blog_id );
+        $template_prefix = $wpdb->prefix;
+        $source_table = str_replace( $destination_prefix, $template_prefix, $dest_table );
+        $templated = $wpdb->get_results( "SELECT * FROM {$source_table}" );
+        restore_current_blog(); //Switch back to the newly created blog
+
+        if ( count( $templated ) )
+            $to_remove = $this->get_fields_to_remove($dest_table, $templated[0]);
+
+        //Now, insert the templated settings into the newly created blog
+        foreach ($templated as $row) {
+            $row = (array)$row;
+
+            foreach ( $row as $key => $value ) {
+                if ( in_array( $key, $to_remove ) )
+                    unset( $row[ $key ] );
+            }
+
+            $process = apply_filters('blog_templates-process_row', $row, $dest_table, $templated_blog_id);
+            if ( ! $process )
+                continue;
+
+            $wpdb->insert( $dest_table, $process );
+            if ( ! empty( $wpdb->last_error ) ) {
+                $error = '<div id="message" class="error"><p>' . sprintf( __( 'Insertion Error: %1$s - The template was not applied. (New Blog Templates - While copying %2$s)', 'blog_templates' ), $wpdb->last_error, $table ) . '</p></div>';
+                $wpdb->query("ROLLBACK;");
+
+                //We've rolled it back and thrown an error, we're done here
+                restore_current_blog();
+                wp_die($error);
+            }
+        }
+    }
+
 
 
 

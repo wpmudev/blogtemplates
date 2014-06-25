@@ -171,7 +171,6 @@ class blog_templates_main_menu {
 			            	$model = nbt_get_model();
 			                $template = $model->get_template( $t );
 			                echo '<!-- TEMPLATE SETTINGS' . ( print_r($template,true) ) . '-->';
-			                var_dump($template);
 			        ?>
 			            
 			            <h2><?php _e('Edit Blog Template', 'blog_templates'); ?></h2>

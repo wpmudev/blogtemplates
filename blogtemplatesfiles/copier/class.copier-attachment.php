@@ -19,6 +19,7 @@ class NBT_Template_Copier_Attachment extends NBT_Template_Copier {
         global $wpdb;
 
         $thumbnail_id = absint( $this->args['attachment_id'] );
+
         if ( ! $thumbnail_id )
             return new WP_Error( 'attachment_error', __( 'Wrong attachment specified', 'blog_templates') );
 
@@ -75,6 +76,8 @@ class NBT_Template_Copier_Attachment extends NBT_Template_Copier {
 
         foreach ( $posts_ids as $post_id )
             update_post_meta( $post_id, '_thumbnail_id', $new_attachment_id );
+
+        return $url;
 
 	}
 

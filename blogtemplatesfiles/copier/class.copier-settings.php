@@ -11,6 +11,8 @@ class NBT_Template_Copier_Settings extends NBT_Template_Copier {
 	public function copy() {
 		global $wpdb;
 
+        wp_cache_flush();
+
 		$exclude_settings = array(
             'siteurl',
             'blogname',
@@ -38,6 +40,7 @@ class NBT_Template_Copier_Settings extends NBT_Template_Copier {
         switch_to_blog( $this->source_blog_id );
         $src_blog_settings = $wpdb->get_results( "SELECT * FROM $wpdb->options WHERE $exclude_settings_where" );
         $template_prefix = $wpdb->prefix;
+
         restore_current_blog();
 
         $new_prefix = $wpdb->prefix;
@@ -53,7 +56,7 @@ class NBT_Template_Copier_Settings extends NBT_Template_Copier {
             if ( ! $row )
                 continue; // Prevent empty row insertion
 
-            add_option( $row->option_name, maybe_unserialize( $row->option_value ), null, $row->autoload );
+            $added = add_option( $row->option_name, maybe_unserialize( $row->option_value ), null, $row->autoload );
 
         }
 

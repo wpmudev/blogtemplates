@@ -63,13 +63,13 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_styles' ) );
 
-            add_action( 'wp_ajax_nbt_process_template', array( $this, 'process_template' ) );
+            add_action( 'wp_ajax_nbt_process_template', array( $this, 'process_ajax_template' ) );
 
             do_action( 'nbt_object_create', $this );
 
         }
 
-        public function process_template() {
+        public function process_ajax_template() {
 
             if ( ! current_user_can( 'manage_options' ) )
                 wp_send_json_error( array( 'message' => "Security Error" ) );
@@ -78,127 +78,127 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             $option = get_option( 'nbt-pending-template' );
 
-            if ( $option === false )
-                wp_send_json_error( array( 'message' => "Error getting option" ) );
+            $result = $this->process_template( $option );
+            
+            if ( $result['error'] )
+                wp_send_json_error( array( 'message' => $result['message'] ) );
+            else
+                wp_send_json_success( array( 'message' => $result['message'] ) );
 
-            if ( empty( $option['to_copy'] ) ) {
-                delete_option( 'nbt-pending-template' );
-                wp_send_json_error( array( 'message' => "Process Finished" ) );
+        }
+
+        public function process_template( $option ) {
+
+            if ( $option === false ) {
+                return array(
+                    'error' => true,
+                    'message' => "Error getting option"
+                );
             }
 
-            $copy = key( $option['to_copy'] );
-            unset( $option['to_copy'][ $copy ] );
-            update_option( 'nbt-pending-template', $option );
+            // Nothing to copy
+            if ( empty( $option['to_copy'] ) ) {
+                delete_option( 'nbt-pending-template' );
+                return array(
+                    'error' => true,
+                    'message' => "Process Finished"
+                );
+            }
 
+            extract( $option );
+
+            // We need to erase the stuff done from the list
+            // So next reload it does not copy teh same things again
+            $copy = key( $option['to_copy'] );
+            if ( $copy != 'attachment' )
+                unset( $option['to_copy'][ $copy ] );
+
+            // Arguments
+            if ( 'attachment' == $copy ) {
+                $attachment_key = key( $attachment_ids );
+                if ( $attachment_key === null ) {
+                    // No attachments to copy
+                    unset( $option['to_copy']['attachment'] );
+                    update_option( 'nbt-pending-template', $option );
+                    return array(
+                        'error' => false,
+                        'message' => 'No attachments to copy'
+                    );
+                }
+
+                $args = array( 
+                    'attachment_id' => $attachment_ids[ $attachment_key ]['attachment_id'],
+                    'date' => $attachment_ids[ $attachment_key ]['date']
+                );
+                unset( $option['attachment_ids'][ $attachment_key] );
+
+                if ( empty( $option['attachment_ids'] ) ) {
+                    // We have finished with attachments
+                    unset( $option['to_copy']['attachment'] );
+                    update_option( 'nbt-pending-template', $option );
+                }
+
+            }
+            else {
+                $args = empty( $to_copy[ $copy ] ) ? array() : $to_copy[ $copy ];
+                update_option( 'nbt-pending-template', $option );
+            }
+
+            // Get the copier object
             $copy_args = array();
             $copy_args['source_blog_id'] = $source_blog_id;
             $copy_args['template'] = $template;
-            $copy_args['args'] = empty( $to_copy[ $opy ] ) ? array() : $to_copy[ $copy ];
+            $copy_args['args'] = $args;
             $copy_args['user_id'] = $user_id;
 
             $copier = nbt_get_copier( $copy, $copy_args );
 
-            if ( ! $copier )
-                wp_send_json_success( array( 'message' => "Error getting class ($copy)" ) );
+            if ( ! $copier ) {
+                return array(
+                    'error' => false,
+                    'message' => "Error getting class ($copy)"
+                );
+            }
 
+            // Copy!
             $copier_result = $copier->copy();
 
             if ( is_wp_error( $copier_result ) ) {
                 $message = $copier_result->get_error_message();
             }
             else {
-                $message = ucfirst( $copy ) . ' Copied';
+                if ( 'attachment' != $copy )
+                    $message = ucfirst( $copy ) . ' Copied';
+                else
+                    $message = basename( $copier_result ) . ' Copied';
             }
 
-            $data = array(
+            return array(
+                'error' => false,
                 'message' => $message
             );
-            wp_send_json_success( $data );
-
-        }
+        }   
 
         /**
          * If there's something pending to template for the current blog
          * here's when everything will be copied
          */
         public function maybe_template() {
-
             if ( defined( 'DOING_AJAX' ) && DOING_AJAX )
-                return;
-
-            if ( get_current_blog_id() != 63 )
                 return;
 
             if ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) )
                 return;
-
-            if ( isset( $_GET['nbt'] ) ) {
-                switch_to_blog( 2 );
-                $attachments = get_posts( array(
-                    'posts_per_page' => -1,
-                    'post_type' => 'attachment',
-                    'fields' => 'ids',
-                    'ignore_sticky_posts' => true
-                ) );
-
-                restore_current_blog();
-                $option = array(
-                    'source_blog_id' => 2,
-                    'template' => array(),
-                    'to_copy' => array(
-                        'settings' => array(),
-                        'posts' => array( 'update_dates' => true ),
-                        'pages' => array(),
-                        'terms' => array( 'update_relationships' => true ),
-                        'menus' => array(),
-                        'users' => array(),
-                        'tables' => array(),
-                        'attachment' => array()
-                    ),
-                    'attachment_ids' => $attachments,
-                    'user_id' => get_current_user_id()
-                );
-
-                update_option( 'nbt-pending-template', $option );
-                return;
-            }
-
 
             if ( ! $option = get_option( 'nbt-pending-template' ) )
                 return;
 
             extract( $option );
 
-            if ( empty( $to_copy ) ) {
-                // Nothing to copy
-                //delete_option( 'nbt-pending-template' );
-                return;
-            }
-
             if ( isset( $_REQUEST['nbt_step'] ) ) {
-
-                // We are not working with Ajax so let's start to copy
-
-                $copy = key( $to_copy );
-                $copy_args = array();
-                $copy_args['source_blog_id'] = $source_blog_id;
-                $copy_args['template'] = $template;
-                $copy_args['args'] = empty( $to_copy[ $copy ] ) ? array() : $to_copy[ $copy ];
-                $copy_args['user_id'] = $user_id;
-
-                $copier = nbt_get_copier( $copy, $copy_args );
-                $copier_result = $copier->copy();
-
-                unset( $option['to_copy'][ $copy ] );
-                update_option( 'nbt-pending-template', $option );
-
-                if ( is_wp_error( $copier_result ) ) {
-                    $message = $copier_result->get_error_message();
-                }
-                else {
-                    $message = ucfirst( $copy ) . ' Copied';
-                }
-
+                $result = $this->process_template( $option );
+                $message = $result['message'];
+                $error = $result['error'];
             }
 
 
@@ -229,10 +229,12 @@ if ( ! class_exists( 'blog_templates' ) ) {
                     <?php endif; ?>
                 </ul>
                 <p class="redirect" style="display:none"><a class="button-primary" href="<?php echo esc_url($finish_url); ?>">Click here to return to dashboard</a></p>
-                <?php if ( empty( $copier_result ) ): ?>
-                    <a class="button next_step_link" href="<?php echo esc_url( add_query_arg( 'nbt_step', 'true', admin_url() ) ); ?>">Start</a>   
-                <?php else: ?>
+                <?php if ( empty( $message ) ): ?>
+                    <a class="button button-primary next_step_link" href="<?php echo esc_url( add_query_arg( 'nbt_step', 'true', admin_url() ) ); ?>">Start</a>   
+                <?php elseif ( ! empty( $message ) && ! $error ): ?>
                     <a class="button next_step_link" href="<?php echo esc_url( add_query_arg( 'nbt_step', 'true', admin_url() ) ); ?>">Next step</a>
+                <?php else: ?>                    
+                    <a class="button button-primary next_step_link" href="<?php echo esc_url( add_query_arg( 'nbt_step', 'true', admin_url() ) ); ?>">Return to dashboard</a>
                 <?php endif; ?>
             </body>
             <script>
@@ -255,7 +257,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
                     })
                     .done(function( data ) {
                         var list = $('#steps');
-                        console.log(data);
                         var list_item = $('<li></li>').text(data.data.message);
                         list_item.appendTo(list);
                         if ( ! data.success ) {
@@ -550,43 +551,90 @@ if ( ! class_exists( 'blog_templates' ) ) {
             $template = apply_filters('blog_templates-blog_template', $template, $blog_id, $user_id );
             if ( ! $template || 'none' == $template )
                 return; //No template, lets leave
+            var_dump($template);
+            $this->enqueue_template_in_blog( $blog_id, $template, $user_id );            
+
+        }
+
+        public function enqueue_template_in_blog( $blog_id, $template, $user_id = false ) {
+
+            if ( ! $user_id )
+                $user_id = get_current_user_id();
 
             switch_to_blog( $blog_id ); //Switch to the blog that was just created            
-
-            $copier_args = array();
-            foreach( $template['to_copy'] as $value ) {
-                $to_copy_args = true;
-
-                if ( $value === 'posts' ) {
-                    $to_copy_args = array();
-                    $to_copy_args['categories'] = isset( $template['post_category'] ) && in_array( 'all-categories', $template['post_category'] ) ? 'all' : $template['post_category'];
-                    $to_copy_args['block'] = isset( $template['block_posts_pages'] ) && $template['block_posts_pages'] === true ? true : false;
-                    $to_copy_args['update_dates'] = isset( $template['update_dates'] ) && $template['update_dates'] === true ? true : false;
-                }
-                elseif( $value === 'pages') {
-                    $to_copy_args = array();
-                    $to_copy_args['pages'] = isset( $template['pages_ids'] ) && in_array( 'all-pages', $template['pages_ids'] ) ? 'all' : $template['pages_ids'];
-                    $to_copy_args['block'] = isset( $template['block_posts_pages'] ) && $template['block_posts_pages'] === true ? true : false;
-                    $to_copy_args['update_dates'] = isset( $template['update_dates'] ) && $template['update_dates'] === true ? true : false;
-                }
-
-                $copier_args['to_copy'][ $value ] = $to_copy_args;
-            }
-
-            $copier_args['template_id'] = $template['ID'];
-            $copier_args['additional_tables'] = ( isset( $template['additional_tables'] ) && is_array( $template['additional_tables'] ) ) ? $template['additional_tables'] : array();
 
             $args = array(
                 'source_blog_id' => $template['blog_id'],
                 'user_id' => $user_id,
-                'copier_args' => $copier_args
+                'template' => $template
             );
 
-            // We leave the pending changes "enqueued"
-            add_option( 'nbt-pending-template', $args, null, 'no' );
-            
-            restore_current_blog(); //Switch back to our current blog
+            $attachments = array();
+            foreach( $template['to_copy'] as $value ) {
+                $to_copy_args = array();
 
+                if ( $value === 'posts' ) {
+                    $to_copy_args['categories'] = isset( $template['post_category'] ) && in_array( 'all-categories', $template['post_category'] ) ? 'all' : $template['post_category'];
+                    $to_copy_args['block'] = isset( $template['block_posts_pages'] ) && $template['block_posts_pages'] === true ? true : false;
+                    $to_copy_args['update_dates'] = isset( $template['update_dates'] ) && $template['update_dates'] === true ? true : false;
+                }
+                elseif ( $value === 'pages' ) {
+                    $to_copy_args['pages_ids'] = isset( $template['pages_ids'] ) && in_array( 'all-pages', $template['pages_ids'] ) ? 'all' : $template['pages_ids'];
+                    $to_copy_args['block'] = isset( $template['block_posts_pages'] ) && $template['block_posts_pages'] === true ? true : false;
+                    $to_copy_args['update_dates'] = isset( $template['update_dates'] ) && $template['update_dates'] === true ? true : false;
+                }
+                elseif ( 'terms' === $value ) {
+                    if ( in_array( 'posts', $template['to_copy'] ) || in_array( 'pages', $template['to_copy'] ) )
+                        $to_copy_args['update_relationships'] = true;
+                }
+                elseif ( 'files' === $value ) {
+                    switch_to_blog( $template['blog_id'] );
+                    $attachment_ids = get_posts( array(
+                        'posts_per_page' => -1,
+                        'post_type' => 'attachment',
+                        'fields' => 'ids',
+                        'ignore_sticky_posts' => true
+                    ) );
+
+                    $attachments = array();
+                    foreach ( $attachment_ids as $id ) {
+                        $item = array(
+                            'attachment_id' => $id,
+                            'date' => false
+                        );
+                        $attached_file = get_post_meta( $id, '_wp_attached_file', true );
+                        if ( $attached_file ) {
+                            if ( preg_match( '%^[0-9]{4}/[0-9]{2}%', $attached_file, $matches ) )
+                                $item['date'] = $matches[0];
+                        }
+                        $attachments[] = $item;
+                    }
+                    restore_current_blog();
+
+                    $value = 'attachment';
+
+                    $args['attachment_ids'] = $attachments;
+                }
+
+                $args['to_copy'][ $value ] = $to_copy_args;
+            }
+
+            // Additional tables
+            $tables_args = array();
+            if ( in_array( 'settings', $template['to_copy'] ) ) {
+                $tables_args['create_tables'] = true;
+                $args['to_copy']['tables'] = $table_args;
+            }
+
+            if ( isset( $template['additional_tables'] ) && is_array( $template['additional_tables'] ) ) {
+                $tables_args['tables'] = $template['additional_tables'];
+                $args['to_copy']['tables'] = $tables_args;
+            }           
+
+            // We leave the pending changes "enqueued"
+            $added = add_option( 'nbt-pending-template', $args, null, 'no' );
+
+            restore_current_blog(); //Switch back to our current blog
         }
 
 
