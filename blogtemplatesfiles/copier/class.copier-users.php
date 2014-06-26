@@ -14,7 +14,7 @@ class NBT_Template_Copier_Users extends NBT_Template_Copier {
         global $wpdb;
 
         switch_to_blog( $this->source_blog_id );
-        $template_users = get_users();
+        $template_users = get_users( array( 'exclude' => $this->user_id ) );
         restore_current_blog();
 
         if ( empty( $template_users ) )

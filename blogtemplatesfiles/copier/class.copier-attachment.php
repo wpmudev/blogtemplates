@@ -18,12 +18,18 @@ class NBT_Template_Copier_Attachment extends NBT_Template_Copier {
 	public function copy() {
         global $wpdb;
 
-        $thumbnail_id = absint( $this->args['attachment_id'] );
+        if ( is_string( $this->args['attachment_id'] ) )
+            $thumbnail_id = absint( $this->args['attachment_id'] );
+        else
+            $thumbnail_id = $this->args['attachment_id'];
 
         if ( ! $thumbnail_id )
             return new WP_Error( 'attachment_error', __( 'Wrong attachment specified', 'blog_templates') );
 
-        $source_attachment = get_blog_post( $this->source_blog_id, $thumbnail_id );
+        if ( ! is_string( $thumbnail_id ) )
+            $source_attachment = get_blog_post( $this->source_blog_id, $thumbnail_id );
+        else {
+        }
 
         if ( ! $source_attachment )
             return new WP_Error( 'attachment_error', sprintf( __( 'Attachment ( ID= %d ) does not exist in the source blog', 'blog_templates'), $thumbnail_id ) );
@@ -77,7 +83,18 @@ class NBT_Template_Copier_Attachment extends NBT_Template_Copier {
         foreach ( $posts_ids as $post_id )
             update_post_meta( $post_id, '_thumbnail_id', $new_attachment_id );
 
-        return $url;
+        if ( apply_filters( 'nbt_change_attachments_urls', true ) ) {
+            // Now remap urls in post_content
+            // Again, code extracted from WordPress importer plugin
+            $wpdb->query( $wpdb->prepare("UPDATE {$wpdb->posts} SET post_content = REPLACE(post_content, %s, %s)", $url, $upload['url'] ) );
+            $wpdb->query( $wpdb->prepare("UPDATE {$wpdb->postmeta} SET meta_value = REPLACE(meta_value, %s, %s) WHERE meta_key='enclosure'", $url, $upload['url'] ) );
+        }
+
+        
+        return array(
+            'url' => $url,
+            'new_attachment_id' => $new_attachment_id
+        );
 
 	}
 
@@ -85,7 +102,7 @@ class NBT_Template_Copier_Attachment extends NBT_Template_Copier {
      * Fetch an image and download it. Then create a new empty file for  it
      * that can be filled later
      * 
-     * Code from WordPress Importer plugin
+     * Code based on WordPress Importer plugin
      * 
      * @return WP_Error/Array Image properties/Error
      */

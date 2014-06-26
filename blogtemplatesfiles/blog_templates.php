@@ -99,6 +99,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             // Nothing to copy
             if ( empty( $option['to_copy'] ) ) {
                 delete_option( 'nbt-pending-template' );
+                do_action( "blog_templates-copy-after_copying", $option['template'], $option['source_blog_id'], $option['user_id'] );
                 return array(
                     'error' => true,
                     'message' => "Process Finished"
@@ -164,7 +165,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 if ( 'attachment' != $copy )
                     $message = ucfirst( $copy ) . ' Copied';
                 else
-                    $message = basename( $copier_result ) . ' Copied';
+                    $message = basename( $copier_result['url'] ) . ' Copied';
             }
 
             return array(
@@ -178,6 +179,12 @@ if ( ! class_exists( 'blog_templates' ) ) {
          * here's when everything will be copied
          */
         public function maybe_template() {
+
+            if ( get_current_blog_id() != 82 )
+                return;
+
+            $copier = nbt_get_copier( 'settings', 2, array() );
+            $copier->copy();
 
             if ( defined( 'DOING_AJAX' ) && DOING_AJAX )
                 return;
@@ -612,6 +619,10 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 }
 
                 $args['to_copy'][ $value ] = $to_copy_args;
+            }
+
+            if ( array_key_exists( 'posts', $args['to_copy'] ) || array_key_exists( 'pages', $args['to_copy'] ) ) {
+                $args['to_copy']['comments'] = array();
             }
 
             // Additional tables

@@ -87,7 +87,11 @@ function nbt_copy_autoblog_feeds( $template ) {
 	$current_site = get_current_site();
 	$current_site_id = $current_site->id;
 
-	$source_blog_id = $template['blog_id'];
+	$source_blog_id = isset( $template['blog_id'] ) ? absint( $template['blog_id'] ) : false;
+
+	if ( ! $source_blog_id )
+		return;
+	
 	$autoblog_on = false;
 
 	switch_to_blog( $source_blog_id );

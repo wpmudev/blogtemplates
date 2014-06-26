@@ -19,7 +19,7 @@ class NBT_Template_Copier_Terms extends NBT_Template_Copier {
 		$tables = array( $wpdb->terms, $wpdb->term_taxonomy, $wpdb->links );
 
 		foreach ( $tables as $table ) {
-			$result = $this->clear_table( $wpdb->terms );
+			$result = $this->clear_table( $table );
 			if ( is_wp_error( $result ) )
 				return $result;
 		}
@@ -31,7 +31,13 @@ class NBT_Template_Copier_Terms extends NBT_Template_Copier {
             $taxonomies[ $taxonomy ] = $taxonomy;
 		unset( $taxonomies['nav_menu'] );
 		$source_terms = $this->get_terms( $taxonomies );
+
+		$source_links_table = $wpdb->links;
 		restore_current_blog();
+		
+		// Now insert the links
+		$wpdb->query( "INSERT INTO $wpdb->links SELECT * FROM $source_links_table" );
+		do_action( 'blog_templates-copy-links', $this->template, get_current_blog_id(), $this->user_id );
 
 		$mapped_terms = array();
 
@@ -53,6 +59,7 @@ class NBT_Template_Copier_Terms extends NBT_Template_Copier {
 
 		}
 
+
 		// Now update parents
 		foreach ( $source_terms as $term ) {
 			if ( ! empty( $term->parent ) && isset( $mapped_terms[ $term->parent ] ) && isset( $mapped_terms[ $term->term_id ] ) ) {
@@ -60,7 +67,10 @@ class NBT_Template_Copier_Terms extends NBT_Template_Copier {
 			}
 		}
 
+		do_action( 'blog_templates-copy-terms', $this->template, get_current_blog_id(), $this->user_id );
+
 		unset( $source_terms );
+
 
 		// Update posts term relationships
 		if ( $this->args['update_relationships'] ) {
@@ -75,41 +85,68 @@ class NBT_Template_Copier_Terms extends NBT_Template_Copier {
 			if ( ! empty( $posts_ids ) ) {
 				$posts_ids = array_map( 'absint', $posts_ids );
 
-				$source_objects_terms = array();
-				switch_to_blog( $this->source_blog_id );
-				foreach ( $posts_ids as $post_id ) {
-					$object_terms = $this->get_object_terms( $post_id, $taxonomies );
-					if ( ! empty( $object_terms ) && ! is_wp_error( $object_terms ) )
-						$source_objects_terms[ $post_id ] = $object_terms;
-				}
-				restore_current_blog();
+				// Remove the link categories for posts
+				$posts_taxonomies = $taxonomies;
+				if ( isset( $posts_taxonomies['link_category'] ) )
+					unset( $posts_taxonomies['link_category'] );
 
-				if ( ! empty( $source_objects_terms ) ) {
-					// We just need to set the object terms with the remapped terms IDs
-					foreach ( $source_objects_terms as $post_id => $source_object_terms ) {
-						$taxonomies = array_unique( wp_list_pluck( $source_object_terms, 'taxonomy' ) );
-						foreach ( $taxonomies as $taxonomy ) {
-							$source_terms_ids = wp_list_pluck( wp_list_filter( $source_object_terms, array( 'taxonomy' => $taxonomy ) ), 'term_id' );
-							$new_terms_ids = array();
-							foreach ( $source_terms_ids as $source_term_id ) {
-								if ( isset( $mapped_terms[ $source_term_id ] ) )
-									$new_terms_ids[] = $mapped_terms[ $source_term_id ];
-							}
-
-							// Set post terms
-							$this->set_object_terms( $post_id, $new_terms_ids, $taxonomy );
-						}
-						
-					}
-				}
-
+				$this->assign_terms_to_objects( $posts_ids, $posts_taxonomies, $mapped_terms );
 
 			}
+
+			if ( isset( $taxonomies['link_category'] ) ) {
+				// There are one or more link categories
+				// Let's assigned them
+				$query = "SELECT link_id FROM $wpdb->links";
+				$links_ids = $wpdb->get_col( $query );
+
+				if ( ! empty( $links_ids ) ) {
+					$links_ids = array_map( 'absint', $links_ids );
+					$this->assign_terms_to_objects( $links_ids, array( 'link_category' ), $mapped_terms );
+
+				}
+
+			}
+
+			do_action( 'blog_templates-copy-term_relationships', $this->template, get_current_blog_id(), $this->user_id );
+
 
 			
 		}
 
         return true;
+	}
+
+	public function assign_terms_to_objects( $objects_ids, $taxonomies, $mapped_terms ) {
+		$source_objects_terms = array();
+		switch_to_blog( $this->source_blog_id );
+		foreach ( $objects_ids as $object_id ) {
+			$object_terms = $this->get_object_terms( $object_id, $taxonomies );
+			if ( ! empty( $object_terms ) && ! is_wp_error( $object_terms ) )
+				$source_objects_terms[ $object_id ] = $object_terms;
+		}
+		restore_current_blog();
+
+
+		if ( ! empty( $source_objects_terms ) ) {
+			// We just need to set the object terms with the remapped terms IDs
+			foreach ( $source_objects_terms as $object_id => $source_object_terms ) {
+				$taxonomies = array_unique( wp_list_pluck( $source_object_terms, 'taxonomy' ) );
+
+				foreach ( $taxonomies as $taxonomy ) {
+					$source_terms_ids = wp_list_pluck( wp_list_filter( $source_object_terms, array( 'taxonomy' => $taxonomy ) ), 'term_id' );
+
+					$new_terms_ids = array();
+					foreach ( $source_terms_ids as $source_term_id ) {
+						if ( isset( $mapped_terms[ $source_term_id ] ) )
+							$new_terms_ids[] = $mapped_terms[ $source_term_id ];
+					}
+					// Set post terms
+					$this->set_object_terms( $object_id, $new_terms_ids, $taxonomy );
+				}
+				
+			}
+		}
 	}
 
 	/**
@@ -134,7 +171,7 @@ class NBT_Template_Copier_Terms extends NBT_Template_Copier {
 		$object_ids = array_map('intval', $object_ids);
 
 		$defaults = array('orderby' => 'name', 'order' => 'ASC', 'fields' => 'all');
-		$args = wp_parse_args( $args, $defaults );
+		$args = wp_parse_args( array(), $defaults );
 
 		$terms = array();
 		if ( count($taxonomies) > 1 ) {
@@ -321,13 +358,15 @@ class NBT_Template_Copier_Terms extends NBT_Template_Copier {
 
 		$empty_array = array();
 
+		$single_taxonomy = ! is_array( $taxonomies ) || 1 === count( $taxonomies );
+
 		$defaults = array('orderby' => 'name', 'order' => 'ASC',
 			'hide_empty' => true, 'exclude' => array(), 'exclude_tree' => array(), 'include' => array(),
 			'number' => '', 'fields' => 'all', 'slug' => '', 'parent' => '',
 			'hierarchical' => true, 'child_of' => 0, 'get' => 'all', 'name__like' => '', 'description__like' => '',
 			'pad_counts' => false, 'offset' => '', 'search' => '', 'cache_domain' => 'core' );
 
-		$args = wp_parse_args( $args, $defaults );
+		$args = wp_parse_args( array(), $defaults );
 		$args['number'] = absint( $args['number'] );
 		$args['offset'] = absint( $args['offset'] );
 		if ( !$single_taxonomy || ! is_taxonomy_hierarchical( reset( $taxonomies ) ) ||
