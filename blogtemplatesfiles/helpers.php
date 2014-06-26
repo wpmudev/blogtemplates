@@ -131,7 +131,7 @@ function nbt_get_additional_tables( $blog_id ) {
  * 
  * @return Object/False
  */
-function nbt_get_copier( $type, $variables ) {
+function nbt_get_copier( $type, $source_blog_id, $template, $args = array(), $user_id = 0 ) {
     $type = strtolower( $type );
 
     include_once( NBT_PLUGIN_DIR . "blogtemplatesfiles/copier/class.copier2.php" );
@@ -146,6 +146,7 @@ function nbt_get_copier( $type, $variables ) {
     $classname = "NBT_Template_Copier_$type";
     $classname = apply_filters( 'blog_templates_get_copier_class', $classname, $type );
 
+    $variables = compact( 'source_blog_id', 'template', 'args', 'user_id' );
     if ( class_exists( $classname ) ) {
         $r = new ReflectionClass( $classname );
         return $r->newInstanceArgs( $variables );

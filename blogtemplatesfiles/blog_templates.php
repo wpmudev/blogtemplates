@@ -145,13 +145,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             }
 
             // Get the copier object
-            $copy_args = array();
-            $copy_args['source_blog_id'] = $source_blog_id;
-            $copy_args['template'] = $template;
-            $copy_args['args'] = $args;
-            $copy_args['user_id'] = $user_id;
-
-            $copier = nbt_get_copier( $copy, $copy_args );
+            $copier = nbt_get_copier( $copy, $source_blog_id, $template, $args, $user_id );
 
             if ( ! $copier ) {
                 return array(
@@ -184,6 +178,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
          * here's when everything will be copied
          */
         public function maybe_template() {
+
             if ( defined( 'DOING_AJAX' ) && DOING_AJAX )
                 return;
 
