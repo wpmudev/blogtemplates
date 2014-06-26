@@ -29,10 +29,16 @@ class NBT_Template_Copier_Settings extends NBT_Template_Copier {
 
         $exclude_settings = apply_filters( 'blog_templates_exclude_settings', $exclude_settings );
 
-        $exclude_settings_where = "`option_name` != '" . implode( "' AND `option_name` != '", $exclude_settings ) . "'";
-        $exclude_settings = apply_filters( 'blog_template_exclude_settings', $exclude_settings_where );
+        $the_options = $wpdb->get_col( "SELECT option_name FROM $wpdb->options" );
+        foreach ( $the_options as $option_name ) {
+            if ( ! in_array( $option_name, $exclude_settings ) )
+                delete_option( $option_name );
+        }
 
-        $wpdb->query( "DELETE FROM $wpdb->options WHERE $exclude_settings_where" );
+        $exclude_settings_where = "`option_name` != '" . implode( "' AND `option_name` != '", $exclude_settings ) . "'";
+        //$exclude_settings = apply_filters( 'blog_template_exclude_settings', $exclude_settings_where );
+
+        //$wpdb->query( "DELETE FROM $wpdb->options WHERE $exclude_settings_where" );
 
         if ( $wpdb->last_error )
             return new WP_Error( 'settings_error', __( 'Error copying settings' ) );
@@ -72,12 +78,11 @@ class NBT_Template_Copier_Settings extends NBT_Template_Copier {
 
             if ( apply_filters( 'nbt_change_attachments_urls', true ) )
                 array_walk_recursive( $mods, array( &$this, 'set_theme_mods_url' ), array( $this->source_blog_id, get_current_blog_id() ) );
-
             update_option( "theme_mods_$theme_slug", $mods );    
         }
         
 
-        do_action( 'blog_templates-copy-options', $this->template, $this->source_blog_id, $this->user_id );
+        do_action( 'blog_templates-copy-options', $this->template,$this->source_blog_id, $this->user_id );
 
         return true;
 	}

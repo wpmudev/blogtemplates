@@ -131,11 +131,14 @@ if ( ! class_exists( 'blog_templates' ) ) {
                     'attachment_id' => $attachment_ids[ $attachment_key ]['attachment_id'],
                     'date' => $attachment_ids[ $attachment_key ]['date']
                 );
-                unset( $option['attachment_ids'][ $attachment_key] );
+                unset( $option['attachment_ids'][ $attachment_key ] );
 
                 if ( empty( $option['attachment_ids'] ) ) {
                     // We have finished with attachments
                     unset( $option['to_copy']['attachment'] );
+                    update_option( 'nbt-pending-template', $option );
+                }
+                else {
                     update_option( 'nbt-pending-template', $option );
                 }
 
@@ -179,12 +182,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
          * here's when everything will be copied
          */
         public function maybe_template() {
-
-            if ( get_current_blog_id() != 82 )
-                return;
-
-            $copier = nbt_get_copier( 'settings', 2, array() );
-            $copier->copy();
 
             if ( defined( 'DOING_AJAX' ) && DOING_AJAX )
                 return;
@@ -258,6 +255,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                         },
                     })
                     .done(function( data ) {
+                        console.log(data);
                         var list = $('#steps');
                         var list_item = $('<li></li>').text(data.data.message);
                         list_item.appendTo(list);
@@ -502,7 +500,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
         */
         function set_blog_defaults( $blog_id, $user_id, $_passed_domain=false, $_passed_path=false, $_passed_site_id=false, $_passed_meta=false ) {
             global $wpdb, $multi_dm;
-
+            error_log("OVER HERE");
             $settings = nbt_get_settings();
 
             $default = false;
@@ -629,7 +627,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             $tables_args = array();
             if ( in_array( 'settings', $template['to_copy'] ) ) {
                 $tables_args['create_tables'] = true;
-                $args['to_copy']['tables'] = $table_args;
+                $args['to_copy']['tables'] = $tables_args;
             }
 
             if ( isset( $template['additional_tables'] ) && is_array( $template['additional_tables'] ) ) {

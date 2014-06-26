@@ -41,14 +41,21 @@ define( 'NBT_PLUGIN_LANG_DOMAIN', 'blog_templates' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/helpers.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/filters.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/model.php' );
-require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/blog_templates_theme_selection_toolbar.php' );
 
-require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/ajax.php' );
+if ( defined( 'DOING_AJAX' ) && DOING_AJAX )
+	require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/ajax.php' );
+
 if ( is_network_admin() ) {
 	require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/admin/main_menu.php' );
 	require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/admin/categories_menu.php' );
 	require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/admin/settings_menu.php' );
+	require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/tables/templates_table.php' );
+	require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/tables/categories_table.php' );
 }
+
+// Load Premium?
+if ( file_exists( NBT_PLUGIN_DIR . 'blogtemplatesfiles/premium/cloner.php' ) )
+	include_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/premium/cloner.php' );
 
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/integration.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/blog_templates.php' );
@@ -59,11 +66,6 @@ include_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/externals/wpmudev-dash-notifi
 global $wpmudev_notices;
 $wpmudev_notices[] = array( 'id'=> 130,'name'=> 'New Blog Templates', 'screens' => array( 'toplevel_page_blog_templates_main-network', 'blog-templates_page_blog_templates_categories-network', 'blog-templates_page_blog_templates_settings-network' ) );
 
-if ( is_network_admin() ) {
-	require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/tables/templates_table.php' );
-	require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/tables/categories_table.php' );
-	
-}
 
 /**
  * Load the plugin text domain and MO files
