@@ -154,3 +154,108 @@ function nbt_get_copier( $type, $source_blog_id, $template, $args = array(), $us
 
     return false;
 }
+
+function nbt_set_copier_args( $source_blog_id, $destination_blog_id, $template = array(), $user_id = 0 ) {
+
+    if ( ! $user_id )
+        $user_id = get_current_user_id();
+
+    $option = array(
+        'source_blog_id' => $source_blog_id,
+        'user_id' => $user_id,
+        'template' => $template
+    );
+    if ( empty( $template ) ) {
+        $to_copy = array(
+            'settings' => array(),
+            'posts' => array(),
+            'pages' => array(),
+            'terms' => array( 'update_relationships' => true ),
+            'menus' => array(),
+            'users' => array(),
+            'comments' => array(),
+            'attachment' => array(),
+            'tables' => array()
+        );
+        $option['to_copy'] = $to_copy;
+        $option['additional_tables'] = nbt_get_additional_tables( $source_blog_id );
+    }
+    else {
+        foreach( $template['to_copy'] as $value ) {
+            $to_copy_args = array();
+
+            if ( $value === 'posts' ) {
+                $to_copy_args['categories'] = isset( $template['post_category'] ) && in_array( 'all-categories', $template['post_category'] ) ? 'all' : $template['post_category'];
+                $to_copy_args['block'] = isset( $template['block_posts_pages'] ) && $template['block_posts_pages'] === true ? true : false;
+                $to_copy_args['update_dates'] = isset( $template['update_dates'] ) && $template['update_dates'] === true ? true : false;
+            }
+            elseif ( $value === 'pages' ) {
+                $to_copy_args['pages_ids'] = isset( $template['pages_ids'] ) && in_array( 'all-pages', $template['pages_ids'] ) ? 'all' : $template['pages_ids'];
+                $to_copy_args['block'] = isset( $template['block_posts_pages'] ) && $template['block_posts_pages'] === true ? true : false;
+                $to_copy_args['update_dates'] = isset( $template['update_dates'] ) && $template['update_dates'] === true ? true : false;
+            }
+            elseif ( 'terms' === $value ) {
+                if ( in_array( 'posts', $template['to_copy'] ) || in_array( 'pages', $template['to_copy'] ) )
+                    $to_copy_args['update_relationships'] = true;
+            }
+            elseif ( 'files' === $value ) {
+                $value = 'attachment';
+            }
+
+            $option['to_copy'][ $value ] = $to_copy_args;
+        }
+
+        if ( array_key_exists( 'posts', $option['to_copy'] ) || array_key_exists( 'pages', $option['to_copy'] ) )
+            $option['to_copy']['comments'] = array();
+
+        // Additional tables
+        $tables_args = array();
+        if ( in_array( 'settings', $template['to_copy'] ) ) {
+            $tables_args['create_tables'] = true;
+            $option['to_copy']['tables'] = $tables_args;
+        }
+
+        if ( isset( $template['additional_tables'] ) && is_array( $template['additional_tables'] ) ) {
+            $tables_args['tables'] = $template['additional_tables'];
+            $option['to_copy']['tables'] = $tables_args;
+        }       
+    }
+
+    if ( isset( $option['to_copy']['attachment'] ) )
+        $option['attachment_ids'] = nbt_get_blog_attachments( $source_blog_id );
+
+    switch_to_blog( $destination_blog_id );
+    delete_option( 'nbt-pending-template' );
+    add_option( 'nbt-pending-template', $option, null, 'no' );
+    restore_current_blog();
+
+    return true;
+}
+
+function nbt_get_blog_attachments( $blog_id ) {
+    switch_to_blog( $blog_id );
+
+    $attachment_ids = get_posts( array(
+        'posts_per_page' => -1,
+        'post_type' => 'attachment',
+        'fields' => 'ids',
+        'ignore_sticky_posts' => true
+    ) );
+
+    $attachments = array();
+    foreach ( $attachment_ids as $id ) {
+        $item = array(
+            'attachment_id' => $id,
+            'date' => false
+        );
+        $attached_file = get_post_meta( $id, '_wp_attached_file', true );
+        if ( $attached_file ) {
+            if ( preg_match( '%^[0-9]{4}/[0-9]{2}%', $attached_file, $matches ) )
+                $item['date'] = $matches[0];
+        }
+        $attachments[] = $item;
+    }
+    restore_current_blog();
+
+    return $attachments;
+}

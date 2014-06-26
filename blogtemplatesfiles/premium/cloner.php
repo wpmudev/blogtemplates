@@ -6,7 +6,6 @@ class NBT_Cloner {
 
 	public function __construct() {
 
-		add_action( 'init', array( &$this, 'init_plugin' ) );
 		add_filter( 'manage_sites_action_links', array( &$this, 'add_site_action_link' ), 10, 2 );
 		add_action( 'network_admin_menu', array( &$this, 'add_admin_menu' ) );
 		
@@ -21,7 +20,7 @@ class NBT_Cloner {
 	}
 
 	public function add_admin_menu() {
-		$this->admin_menu_id = add_submenu_page( null, __( 'Clone Site', 'site_cloner' ), __( 'Clone Site', 'site_cloner' ), 'manage_network', 'clone_site', array( &$this, 'render_admin_menu' ) );
+		$this->admin_menu_id = add_submenu_page( null, __( 'Clone Site', NBT_PLUGIN_LANG_DOMAIN ), __( 'Clone Site', NBT_PLUGIN_LANG_DOMAIN ), 'manage_network', 'clone_site', array( &$this, 'render_admin_menu' ) );
 		add_action( 'load-' . $this->admin_menu_id, array( $this, 'sanitize_clone_form' ) );
 	}
 
@@ -187,56 +186,7 @@ class NBT_Cloner {
             return new WP_Error( 'create_empty_blog', strip_tags( $new_blog_id ) );
 
 
-        // Get attachments IDs
-        switch_to_blog( $source_blog_id );
-        $attachment_ids = get_posts( array(
-            'posts_per_page' => -1,
-            'post_type' => 'attachment',
-            'fields' => 'ids',
-            'ignore_sticky_posts' => true
-        ) );
-
-        $attachments = array();
-        foreach ( $attachment_ids as $id ) {
-            $item = array(
-                'attachment_id' => $id,
-                'date' => false
-            );
-            $attached_file = get_post_meta( $id, '_wp_attached_file', true );
-            if ( $attached_file ) {
-                if ( preg_match( '%^[0-9]{4}/[0-9]{2}%', $attached_file, $matches ) )
-                    $item['date'] = $matches[0];
-            }
-            $attachments[] = $item;
-        }
-        restore_current_blog();
-
-        $to_copy = array(
-        	'settings' => array(),
-        	'posts' => array(),
-        	'pages' => array(),
-        	'terms' => array( 'update_relationships' => true ),
-        	'menus' => array(),
-        	'users' => array(),
-        	'comments' => array(),
-        	'attachment' => array(),
-        	'tables' => array()
-        );
-        $option = array(
-            'source_blog_id' => $source_blog_id,
-            'user_id' => get_current_user_id(),
-            'template' => array(),
-            'to_copy' => $to_copy,
-            'attachment_ids' => $attachments,
-            'additional_tables' => nbt_get_additional_tables( $source_blog_id )
-        );
-
-        $option = apply_filters( 'blog_templates_pre_clone_args', $option, $new_blog_id );
-
-        switch_to_blog( $new_blog_id );
-        delete_option( 'nbt-pending-template' );
-        add_option( 'nbt-pending-template', $option, null, 'no' );
-        restore_current_blog();
+        $result = nbt_set_copier_args( $source_blog_id, $new_blog_id );
 
         return $new_blog_id;
     }

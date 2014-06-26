@@ -500,7 +500,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
         */
         function set_blog_defaults( $blog_id, $user_id, $_passed_domain=false, $_passed_path=false, $_passed_site_id=false, $_passed_meta=false ) {
             global $wpdb, $multi_dm;
-            error_log("OVER HERE");
+
             $settings = nbt_get_settings();
 
             $default = false;
@@ -551,7 +551,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
             $template = apply_filters('blog_templates-blog_template', $template, $blog_id, $user_id );
             if ( ! $template || 'none' == $template )
                 return; //No template, lets leave
-            var_dump($template);
+
+            $result = nbt_set_copier_args( $template['blog_id'], $blog_id, $template, $user_id );
             $this->enqueue_template_in_blog( $blog_id, $template, $user_id );            
 
         }
@@ -560,6 +561,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             if ( ! $user_id )
                 $user_id = get_current_user_id();
+
 
             switch_to_blog( $blog_id ); //Switch to the blog that was just created            
 
