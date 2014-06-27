@@ -66,7 +66,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
             add_action( 'wp_ajax_nbt_process_template', array( $this, 'process_ajax_template' ) );
 
             do_action( 'nbt_object_create', $this );
-
         }
 
         public function process_ajax_template() {
