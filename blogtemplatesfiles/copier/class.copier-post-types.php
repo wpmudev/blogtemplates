@@ -2,25 +2,25 @@
 
 class NBT_Template_Copier_Post_Types extends NBT_Template_Copier {
 
-	protected $type;
+    protected $type;
     protected $posts_copied = array();
 
-	public function __construct( $source_blog_id, $template, $user_id = 0 ) {
-		parent::__construct( $source_blog_id, $template, $user_id );
-	}
+    public function __construct( $source_blog_id, $template, $user_id = 0 ) {
+        parent::__construct( $source_blog_id, $template, $user_id );
+    }
 
-	public function get_default_args() {}
+    public function get_default_args() {}
 
-	public function copy() {
-		global $wpdb;
+    public function copy() {
+        global $wpdb;
 
-		$wpdb->query( "BEGIN;" );
+        $wpdb->query( "BEGIN;" );
 
-		$result = $this->copy_posts();
+        $result = $this->copy_posts();
 
-		if ( is_wp_error( $result ) ) {
-        	$wpdb->query("ROLLBACK;");
-        	return $result;
+        if ( is_wp_error( $result ) ) {
+            $wpdb->query("ROLLBACK;");
+            return $result;
         }
 
         do_action( 'blog_templates-copy-pages', $this->template, get_current_blog_id(), $this->user_id );
@@ -28,8 +28,8 @@ class NBT_Template_Copier_Post_Types extends NBT_Template_Copier {
 
         $result = $this->copy_postmeta();
         if ( is_wp_error( $result ) ) {
-        	$wpdb->query("ROLLBACK;");
-        	return $result;
+            $wpdb->query("ROLLBACK;");
+            return $result;
         }
 
         do_action( 'blog_templates-copy-pagemeta', $this->template, get_current_blog_id(), $this->user_id );
@@ -38,27 +38,25 @@ class NBT_Template_Copier_Post_Types extends NBT_Template_Copier {
         $wpdb->query("COMMIT;");
 
         return true;
-	}
+    }
 
-	public function copy_posts() {
-		global $wpdb;
+    public function copy_posts() {
+        global $wpdb;
 
-		do_action( 'blog_templates-copying_table', $this->type, $this->source_blog_id );
+        do_action( 'blog_templates-copying_table', $this->type, $this->source_blog_id );
 
-		$result = $this->clear_table( $wpdb->posts );
+        $result = $this->clear_table( $wpdb->posts );
 
-		if ( is_wp_error( $result ) )
-			return $result;
+        if ( is_wp_error( $result ) )
+            return $result;
 
-		
-
-		// Posts
+        // Posts
         switch_to_blog( $this->source_blog_id );
-		$select = "SELECT p.* FROM {$wpdb->posts} p";
+        $select = "SELECT p.* FROM {$wpdb->posts} p";
         restore_current_blog();
 
         
-		$join = apply_filters( 'blog_templates_copy_post_table_query_join', "" );
+        $join = apply_filters( 'blog_templates_copy_post_table_query_join', "" );
         $group = apply_filters( 'blog_templates_copy_post_table_query_group', "" );
         $where = apply_filters( 'blog_templates_copy_post_table_query_where', "" );
 
@@ -79,17 +77,17 @@ class NBT_Template_Copier_Post_Types extends NBT_Template_Copier {
 
         $table = $wpdb->posts;
         return $this->insert_table( $table, $results );    
-	}
+    }
 
-	public function copy_postmeta() {
-		global $wpdb;
+    public function copy_postmeta() {
+        global $wpdb;
 
-		$result = $this->clear_table( $wpdb->postmeta );
+        $result = $this->clear_table( $wpdb->postmeta );
 
-		if ( is_wp_error( $result ) )
-			return $result;
+        if ( is_wp_error( $result ) )
+            return $result;
 
-		switch_to_blog( $this->source_blog_id );
+        switch_to_blog( $this->source_blog_id );
 
         $posts_meta = array();
         foreach ( $this->posts_copied as $post_id ) {
@@ -105,24 +103,24 @@ class NBT_Template_Copier_Post_Types extends NBT_Template_Copier {
         }
 
         return true;  
-	}
+    }
 
-	public function insert_table( $table, $rows ) {
-		global $wpdb;
+    public function insert_table( $table, $rows ) {
+        global $wpdb;
 
         if ( empty( $rows ) )
             return;
 
-		$to_remove = $this->get_fields_to_remove( $table, $rows[0] );
+        $to_remove = $this->get_fields_to_remove( $table, $rows[0] );
 
-		foreach ( $rows as $row ) {
+        foreach ( $rows as $row ) {
 
-			$row = (array)$row;
+            $row = (array)$row;
 
             $process = apply_filters( 'blog_templates-process_row', $row, str_replace( $wpdb->prefix, '', $table ), $this->source_blog_id );
             
             if ( ! $process )
-            	continue;
+                continue;
 
             foreach ( $row as $key => $value ) {
                 if ( in_array( $key, $to_remove ) )
@@ -130,13 +128,13 @@ class NBT_Template_Copier_Post_Types extends NBT_Template_Copier {
             }
 
             if ( $table == $wpdb->posts && isset( $this->args['update_date'] ) && $this->args['update_date'] ) {
-            	$current_time = current_time( 'mysql', false );
-        		$current_gmt_time = current_time( 'mysql', false );
+                $current_time = current_time( 'mysql', false );
+                $current_gmt_time = current_time( 'mysql', false );
 
-            	$process['post_date'] = $current_time;
-            	$process['post_modified'] = $current_time;
-            	$process['post_date_gmt'] = $current_gmt_time;
-            	$process['post_modified_gmt'] = $current_gmt_time;
+                $process['post_date'] = $current_time;
+                $process['post_modified'] = $current_time;
+                $process['post_date_gmt'] = $current_gmt_time;
+                $process['post_modified_gmt'] = $current_gmt_time;
 
                 // Retrocompatibility
                 do_action('blog_templates-update-pages-dates', $this->template, get_current_blog_id(), $this->user_id );
@@ -146,16 +144,16 @@ class NBT_Template_Copier_Post_Types extends NBT_Template_Copier {
             $wpdb->insert( $table, $process );
 
             if ( $table == $wpdb->posts && isset( $this->args['block'] ) && $this->args['block'] ) {
-            	update_post_meta( $process['ID'], 'nbt_block_post', true );
+                update_post_meta( $process['ID'], 'nbt_block_post', true );
             }
 
 
             if ( ! empty( $wpdb->last_error ) )
-            	return new WP_Error( 'insertion_error', sprintf( __( 'Insertion Error: %1$s - Posts have not been copied. (While copying %2$s)', 'blog_templates' ), $wpdb->last_error, $table ) );
+                return new WP_Error( 'insertion_error', sprintf( __( 'Insertion Error: %1$s - Posts have not been copied. (While copying %2$s)', 'blog_templates' ), $wpdb->last_error, $table ) );
 
         }
 
         return true;
-	}
+    }
 
 }

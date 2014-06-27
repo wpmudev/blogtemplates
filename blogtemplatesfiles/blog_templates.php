@@ -220,6 +220,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 </head>
                 <body class="wp-core-ui">
                 <h1>We're setting up your new blog. Please wait... <span id="spinner" style="display:none;"><img style="width:15px;height:15px;" src="<?php echo admin_url( 'images/spinner.gif' ); ?>" /></span></h1>
+                <p class="js_alert" style="color:#a00"><?php _e( 'Please, activate Javascript and set WP_DEBUG to false if you want this screen to work automatically instead of manually', 'blog_templates' ); ?></p>
                 <p class="redirect" style="display:none"><a class="button-primary" href="<?php echo esc_url($finish_url); ?>">Click here to return to dashboard</a></p>
                 <ul id="steps">
                     <?php if ( ! empty( $message ) ): ?>
@@ -235,41 +236,45 @@ if ( ! class_exists( 'blog_templates' ) ) {
                     <a class="button button-primary next_step_link" href="<?php echo esc_url( add_query_arg( 'nbt_step', 'true', admin_url() ) ); ?>">Return to dashboard</a>
                 <?php endif; ?>
             </body>
-            <script>
-            jQuery(document).ready(function($) {
-                
-                nbt_process_template();
+            <?php if ( ! ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ): ?>
+                <script>
+                    jQuery(document).ready(function($) {
+                        
+                        nbt_process_template();
 
-                $('.next_step_link').detach();
-                $('#spinner').show();
-                
+                        $('.next_step_link').detach();
+                        $('.js_alert').detach();
+                        $('#spinner').show();
+                        
 
-                function nbt_process_template() {
-                    $.ajax({
-                        url: '<?php echo $ajax_url; ?>',
-                        type: 'POST',
-                        data: {
-                            action: 'nbt_process_template',
-                            security: '<?php echo $nonce; ?>'
-                        },
-                    })
-                    .done(function( data ) {
-                        console.log(data);
-                        var list = $('#steps');
-                        var list_item = $('<li></li>').text(data.data.message);
-                        list_item.appendTo(list);
-                        if ( ! data.success ) {
-                            $('#spinner').hide();
-                            $('.redirect').show();
+                        function nbt_process_template() {
+                            $.ajax({
+                                url: '<?php echo $ajax_url; ?>',
+                                type: 'POST',
+                                data: {
+                                    action: 'nbt_process_template',
+                                    security: '<?php echo $nonce; ?>'
+                                },
+                            })
+                            .done(function( data ) {
+                                console.log(data);
+                                var list = $('#steps');
+                                var list_item = $('<li></li>').text(data.data.message);
+                                list_item.appendTo(list);
+                                if ( ! data.success ) {
+                                    $('#spinner').hide();
+                                    $('.redirect').show();
+                                }
+                                else {
+                                    nbt_process_template();
+                                }
+
+                            });
                         }
-                        else {
-                            nbt_process_template();
-                        }
-
                     });
-                }
-            });
-        </script>
+                </script>
+            <?php endif; ?>
+
             <?php
             wp_die();
 

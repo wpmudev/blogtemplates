@@ -24,7 +24,9 @@ class NBT_Template_Copier_Settings extends NBT_Template_Copier {
             'secret',
             'fileupload_url',
             'nonce_salt',
-            'nbt-pending-template'
+            'nbt-pending-template',
+            'stylesheet',
+            'active_plugins'
         );
 
         $exclude_settings = apply_filters( 'blog_templates_exclude_settings', $exclude_settings );
@@ -43,12 +45,27 @@ class NBT_Template_Copier_Settings extends NBT_Template_Copier {
         if ( $wpdb->last_error )
             return new WP_Error( 'settings_error', __( 'Error copying settings' ) );
 
+        if ( ! function_exists( 'get_plugins' ) )
+            require_once ABSPATH . 'wp-admin/includes/plugin.php';
+
         switch_to_blog( $this->source_blog_id );
         $src_blog_settings = $wpdb->get_results( "SELECT * FROM $wpdb->options WHERE $exclude_settings_where" );
         $template_prefix = $wpdb->prefix;
 
         $themes_mods = $wpdb->get_results( "SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE 'theme_mods_%' ");
-        restore_current_blog();
+
+        $template_theme = wp_get_theme();
+
+        // List of active plugins
+        $all_plugins = get_plugins();
+        $source_plugins = array();
+        foreach( $all_plugins as $plugin_slug => $plugin ) {
+            if ( is_plugin_active( $plugin_slug ) )
+                $source_plugins[] = $plugin_slug;
+        }
+
+        restore_current_blog();       
+
 
         $new_prefix = $wpdb->prefix;
 
@@ -66,9 +83,17 @@ class NBT_Template_Copier_Settings extends NBT_Template_Copier {
             $added = add_option( $row->option_name, maybe_unserialize( $row->option_value ), null, $row->autoload );
 
         }
+        
+        // Activate plugins
+        foreach ( $source_plugins as $plugin_slug ) {
+            if ( ! is_plugin_active( $plugin_slug ) )
+                activate_plugin( $plugin_slug, null, false, true );
+        }
+
+        // We are going to switcth the theme manually
+        switch_theme( $template_theme->get_stylesheet() );
 
         // Themes mods
-        
         foreach ( $themes_mods as $mod ) {
             $theme_slug = str_replace( 'theme_mods_', '', $mod->option_name );
             $mods = maybe_unserialize( $mod->option_value );
