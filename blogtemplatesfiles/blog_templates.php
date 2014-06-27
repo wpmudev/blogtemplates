@@ -64,7 +64,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
 
             do_action( 'nbt_object_create', $this );
-
         }
 
         public function enqueue_styles() {

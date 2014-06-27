@@ -185,12 +185,19 @@ function nbt_copy_easy_google_fonts_controls( $template, $destination_blog_id ) 
 // Triggered when New Blog Templates class is created
 add_action( 'nbt_object_create', 'set_gravity_forms_hooks' );
 
+
 /**
  * Set all hooks needed for GF Integration
  * 
  * @param blog_templates $blog_templates Object 
  */
 function set_gravity_forms_hooks( $blog_templates ) {
+	if ( ! function_exists( 'is_plugin_active' ) )
+		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+
+	if ( ! is_plugin_active( 'gravityformsuserregistration/userregistration.php' ) || ! is_plugin_active( 'gravityforms/gravityforms.php' ) )
+		return;
+
 	add_filter( 'gform_get_form_filter', 'nbt_render_user_registration_form', 15, 2 );
 	add_action( 'gform_user_registration_add_option_section', 'nbt_add_blog_templates_user_registration_option', 15 );
 	add_filter( "gform_user_registration_save_config", "nbt_save_multisite_user_registration_config" );
@@ -239,10 +246,7 @@ function nbt_add_blog_templates_user_registration_option( $config ) {
  * @param Array $config Current Form attributes
  * @return Array
  */
-function nbt_save_multisite_user_registration_config( $config ) {
-	if ( ! class_exists( 'RGForms' ) )
-		return $config;
-	
+function nbt_save_multisite_user_registration_config( $config ) {	
 	$config['meta']['multisite_options']['blog_templates'] = RGForms::post("gf_user_registration_multisite_blog_templates");
 	return $config;
 }
@@ -257,15 +261,12 @@ function nbt_save_multisite_user_registration_config( $config ) {
 function nbt_render_user_registration_form( $form_html, $form ) {
 
 	global $blog_templates;
-
-	if ( ! class_exists( 'GFUserData' ) )
-		return $form_html;
 	
 	// Let's check if the option for New Blog Templates is activated in this form
 	$config = GFUserData::get_feed_by_form( $form['id'] );
 
 	if ( empty( $config ) )
-		return;
+		return $form_html;
 
 	$config = current( $config );
 	
@@ -277,7 +278,7 @@ function nbt_render_user_registration_form( $form_html, $form ) {
 
 		$nbt_selection = ob_get_clean();
 		
-		$form_html .= $nbt_selection;
+		$form_html .= '<div id="gf_nbt_selection" style="display:none">' . $nbt_selection . '</div>';
 		$form_id = $form['id'];
 
 		ob_start();
