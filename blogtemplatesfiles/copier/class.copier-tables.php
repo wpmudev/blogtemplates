@@ -37,7 +37,6 @@ class NBT_Template_Copier_Tables extends NBT_Template_Copier {
         foreach ( $all_source_tables as $table ) {
             // Copy content too?
             $add = in_array( $table, $tables_to_copy );
-
             $table = esc_sql( $table );
 
             // MultiDB Hack
@@ -52,11 +51,15 @@ class NBT_Template_Copier_Tables extends NBT_Template_Copier {
             if ( ! empty( $result ) ) {
                 // The table is already present in the new blog
                 // Clear it
-                $this->clear_table( $tablebase );
+                $this->clear_table( $new_table );
 
                 if ( $add ) {
                     // And copy the content if needed
-                    $this->copy_table( $this->template['blog_id'], $tablebase );
+                    $result = $this->copy_table( $new_table );
+                    if ( is_wp_error( $result ) ) {
+                        $wpdb->query( "ROLLBACK;" );
+                        return $result;
+                    }
                 }
             }
             else {
@@ -95,15 +98,15 @@ class NBT_Template_Copier_Tables extends NBT_Template_Copier {
         return true;
 	}
 
-    function copy_table( $templated_blog_id, $dest_table ) {
+    function copy_table( $dest_table ) {
         global $wpdb;
 
-        do_action( 'blog_templates-copying_table', $dest_table, $templated_blog_id );
+        do_action( 'blog_templates-copying_table', $dest_table, $this->source_blog_id );
 
         $destination_prefix = $wpdb->prefix;
 
         //Switch to the template blog, then grab the values
-        switch_to_blog( $templated_blog_id );
+        switch_to_blog( $this->source_blog_id );
         $template_prefix = $wpdb->prefix;
         $source_table = str_replace( $destination_prefix, $template_prefix, $dest_table );
         $templated = $wpdb->get_results( "SELECT * FROM {$source_table}" );
@@ -121,20 +124,17 @@ class NBT_Template_Copier_Tables extends NBT_Template_Copier {
                     unset( $row[ $key ] );
             }
 
-            $process = apply_filters('blog_templates-process_row', $row, $dest_table, $templated_blog_id);
+            $process = apply_filters('blog_templates-process_row', $row, $dest_table, $this->source_blog_id);
             if ( ! $process )
                 continue;
 
             $wpdb->insert( $dest_table, $process );
             if ( ! empty( $wpdb->last_error ) ) {
-                $error = '<div id="message" class="error"><p>' . sprintf( __( 'Insertion Error: %1$s - The template was not applied. (New Blog Templates - While copying %2$s)', 'blog_templates' ), $wpdb->last_error, $table ) . '</p></div>';
-                $wpdb->query("ROLLBACK;");
-
-                //We've rolled it back and thrown an error, we're done here
-                restore_current_blog();
-                wp_die($error);
+                return new WP_Error( 'copy_table', 'Error copying table: ' . $dest_table );
             }
         }
+
+        return true;
     }
 
 

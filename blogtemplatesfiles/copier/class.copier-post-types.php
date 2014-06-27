@@ -50,8 +50,6 @@ class NBT_Template_Copier_Post_Types extends NBT_Template_Copier {
 		if ( is_wp_error( $result ) )
 			return $result;
 
-		
-
 		// Posts
         switch_to_blog( $this->source_blog_id );
 		$select = "SELECT p.* FROM {$wpdb->posts} p";
@@ -78,7 +76,10 @@ class NBT_Template_Copier_Post_Types extends NBT_Template_Copier {
         }
 
         $table = $wpdb->posts;
-        return $this->insert_table( $table, $results );    
+        $inserted = $this->insert_table( $table, $results );    
+        unset( $results );
+
+        return $inserted;
 	}
 
 	public function copy_postmeta() {

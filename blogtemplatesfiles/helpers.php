@@ -175,10 +175,9 @@ function nbt_set_copier_args( $source_blog_id, $destination_blog_id, $template =
             'users' => array(),
             'comments' => array(),
             'attachment' => array(),
-            'tables' => array()
+            'tables' => array( 'tables' => wp_list_pluck( nbt_get_additional_tables( $source_blog_id ), 'prefix.name' ) )
         );
         $option['to_copy'] = $to_copy;
-        $option['additional_tables'] = nbt_get_additional_tables( $source_blog_id );
     }
     else {
         foreach( $template['to_copy'] as $value ) {
