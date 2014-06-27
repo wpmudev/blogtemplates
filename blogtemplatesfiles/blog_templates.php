@@ -181,7 +181,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
          * here's when everything will be copied
          */
         public function maybe_template() {
-
+            
             if ( defined( 'DOING_AJAX' ) && DOING_AJAX )
                 return;
 
