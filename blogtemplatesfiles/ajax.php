@@ -1,6 +1,6 @@
 <?php
 
-
+add_action( 'wp_ajax_nbt_get_sites_search', 'nbt_get_sites_search' );
 function nbt_get_sites_search() {
 	global $wpdb, $current_site;
 
@@ -52,4 +52,23 @@ function nbt_get_sites_search() {
 
 	die();
 }
-add_action( 'wp_ajax_nbt_get_sites_search', 'nbt_get_sites_search' );
+
+
+add_action( 'wp_ajax_nbt_process_template', 'nbt_process_ajax_template' );
+function nbt_process_ajax_template() {
+
+    if ( ! current_user_can( 'manage_options' ) )
+        wp_send_json_error( array( 'message' => "Security Error" ) );
+
+    check_ajax_referer( 'nbt_process_template', 'security' );
+
+    $option = get_option( 'nbt-pending-template' );
+
+    $result = blog_templates::process_template( $option );
+    
+    if ( $result['error'] )
+        wp_send_json_error( array( 'message' => $result['message'] ) );
+    else
+        wp_send_json_success( array( 'message' => $result['message'] ) );
+
+}

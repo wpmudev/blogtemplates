@@ -27,6 +27,28 @@ class blog_templates_main_menu {
 
         add_action( 'admin_enqueue_scripts', array( $this, 'add_javascript' ) );
 
+        add_filter( 'nbt_display_create_template_form', array( &$this, 'remove_add_new_template_form' ), 99 );
+
+	}
+
+	/**
+	 * If there are one template already we won't allow
+	 * to create more templates.
+	 * 
+	 * Premium version will override this but even if the form appears
+	 * the current template will be overriden so there's no way to add more than one
+	 * template with the free version
+	 * 
+	 * @return Boolean
+	 */
+	function remove_add_new_template_form( $display ) {
+		$model = nbt_get_model();
+		$templates = $model->get_templates();
+		if ( ! empty( $templates ) ) {
+			return false;
+		}
+
+		return true;
 	}
 
 
@@ -131,40 +153,41 @@ class blog_templates_main_menu {
 			                $templates_table->display();
 			            ?>
 			            
-			            <h2><?php _e('Create New Blog Template','blog_templates'); ?></h2>
-			            <p><?php _e('Create a blog template based on the blog of your choice! This allows you (and other admins) to copy all of the selected blog\'s settings and allow you to create other blogs that are almost exact copies of that blog. (Blog name, URL, etc will change, so it\'s not a 100% copy)','blog_templates'); ?></p>
-			            <p><?php _e('Simply fill out the form below and click "Create Blog Template!" to generate the template for later use!','blog_templates'); ?></p>
-			            <table class="form-table">
-			                <?php ob_start(); ?>
-			                    <input name="template_name" type="text" id="template_name" class="regular-text"/>
-			                <?php $this->render_row( __( 'Template Name:', 'blog_templates' ), ob_get_clean() ); ?>
+			            <?php if ( apply_filters( 'nbt_display_create_template_form', true ) ): ?>
+				            <h2><?php _e('Create New Blog Template','blog_templates'); ?></h2>
+				            <p><?php _e('Create a blog template based on the blog of your choice! This allows you (and other admins) to copy all of the selected blog\'s settings and allow you to create other blogs that are almost exact copies of that blog. (Blog name, URL, etc will change, so it\'s not a 100% copy)','blog_templates'); ?></p>
+				            <p><?php _e('Simply fill out the form below and click "Create Blog Template!" to generate the template for later use!','blog_templates'); ?></p>
+				            <table class="form-table">
+				                <?php ob_start(); ?>
+				                    <input name="template_name" type="text" id="template_name" class="regular-text"/>
+				                <?php $this->render_row( __( 'Template Name:', 'blog_templates' ), ob_get_clean() ); ?>
 
-			                <?php ob_start(); ?>
-			                    <input name="copy_blog_id" type="text" id="copy_blog_id" size="10" placeholder="<?php _e( 'Blog ID', 'blog_templates' ); ?>"/>
-			                    <div class="ui-widget">
-				                    <label for="search_for_blog"> <?php _e( 'Or search by blog path', 'blog_templates' ); ?> 
-										<input type="text" id="search_for_blog" class="medium-text">
-										<span class="description"><?php _e( 'For example, if the blog you are searching has an URL like http://ablog.mydomain.com, you can type "ablog"', 'blog_templates' ); ?></span>
-				                    </label>
-				                </div>
-			                <?php $this->render_row( __( 'Blog ID:', 'blog_templates' ), ob_get_clean() ); ?>
+				                <?php ob_start(); ?>
+				                    <input name="copy_blog_id" type="text" id="copy_blog_id" size="10" placeholder="<?php _e( 'Blog ID', 'blog_templates' ); ?>"/>
+				                    <div class="ui-widget">
+					                    <label for="search_for_blog"> <?php _e( 'Or search by blog path', 'blog_templates' ); ?> 
+											<input type="text" id="search_for_blog" class="medium-text">
+											<span class="description"><?php _e( 'For example, if the blog you are searching has an URL like http://ablog.mydomain.com, you can type "ablog"', 'blog_templates' ); ?></span>
+					                    </label>
+					                </div>
+				                <?php $this->render_row( __( 'Blog ID:', 'blog_templates' ), ob_get_clean() ); ?>
 
-			                <?php ob_start(); ?>
-			                    <textarea class="large-text" name="template_description" type="text" id="template_description" cols="45" rows="5"></textarea>
-			                <?php $this->render_row( __( 'Template Description:', 'blog_templates' ), ob_get_clean() ); ?>
+				                <?php ob_start(); ?>
+				                    <textarea class="large-text" name="template_description" type="text" id="template_description" cols="45" rows="5"></textarea>
+				                <?php $this->render_row( __( 'Template Description:', 'blog_templates' ), ob_get_clean() ); ?>
 
-			                <?php 
-			                	ob_start();
-			                    echo '<strong>' . __( 'After you add this template, a set of options will show up on the edit screen.', 'blog_templates' ) . '</strong>';
-			                ?>
-			                <?php $this->render_row( __( 'More options', 'blog_templates' ), ob_get_clean() ); ?>
-			                
-			            </table>
-			            <p><?php _e('Please note that this will turn the blog you selected into a template blog. Any changes you make to this blog will change the template, as well! We recommend creating specific "Template Blogs" for this purpose, so you don\'t accidentally add new settings, content, or users that you don\'t want in your template.','blog_templates'); ?></p>
-			            <p><?php printf( __( 'This means that if you would like to create a dedicated template blog for this template, please <a href="%1$s">create a new blog</a> and then visit this page to create the template.','blog_templates' ), '<a href="' . ( get_bloginfo('version') >= 3 ) ? network_admin_url('site-new.php') : admin_url('wpmu-blogs.php') . '">'); ?></p>
+				                <?php 
+				                	ob_start();
+				                    echo '<strong>' . __( 'After you add this template, a set of options will show up on the edit screen.', 'blog_templates' ) . '</strong>';
+				                ?>
+				                <?php $this->render_row( __( 'More options', 'blog_templates' ), ob_get_clean() ); ?>
+				                
+				            </table>
+				            <p><?php _e('Please note that this will turn the blog you selected into a template blog. Any changes you make to this blog will change the template, as well! We recommend creating specific "Template Blogs" for this purpose, so you don\'t accidentally add new settings, content, or users that you don\'t want in your template.','blog_templates'); ?></p>
+				            <p><?php printf( __( 'This means that if you would like to create a dedicated template blog for this template, please <a href="%1$s">create a new blog</a> and then visit this page to create the template.','blog_templates' ), '<a href="' . ( get_bloginfo('version') >= 3 ) ? network_admin_url('site-new.php') : admin_url('wpmu-blogs.php') . '">'); ?></p>
 
-			            <p><div class="submit"><input type="submit" name="save_new_template" class="button-primary" value="Create Blog Template!" /></div></p>
-			            
+				            <p><div class="submit"><input type="submit" name="save_new_template" class="button-primary" value="Create Blog Template!" /></div></p>
+			            <?php endif; ?>
 			            
 			        <?php
 			            } else {
@@ -244,19 +267,14 @@ class blog_templates_main_menu {
 						                    <?php $this->render_row( __( 'Copy Status?', 'blog_templates' ), ob_get_clean() ); ?>
 						                <?php endif; ?>
 
-						                <?php if ( apply_filters( 'nbt_activate_block_posts_feature', true ) ): ?>
-							                <?php ob_start(); ?>
-						                        <input type='checkbox' name='block_posts_pages' id='nbt-block-posts-pages' <?php checked( $template['block_posts_pages'] ); ?>>
-						                        <label for='nbt-block-posts-pages'><?php _e( 'If selected, pages and posts included in the template will not be allowed to be edited (even for the blog administrator). Only Super Admins will be able to edit the text of copied posts/pages.', 'blog_templates' ); ?></label>
-						                    <?php $this->render_row( __( 'Lock Posts/Pages', 'blog_templates' ), ob_get_clean() ); ?>
-						                <?php endif; ?>
-
 					                    <?php ob_start(); ?>
 							            	<label>
 							            		<input type="checkbox" name="update_dates" <?php checked( ! empty( $template['update_dates'] ) ); ?>>
 							            		<?php _e( 'If selected, the dates of the posts/pages will be updated to the date when the blog is created', 'blog_templates' ); ?>
 							            	</label>
 					                	<?php $this->render_row( __( 'Update dates', 'blog_templates' ), ob_get_clean() ); ?>
+
+					                	<?php do_action( 'nbt_template_settings_after_content', $template ); ?>
 
 					                    <?php 
 					                    	ob_start();
@@ -318,36 +336,8 @@ class blog_templates_main_menu {
 					            	
 					            </div>
 
-					            <?php if ( apply_filters( 'nbt_activate_categories_feature', true ) ): ?>
-						            <?php 
-						            	$model = nbt_get_model();
-						            	$categories = $model->get_templates_categories(); 
-						            	$template_categories_tmp = $model->get_template_categories( $t );
-
-						            	$template_categories = array();
-						            	foreach ( $template_categories_tmp as $row ) {
-						            		$template_categories[] = absint( $row['ID'] );
-						            	}
-						            ?>
-						            <div id="postbox-container-1" class="postbox-container">
-										<div id="side-sortables" class="meta-box-sortables ui-sortable">
-											<div id="categorydiv" class="postbox ">
-												<div class="handlediv" title=""><br></div><h3 class="hndle"><span><?php _e( 'Template categories' ); ?></span></h3>
-												<div class="inside">
-													<div id="taxonomy-category" class="categorydiv">
-														<div id="category-all" class="tabs-panel">
-															<ul id="templatecategorychecklist" class="categorychecklist form-no-clear">
-																<?php foreach ( $categories as $category ): ?>
-																	<li id="template-cat-<?php echo $category['ID']; ?>"><label class="selectit"><input value="<?php echo $category['ID']; ?>" <?php checked( in_array( $category['ID'], $template_categories ) ); ?> type="checkbox" name="template_category[]"> <?php echo $category['name']; ?></label></li>
-																<?php endforeach; ?>
-															</ul>
-														</div>
-													</div>
-												</div>
-											</div>
-										</div>			
-									</div>
-								<?php endif; ?>
+					            <?php do_action( 'nbt_edit_template_menu_after_content', $template, $t ); ?>
+					            
 							</div>
 				        </div>
 		            </div>
@@ -483,24 +473,7 @@ class blog_templates_main_menu {
                 }
                 $args['pages_ids'] = $pages_ids;
 
-
-                // TEMPLATE CATEGORY
-                if ( ! isset( $_POST['template_category'] ) ) {
-                	$template_category = array( $model->get_default_category_id() );
-                }
-                else {
-                	$categories = $_POST['template_category'];
-
-                	$template_category = array();
-            		foreach( $categories as $category ) {
-            			if ( ! is_numeric( $category ) )
-            				continue;
-
-            			$template_category[] = absint( $category );
-            		}
-                }
-
-                $model->update_template_categories( $t, $template_category );
+                do_action( 'nbt_update_template', $t );          
 
                 $model->update_template( $t, $args );
 
@@ -541,37 +514,8 @@ class blog_templates_main_menu {
                 );
                 wp_redirect( $to_url );
 
-            } elseif( isset( $_GET['remove_default'] ) ) {
-
-                if ( ! wp_verify_nonce($_GET['_wpnonce'], 'blog_templates-remove_default') )
-                    wp_die( __( 'Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)', 'blog_templates' ) );
-               	
-               	$model->remove_default_template();
-               	$settings = nbt_get_settings();
-
-               	$settings['default'] = '';
-               	nbt_update_settings( $settings );
-
-                $this->updated_message = __( 'The default template was successfully turned off.', 'blog_templates' );
-                add_action( 'network_admin_notices', array( &$this, 'show_admin_notice' ) );
-
-            } elseif ( isset( $_GET['default'] ) && is_numeric( $_GET['default'] ) ) {
-
-                if (! wp_verify_nonce($_GET['_wpnonce'], 'blog_templates-make_default') )
-                    wp_die( __( 'Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)', 'blog_templates' ) );
-
-				$default_updated = $model->set_default_template( absint( $_GET['default'] ) );
-
-				if ( $default_updated ) {
-					$settings = nbt_get_settings();
-					$settings['default'] = $_GET['default'];
-	               	nbt_update_settings( $settings );
-	            }
-
-                $this->updated_message =  __( 'The default template was successfully updated.', 'blog_templates' );
-                add_action( 'network_admin_notices', array( &$this, 'show_admin_notice' ) );
-
-            } elseif ( isset( $_GET['d'] ) && is_numeric( $_GET['d'] ) ) {
+            }
+            elseif ( isset( $_GET['d'] ) && is_numeric( $_GET['d'] ) ) {
 
                 if (! wp_verify_nonce($_GET['_wpnonce'], 'blog_templates-delete_template') )
                     wp_die( __( 'Whoops! There was a problem with the data you posted. Please go back and try again. (Generated by New Blog Templates)', 'blog_templates' ) );
@@ -581,6 +525,8 @@ class blog_templates_main_menu {
                 $this->updated_message =  __( 'Success! The template was successfully deleted.', 'blog_templates' );
                 add_action( 'network_admin_notices', array( &$this, 'show_admin_notice' ) );
             }
+
+            do_action( 'nbt_main_menu_processed', $this );
         }
 
         public function show_admin_notice() {

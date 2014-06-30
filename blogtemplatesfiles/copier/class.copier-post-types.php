@@ -117,7 +117,7 @@ class NBT_Template_Copier_Post_Types extends NBT_Template_Copier {
 
             $row = (array)$row;
 
-            $process = apply_filters( 'blog_templates-process_row', $row, str_replace( $wpdb->prefix, '', $table ), $this->source_blog_id );
+            $process = apply_filters( 'blog_templates-process_row', $row, str_replace( $wpdb->prefix, '', $table ), $this->source_blog_id, $this->args );
             
             if ( ! $process )
                 continue;
@@ -143,14 +143,11 @@ class NBT_Template_Copier_Post_Types extends NBT_Template_Copier {
 
             $wpdb->insert( $table, $process );
 
-            if ( $table == $wpdb->posts && isset( $this->args['block'] ) && $this->args['block'] ) {
-                update_post_meta( $process['ID'], 'nbt_block_post', true );
-            }
-
 
             if ( ! empty( $wpdb->last_error ) )
                 return new WP_Error( 'insertion_error', sprintf( __( 'Insertion Error: %1$s - Posts have not been copied. (While copying %2$s)', 'blog_templates' ), $wpdb->last_error, $table ) );
 
+            do_action( 'nbt_row_processed', $row, str_replace( $wpdb->prefix, '', $table ), $this->source_blog_id, $args );
         }
 
         return true;

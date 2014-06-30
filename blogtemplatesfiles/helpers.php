@@ -23,32 +23,6 @@ function nbt_get_default_settings() {
 	return $handler->get_default_settings();
 }
 
-function nbt_theme_selection_toolbar( $templates ) {
-    require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/blog_templates_theme_selection_toolbar.php' );
-	$settings = nbt_get_settings();
-	$toolbar = new blog_templates_theme_selection_toolbar( $settings['registration-templates-appearance'] );
-	$toolbar->display();
-	$category_id = $toolbar->default_category_id; 
-
-	if ( $category_id !== 0 ) {
-		$model = nbt_get_model();
-		$templates = $model->get_templates_by_category( $category_id );
-	}
-
-	return $templates;
-}
-
-function nbt_get_template_selection_types() {
-	return apply_filters( 'nbt_get_template_selection_types', array(
-        0 => __('As simple selection box', 'blog_templates'),
-        'description' => __('As radio-box selection with descriptions', 'blog_templates'),
-        'screenshot' => __('As theme screenshot selection', 'blog_templates'),
-        'screenshot_plus' => __('As theme screenshot selection with titles and description', 'blog_templates'),
-        'previewer' => __('As a theme previewer', 'blog_templates'),
-        'page_showcase' => __('As a showcase inside a page', 'blog_templates')
-    ) );
-}
-
 /**
  * Get a list of WordPress DB tables in a blog (not the default ones)
  * 
@@ -185,7 +159,6 @@ function nbt_set_copier_args( $source_blog_id, $destination_blog_id, $template =
 
             if ( $value === 'posts' ) {
                 $to_copy_args['categories'] = isset( $template['post_category'] ) && in_array( 'all-categories', $template['post_category'] ) ? 'all' : $template['post_category'];
-                $to_copy_args['block'] = isset( $template['block_posts_pages'] ) && $template['block_posts_pages'] === true ? true : false;
                 $to_copy_args['update_dates'] = isset( $template['update_dates'] ) && $template['update_dates'] === true ? true : false;
             }
             elseif ( $value === 'pages' ) {
@@ -223,6 +196,8 @@ function nbt_set_copier_args( $source_blog_id, $destination_blog_id, $template =
     if ( isset( $option['to_copy']['attachment'] ) )
         $option['attachment_ids'] = nbt_get_blog_attachments( $source_blog_id );
 
+    $option = apply_filters( 'nbt_set_copier_args', $option, $destination_blog_id, $template );
+
     switch_to_blog( $destination_blog_id );
     delete_option( 'nbt-pending-template' );
     add_option( 'nbt-pending-template', $option, null, 'no' );
@@ -257,4 +232,11 @@ function nbt_get_blog_attachments( $blog_id ) {
     restore_current_blog();
 
     return $attachments;
+}
+
+function nbt_get_default_screenshot_url( $blog_id ) {
+    switch_to_blog($blog_id);
+    $img = untrailingslashit(dirname(get_stylesheet_uri())) . '/screenshot.png';
+    restore_current_blog(); 
+    return $img;
 }

@@ -14,7 +14,6 @@ class NBT_Template_Copier_Pages extends NBT_Template_Copier_Post_Types {
 	public function get_default_args() {
 		return array(
 			'pages_ids' => 'all',
-			'block' => false,
 			'update_date' => false
 		);
 	}

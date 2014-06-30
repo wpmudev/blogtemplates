@@ -46,35 +46,17 @@ class NBT_Templates_Table extends WP_List_Table {
         );
         $url_delete = wp_nonce_url( $url_delete, 'blog_templates-delete_template' );
 
-        $url_default = add_query_arg(
-            array(
-                'page' => 'blog_templates_main',
-                'default' => $item['ID']
-            ),
-            $pagenow
-        );
-        $url_default = wp_nonce_url( $url_default, 'blog_templates-make_default' );
-
-        $url_remove_default = add_query_arg(
-            array(
-                'page' => 'blog_templates_main',
-                'remove_default' => $item['ID']
-            ),
-            $pagenow
-        );
-        $url_remove_default = wp_nonce_url( $url_remove_default, 'blog_templates-remove_default' );
-
         $actions = array(
             'edit'      => sprintf( __( '<a href="%s">Edit</a>', $this->localization_domain ), $url ),
             'delete'    => sprintf( __( '<a href="%s">Delete</a>', $this->localization_domain ), $url_delete ),
         );
 
+        $actions = apply_filters( 'nbt_templates_table_actions', $actions, $item );
+
         if ( $item['is_default'] ) {
-            $actions['remove_default'] = sprintf( __( '<a href="%s">Remove default</a>', $this->localization_domain ), $url_remove_default );
-            $default = ' <strong>' . __( '(Default)', $this->localization_domain ) . '</strong>';
+            $default = ' <strong>' . __( '(Default)', 'blog_templates' ) . '</strong>';
         }
         else {
-            $actions['make_default'] = sprintf( __( '<a href="%s">Make default</a>', $this->localization_domain ), $url_default );
             $default = '';
         }
 
@@ -126,21 +108,6 @@ class NBT_Templates_Table extends WP_List_Table {
 
         $this->items = array_slice( $this->items, ( ( $current_page - 1 ) * $per_page ), $per_page );
 
-        $new_data = array();
-        foreach ( $this->items as $row ) {
-            $new_row = $row;
-            $categories_tmp = $model->get_template_categories( $row['ID'] );
-
-            $categories = array();
-            foreach ( $categories_tmp as $row ) {
-                $categories[] = $row['name'];
-            }
-
-            $new_row['categories'] = implode( ', ', $categories );
-
-            $new_data[] = $new_row;
-        }
-        $this->items = $new_data;
 
         $this->set_pagination_args( 
             array(

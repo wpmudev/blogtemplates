@@ -13,12 +13,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
         function __construct() {
 
             if ( is_network_admin() ) {
-                new blog_templates_main_menu();
-
-                if ( apply_filters( 'nbt_activate_categories_feature', true ) )
-                    new blog_templates_categories_menu();
-                
-                new blog_templates_settings_menu();
+                new blog_templates_main_menu();                
             }
 
             
@@ -63,30 +58,16 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_styles' ) );
 
-            add_action( 'wp_ajax_nbt_process_template', array( $this, 'process_ajax_template' ) );
+           
 
             do_action( 'nbt_object_create', $this );
-        }
 
-        public function process_ajax_template() {
-
-            if ( ! current_user_can( 'manage_options' ) )
-                wp_send_json_error( array( 'message' => "Security Error" ) );
-
-            check_ajax_referer( 'nbt_process_template', 'security' );
-
-            $option = get_option( 'nbt-pending-template' );
-
-            $result = $this->process_template( $option );
-            
-            if ( $result['error'] )
-                wp_send_json_error( array( 'message' => $result['message'] ) );
-            else
-                wp_send_json_success( array( 'message' => $result['message'] ) );
 
         }
 
-        public function process_template( $option ) {
+        
+
+        public static function process_template( $option ) {
 
             if ( $option === false ) {
                 return array(
@@ -194,7 +175,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             extract( $option );
 
             if ( isset( $_REQUEST['nbt_step'] ) ) {
-                $result = $this->process_template( $option );
+                $result = self::process_template( $option );
                 $message = $result['message'];
                 $error = $result['error'];
             }
@@ -294,11 +275,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
         }
 
         public function init() {
-            $model = nbt_get_model();
-            $categories_count = $model->get_categories_count();
-            if ( empty( $categories_count ) ) {
-                $model->add_default_template_category();
-            }
+            do_action( 'nbt_init' );
         }
 
         function maybe_upgrade() {
@@ -506,6 +483,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             global $wpdb, $multi_dm;
 
             $settings = nbt_get_settings();
+            $model = nbt_get_model();
 
             $default = false;
             
@@ -522,10 +500,10 @@ if ( ! class_exists( 'blog_templates' ) ) {
             /* End special Multi-Domain feature */
 
             if( empty( $default ) && isset( $settings['default'] ) && is_numeric( $settings['default'] ) ) { // select global default
-                $default = isset($settings['templates'][$settings['default']]) 
-                    ? $settings['templates'][$settings['default']]
-                    : false
-                ;
+                $default = false;
+                $template = $model->get_template( $settings['default'] );
+                if ( ! empty( $template ) )
+                    $default = $template;
             }
 
             
@@ -541,13 +519,13 @@ if ( ! class_exists( 'blog_templates' ) ) {
                     return;
                 }
                 else {
-                    $template = $settings['templates'][$_POST['blog_template_admin']];
+                    $template = $model->get_template( $_POST['blog_template_admin'] );
                 }
             }
             elseif ( isset( $_POST['blog_template'] ) && is_numeric( $_POST['blog_template'] ) ) { //If they've chosen a template, use that. For some reason, when PHP gets 0 as a posted var, it doesn't recognize it as is_numeric, so test for that specifically
-                $template = $settings['templates'][$_POST['blog_template']];
+                $template = $model->get_template( $_POST['blog_template'] );
             } elseif ($_passed_meta && isset($_passed_meta['blog_template']) && is_numeric($_passed_meta['blog_template'])) { // Do we have a template in meta?
-                $template = $settings['templates'][$_passed_meta['blog_template']]; // Why, yes. Yes, we do. Use that. 
+                $template = $model->get_template( $_passed_meta['blog_template'] ); // Why, yes. Yes, we do. Use that. 
             } elseif ( $default ) { //If they haven't chosen a template, use the default if it exists
                 $template = $default;
             }
@@ -557,95 +535,10 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 return; //No template, lets leave
 
             $result = nbt_set_copier_args( $template['blog_id'], $blog_id, $template, $user_id );
-            $this->enqueue_template_in_blog( $blog_id, $template, $user_id );            
 
         }
 
-        public function enqueue_template_in_blog( $blog_id, $template, $user_id = false ) {
-
-            if ( ! $user_id )
-                $user_id = get_current_user_id();
-
-
-            switch_to_blog( $blog_id ); //Switch to the blog that was just created            
-
-            $args = array(
-                'source_blog_id' => $template['blog_id'],
-                'user_id' => $user_id,
-                'template' => $template
-            );
-
-            $attachments = array();
-            foreach( $template['to_copy'] as $value ) {
-                $to_copy_args = array();
-
-                if ( $value === 'posts' ) {
-                    $to_copy_args['categories'] = isset( $template['post_category'] ) && in_array( 'all-categories', $template['post_category'] ) ? 'all' : $template['post_category'];
-                    $to_copy_args['block'] = isset( $template['block_posts_pages'] ) && $template['block_posts_pages'] === true ? true : false;
-                    $to_copy_args['update_dates'] = isset( $template['update_dates'] ) && $template['update_dates'] === true ? true : false;
-                }
-                elseif ( $value === 'pages' ) {
-                    $to_copy_args['pages_ids'] = isset( $template['pages_ids'] ) && in_array( 'all-pages', $template['pages_ids'] ) ? 'all' : $template['pages_ids'];
-                    $to_copy_args['block'] = isset( $template['block_posts_pages'] ) && $template['block_posts_pages'] === true ? true : false;
-                    $to_copy_args['update_dates'] = isset( $template['update_dates'] ) && $template['update_dates'] === true ? true : false;
-                }
-                elseif ( 'terms' === $value ) {
-                    if ( in_array( 'posts', $template['to_copy'] ) || in_array( 'pages', $template['to_copy'] ) )
-                        $to_copy_args['update_relationships'] = true;
-                }
-                elseif ( 'files' === $value ) {
-                    switch_to_blog( $template['blog_id'] );
-                    $attachment_ids = get_posts( array(
-                        'posts_per_page' => -1,
-                        'post_type' => 'attachment',
-                        'fields' => 'ids',
-                        'ignore_sticky_posts' => true
-                    ) );
-
-                    $attachments = array();
-                    foreach ( $attachment_ids as $id ) {
-                        $item = array(
-                            'attachment_id' => $id,
-                            'date' => false
-                        );
-                        $attached_file = get_post_meta( $id, '_wp_attached_file', true );
-                        if ( $attached_file ) {
-                            if ( preg_match( '%^[0-9]{4}/[0-9]{2}%', $attached_file, $matches ) )
-                                $item['date'] = $matches[0];
-                        }
-                        $attachments[] = $item;
-                    }
-                    restore_current_blog();
-
-                    $value = 'attachment';
-
-                    $args['attachment_ids'] = $attachments;
-                }
-
-                $args['to_copy'][ $value ] = $to_copy_args;
-            }
-
-            if ( array_key_exists( 'posts', $args['to_copy'] ) || array_key_exists( 'pages', $args['to_copy'] ) ) {
-                $args['to_copy']['comments'] = array();
-            }
-
-            // Additional tables
-            $tables_args = array();
-            if ( in_array( 'settings', $template['to_copy'] ) ) {
-                $tables_args['create_tables'] = true;
-                $args['to_copy']['tables'] = $tables_args;
-            }
-
-            if ( isset( $template['additional_tables'] ) && is_array( $template['additional_tables'] ) ) {
-                $tables_args['tables'] = $template['additional_tables'];
-                $args['to_copy']['tables'] = $tables_args;
-            }           
-
-            // We leave the pending changes "enqueued"
-            $added = add_option( 'nbt-pending-template', $args, null, 'no' );
-
-            restore_current_blog(); //Switch back to our current blog
-        }
+        
 
 
         /**

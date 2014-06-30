@@ -188,6 +188,16 @@ function nbt_copy_easy_google_fonts_controls( $template, $destination_blog_id ) 
 	}
 }
 
+/**
+ * Exclude EPanel temporary folder paths.
+ */
+function blog_template_exclude_epanel_temp_path ($exclude) {
+	$exclude[] = 'et_images_temp_folder';
+	return $exclude;
+}
+add_filter('blog_templates_exclude_settings', 'blog_template_exclude_epanel_temp_path');
+
+
 /** GRAVITY FORMS **/
 
 // Triggered when New Blog Templates class is created
@@ -305,4 +315,90 @@ function nbt_render_user_registration_form( $form_html, $form ) {
 	}
 
 	return $form_html;
+}
+
+/**
+ * Exclude Gravity Forms option AND Formidable Pro (thank you, wecreateyou/Stephanie).
+ **/
+function blog_template_exclude_gravity_forms( $exclude ) {
+	//$and .= " AND `option_name` != 'rg_forms_version'";
+	$exclude[] = 'rg_forms_version';
+	$exclude[] = 'frm_db_version';
+	$exclude[] = 'frmpro_db_version';
+	return $exclude;
+}
+add_filter('blog_templates_exclude_settings', 'blog_template_exclude_gravity_forms');
+
+
+/** CONTACT FORM 7 **/
+
+/**
+ * Exclude Contact Form 7 postmeta fields 
+ */
+function blog_template_contact_form7_postmeta ($row, $table) {
+	if ("postmeta" != $table) return $row;
+	
+	$key = @$row['meta_key'];
+	$wpcf7 = array('mail', 'mail_2');
+	if (defined('NBT_PASSTHROUGH_WPCF7_MAIL_FIELDS') && NBT_PASSTHROUGH_WPCF7_MAIL_FIELDS) return $row;
+	if (defined('NBT_CONVERT_WPCF7_MAIL_FIELDS') && NBT_CONVERT_WPCF7_MAIL_FIELDS) return blog_template_convert_wpcf7_mail_fields($row);
+	if (in_array($key, $wpcf7)) return false;
+	
+	return $row;
+}
+function blog_template_convert_wpcf7_mail_fields ($row) {
+	global $_blog_template_current_templated_blog_id;
+	if (!$_blog_template_current_templated_blog_id) return $row; // Can't do the replacement
+
+	$value = @$row['meta_value'];
+	$wpcf7 = $value ? unserialize($value) : false;
+	if (!$wpcf7) return $row; // Something went wrong
+
+	// Get convertable values
+	switch_to_blog($_blog_template_current_templated_blog_id);
+	$admin_email = get_option("admin_email");
+	$site_url = get_bloginfo('url');
+	// ... more stuff at some point
+	restore_current_blog();
+
+	// Get target values
+	$new_site_url = get_bloginfo('url');
+	$new_admin_email = get_option('admin_email');
+	// ... more stuff at some point
+	
+	// Do the replace
+	foreach ($wpcf7 as $key => $val) {
+		$val = preg_replace('/' . preg_quote($site_url, '/') . '/i', $new_site_url, $val);
+		$val = preg_replace('/' . preg_quote($admin_email, '/') . '/i', $new_admin_email, $val);
+		$wpcf7[$key] = $val;
+	}
+
+	// Right, so now we have the replaced array - populate it.
+	$row['meta_value'] = serialize($wpcf7);
+	return $row;
+}
+function blog_template_check_postmeta ($tbl, $templated_blog_id) {
+	global $_blog_template_current_templated_blog_id;
+	$_blog_template_current_templated_blog_id = $templated_blog_id;
+	if ("postmeta" == $tbl) add_filter('blog_templates-process_row', 'blog_template_contact_form7_postmeta', 10, 2);
+}
+add_action('blog_templates-copying_table', 'blog_template_check_postmeta', 10, 2);
+
+
+// Play nice with Multisite Privacy, if requested so
+if (defined('NBT_TO_MULTISITE_PRIVACY_ALLOW_SIGNUP_OVERRIDE') && NBT_TO_MULTISITE_PRIVACY_ALLOW_SIGNUP_OVERRIDE) {
+	/**
+	 * Keeps user-selected Multisite Privacy settings entered on registration time.
+	 * Propagate template settings on admin blog creation time.
+	 */
+	function blog_template_exclude_multisite_privacy_settings ($exclude) {
+		$user = wp_get_current_user();
+		if ( is_super_admin( $user->ID ) ) 
+			return $exclude;
+
+		$exclude[] = 'spo_settings';
+		$exclude[] = 'blog_public';
+		return $exclude;
+	}
+	add_filter('blog_templates_exclude_settings', 'blog_template_exclude_multisite_privacy_settings');
 }
