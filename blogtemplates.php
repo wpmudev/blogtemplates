@@ -52,8 +52,8 @@ if ( is_network_admin() ) {
 }
 
 // Load Premium?
-//if ( file_exists( NBT_PLUGIN_DIR . 'blogtemplatesfiles/premium/premium.php' ) )
-	//include_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/premium/premium.php' );
+if ( file_exists( NBT_PLUGIN_DIR . 'blogtemplatesfiles/premium/premium.php' ) )
+	include_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/premium/premium.php' );
 
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/model.php' );
 

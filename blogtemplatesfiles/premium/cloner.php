@@ -149,14 +149,7 @@ class NBT_Cloner {
 
 			if ( is_integer( $result ) ) {
 
-				$redirect_to = add_query_arg(
-					array(
-						'cloned' => $result,
-						'blog_id' => $blog_id
-					),
-					network_admin_url( 'index.php?page=clone_site' )
-				);
-
+				$redirect_to = get_admin_url( $result );
 				wp_redirect( $redirect_to );	
 				exit;
 			}
@@ -168,7 +161,6 @@ class NBT_Cloner {
         global $wpdb;
 
         $defaults = array(
-            'title' => 'Test Site',
             'override' => false
         );
         $args = wp_parse_args( $args, $defaults );
@@ -179,12 +171,15 @@ class NBT_Cloner {
             $override = false;
 
         $new_blog_id = $override;
-        if ( ! $override )
-            $new_blog_id = create_empty_blog( $domain, $path, $title );            
+        if ( ! $override ) {
+            $new_blog_id = create_empty_blog( $domain, $path, 'aaaaa' );            
+        }
 
         if ( ! is_integer( $new_blog_id ) )
             return new WP_Error( 'create_empty_blog', strip_tags( $new_blog_id ) );
 
+        $source_blog_details = get_blog_details( $source_blog_id );
+        update_blog_option( $new_blog_id, 'blogname', $source_blog_details->blogname );
 
         $result = nbt_set_copier_args( $source_blog_id, $new_blog_id );
 

@@ -486,14 +486,14 @@ if ( ! class_exists( 'blog_templates' ) ) {
             $model = nbt_get_model();
 
             $default = false;
-            
+
             /* Start special Multi-Domain feature */
             if( !empty( $multi_dm ) ) {
                 $bloginfo = get_blog_details( (int) $blog_id, false );
                 foreach( $multi_dm->domains as $multi_domain ) {
                     if( strpos( $bloginfo->domain, $multi_domain['domain_name'] ) ) {
                         if( isset( $multi_domain['blog_template'] ) && !empty( $settings['templates'][$multi_domain['blog_template']] ) )
-                            $default = $settings['templates'][$multi_domain['blog_template']];
+                            $default = $model->get_template( $multi_domain['blog_template'] );
                     }
                 }
             }
@@ -504,9 +504,10 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 $template = $model->get_template( $settings['default'] );
                 if ( ! empty( $template ) )
                     $default = $template;
+                unset( $template );
             }
 
-            
+
             $template = '';
             // Check $_POST first for passed template and use that, if present.
             // Otherwise, check passed meta from blog signup.

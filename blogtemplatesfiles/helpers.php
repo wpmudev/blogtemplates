@@ -131,9 +131,6 @@ function nbt_get_copier( $type, $source_blog_id, $template, $args = array(), $us
 
 function nbt_set_copier_args( $source_blog_id, $destination_blog_id, $template = array(), $user_id = 0 ) {
 
-    if ( ! $user_id )
-        $user_id = get_current_user_id();
-
     $option = array(
         'source_blog_id' => $source_blog_id,
         'user_id' => $user_id,
