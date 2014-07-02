@@ -76,7 +76,8 @@ class NBT_Template_Copier_Attachment extends NBT_Template_Copier {
                         'value' => $thumbnail_id
                     )
                 ),
-                'fields' => 'ids'
+                'fields' => 'ids',
+                'post_type' => 'any'
             )
         );
 

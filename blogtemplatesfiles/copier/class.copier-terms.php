@@ -41,7 +41,6 @@ class NBT_Template_Copier_Terms extends NBT_Template_Copier {
 
 		$mapped_terms = array();
 		foreach ( $source_terms as $term ) {
-			//var_dump($term);
 
 			$term_args = array(
 				'description' => $term->description,
@@ -113,11 +112,10 @@ class NBT_Template_Copier_Terms extends NBT_Template_Copier {
 
 		// If there's a links widget in the sidebar we may need to set the new category ID
         $widget_links_settings = get_blog_option( $this->source_blog_id, 'widget_links' );
-        var_dump($widget_links_settings);
+
         $new_widget_links_settings = $widget_links_settings;
 
         foreach ( $widget_links_settings as $widget_key => $widget_settings ) {
-        	var_dump($widget_settings);
             if ( ! empty( $widget_settings['category'] ) && isset( $mapped_terms[ $widget_settings['category'] ] ) ) {
 
                 $new_widget_links_settings[ $widget_key ]['category'] = $mapped_terms[ $widget_settings['category'] ];
