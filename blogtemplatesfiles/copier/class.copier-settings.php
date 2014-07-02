@@ -11,7 +11,8 @@ class NBT_Template_Copier_Settings extends NBT_Template_Copier {
 	public function copy() {
 		global $wpdb;
 
-        wp_cache_flush();
+        wp_cache_delete( 'notoptions', 'options' );
+        wp_cache_delete( 'alloptions', 'options' );
 
 		$exclude_settings = array(
             'siteurl',
@@ -33,8 +34,9 @@ class NBT_Template_Copier_Settings extends NBT_Template_Copier {
 
         $the_options = $wpdb->get_col( "SELECT option_name FROM $wpdb->options" );
         foreach ( $the_options as $option_name ) {
-            if ( ! in_array( $option_name, $exclude_settings ) )
-                delete_option( $option_name );
+            if ( ! in_array( $option_name, $exclude_settings ) ) {
+                $deleted = delete_option( $option_name );
+            }
         }
 
         $exclude_settings_where = "`option_name` != '" . implode( "' AND `option_name` != '", $exclude_settings ) . "'";
@@ -70,17 +72,26 @@ class NBT_Template_Copier_Settings extends NBT_Template_Copier {
         $new_prefix = $wpdb->prefix;
 
         foreach ( $src_blog_settings as $row ) {
+            
             //Make sure none of the options are using wp_X_ convention, and if they are, replace the value with the new blog ID
             $row->option_name = str_replace( $template_prefix, $new_prefix, $row->option_name );
-            if ( 'sidebars_widgets' != $row->option_name ) /* <-- Added this to prevent unserialize() call choking on badly formatted widgets pickled array */
-                $row->option_value = str_replace( $template_prefix, $new_prefix, $row->option_value );
+            //if ( 'sidebars_widgets' != $row->option_name ) /* <-- Added this to prevent unserialize() call choking on badly formatted widgets pickled array */
+                //$row->option_value = str_replace( $template_prefix, $new_prefix, $row->option_value );
 
             $row = apply_filters( 'blog_templates-copy-options_row', $row, $this->template, get_current_blog_id(), $this->user_id );
 
             if ( ! $row )
                 continue; // Prevent empty row insertion
 
+            wp_cache_delete( $row->option_name, 'options' );
+
             $added = add_option( $row->option_name, maybe_unserialize( $row->option_value ), null, $row->autoload );
+
+            if ( ! $added ) {
+               $updated = update_option( $row->option_name, maybe_unserialize( $row->option_value ) );
+            }
+            
+            
 
         }
         

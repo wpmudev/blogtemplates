@@ -274,7 +274,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             }
         }
 
-        public function init() {
+        public function init() {  
             do_action( 'nbt_init' );
         }
 

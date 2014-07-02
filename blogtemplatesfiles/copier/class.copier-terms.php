@@ -40,7 +40,6 @@ class NBT_Template_Copier_Terms extends NBT_Template_Copier {
 		do_action( 'blog_templates-copy-links', $this->template, get_current_blog_id(), $this->user_id );
 
 		$mapped_terms = array();
-
 		foreach ( $source_terms as $term ) {
 			//var_dump($term);
 
@@ -109,10 +108,23 @@ class NBT_Template_Copier_Terms extends NBT_Template_Copier {
 			}
 
 			do_action( 'blog_templates-copy-term_relationships', $this->template, get_current_blog_id(), $this->user_id );
-
-
 			
 		}
+
+		// If there's a links widget in the sidebar we may need to set the new category ID
+        $widget_links_settings = get_blog_option( $this->source_blog_id, 'widget_links' );
+        var_dump($widget_links_settings);
+        $new_widget_links_settings = $widget_links_settings;
+
+        foreach ( $widget_links_settings as $widget_key => $widget_settings ) {
+        	var_dump($widget_settings);
+            if ( ! empty( $widget_settings['category'] ) && isset( $mapped_terms[ $widget_settings['category'] ] ) ) {
+
+                $new_widget_links_settings[ $widget_key ]['category'] = $mapped_terms[ $widget_settings['category'] ];
+            }
+        }
+
+        $updated = update_option( 'widget_links', $new_widget_links_settings );
 
         return true;
 	}
