@@ -4,7 +4,12 @@ include_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/premium/admin/settings-menu.p
 include_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/premium/admin/categories-menu.php' );
 include_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/premium/admin/categories-table.php' );
 
-remove_action( 'nbt_display_create_template_form', array( 'blog_templates_main_menu', 'remove_add_new_template_form' ), 99 );
+add_action( 'admin_init', 'nbt_set_premium_admin_hooks' );
+function nbt_set_premium_admin_hooks() {
+    global $blog_templates;
+    if ( is_network_admin() )
+        remove_filter( 'nbt_display_create_template_form', array( $blog_templates->main_menu, 'remove_add_new_template_form' ), 99 );
+}
 
 add_action( 'nbt_object_create', 'nbt_add_network_settings_menu' );
 function nbt_add_network_settings_menu() {
@@ -94,6 +99,8 @@ function nbt_add_lock_posts_setting( $template ) {
 
 add_filter( 'nbt_templates_table_actions', 'nbt_add_default_template_actions', 10, 2 );
 function nbt_add_default_template_actions( $actions, $item ) {
+    global $pagenow;
+
 	$url_default = add_query_arg(
         array(
             'page' => 'blog_templates_main',

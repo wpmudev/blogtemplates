@@ -42,6 +42,9 @@ require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/helpers.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/copier/copier.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/filters.php' );
 
+// Load Premium?
+if ( file_exists( NBT_PLUGIN_DIR . 'blogtemplatesfiles/premium/premium.php' ) )
+	include_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/premium/premium.php' );
 
 if ( defined( 'DOING_AJAX' ) && DOING_AJAX )
 	require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/ajax.php' );
@@ -52,9 +55,7 @@ if ( is_network_admin() ) {
 	
 }
 
-// Load Premium?
-if ( file_exists( NBT_PLUGIN_DIR . 'blogtemplatesfiles/premium/premium.php' ) )
-	include_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/premium/premium.php' );
+
 
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/model.php' );
 

@@ -4,6 +4,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
     class blog_templates {
 
+        public $main_menu = null;
+        
         /**
         * PHP 5 Constructor
         *
@@ -13,7 +15,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
         function __construct() {
 
             if ( is_network_admin() ) {
-                new blog_templates_main_menu();                
+                $this->main_menu = new blog_templates_main_menu();                
             }
 
             
