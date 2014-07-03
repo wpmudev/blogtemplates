@@ -1,31 +1,7 @@
 <?php
 
 // Other plugins integrations
-
-add_action( 'blog_templates-copy-options', 'nbt_add_membership_caps', 10, 3 );
-function nbt_add_membership_caps( $template, $blog_id, $user_id ) {
-	if ( ! class_exists( 'membershipadmin' ) )
-		return;
-
-	switch_to_blog( $blog_id );
-	$user = get_userdata( $user_id );
-	$user->add_cap('membershipadmin');
-	$user->add_cap('membershipadmindashboard');
-	$user->add_cap('membershipadminmembers');
-	$user->add_cap('membershipadminlevels');
-	$user->add_cap('membershipadminsubscriptions');
-	$user->add_cap('membershipadmincoupons');
-	$user->add_cap('membershipadminpurchases');
-	$user->add_cap('membershipadmincommunications');
-	$user->add_cap('membershipadmingroups');
-	$user->add_cap('membershipadminpings');
-	$user->add_cap('membershipadmingateways');
-	$user->add_cap('membershipadminoptions');
-	$user->add_cap('membershipadminupdatepermissions');
-	update_user_meta( $user_id, 'membership_permissions_updated', 'yes');
-	restore_current_blog();
-}
-
+add_action( 'bp_before_blog_details_fields', 'nbt_bp_add_register_scripts' );
 function nbt_bp_add_register_scripts() {
 	?>
 	<script>
@@ -43,12 +19,6 @@ function nbt_appplus_unregister_action() {
 		global $appointments;
 		remove_action( 'wpmu_new_blog', array( $appointments, 'new_blog' ), 10, 6 );
 	}
-}
-
-add_filter( 'blog_template_exclude_settings', 'nbt_popover_remove_install_setting', 10, 1 );
-function nbt_popover_remove_install_setting( $query ) {
-	$query .= " AND `option_name` != 'popover_installed' ";
-	return $query;
 }
 
 // Framemarket theme
@@ -78,130 +48,11 @@ function nbt_remove_blogs_from_directory( $blogs ) {
 	return $new_blogs;
 }
 
-/** AUTOBLOG **/
-add_action( 'blog_templates-copy-options', 'nbt_copy_autoblog_feeds' );
-function nbt_copy_autoblog_feeds( $template ) {
-	global $wpdb;
-
-	// Site ID, blog ID...
-	$current_site = get_current_site();
-	$current_site_id = $current_site->id;
-
-	$source_blog_id = isset( $template['blog_id'] ) ? absint( $template['blog_id'] ) : false;
-
-	if ( ! $source_blog_id )
-		return;
-	
-	$autoblog_on = false;
-
-	switch_to_blog( $source_blog_id );
-	// Is Autoblog activated?
-	if ( ! function_exists( 'is_plugin_active' ) )
-		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
-
-	if ( is_plugin_active( 'autoblog/autoblogpremium.php' ) )
-		$autoblog_on = true;
-
-	// We'll need this values later
-	$source_url = get_site_url( $source_blog_id );
-	$source_url_ssl = get_site_url( $source_blog_id, '', 'https' );
-
-	restore_current_blog();
-
-	if ( ! $autoblog_on )
-		return;
-
-	// Getting all the feed data for the source blog ID
-	$autoblog_table = $wpdb->base_prefix . 'autoblog';
-	$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $autoblog_table WHERE blog_id = %d AND site_id = %d", $source_blog_id, $current_site_id ) );
-
-	if ( ! empty( $results ) ) {
-		$current_blog_id = get_current_blog_id();
-
-		$current_url = get_site_url( $current_blog_id );
-		$current_url_ssl = get_site_url( $current_blog_id, '', 'https' );
-
-		foreach ( $results as $row ) {
-			// Getting the feed metadata
-			$feed_meta = maybe_unserialize( $row->feed_meta );
-
-			// We need to replace the source blog URL for the new one
-			$feed_meta = str_replace( $source_url, $current_url, $feed_meta );
-			$feed_meta = str_replace( $source_url_ssl, $current_url_ssl, $feed_meta );
-
-			$row->feed_meta = maybe_serialize( $feed_meta );
-
-			// Inserting feed for the new blog
-			$wpdb->insert(
-				$autoblog_table,
-				array(
-					'site_id' => $current_site_id,
-					'blog_id' => $current_blog_id,
-					'feed_meta' => $row->feed_meta,
-					'active' => $row->active,
-					'nextcheck' => $row->nextcheck,
-					'lastupdated' => $row->lastupdated
-				),
-				array( '%d', '%d', '%s', '%d', '%d', '%d' )
-			);
-		}
-	}
-
-}
-
-/** EASY GOOGLE FONTS **/
-add_action( 'blog_templates-copy-after_copying', 'nbt_copy_easy_google_fonts_controls', 10, 2 );
-function nbt_copy_easy_google_fonts_controls( $template, $destination_blog_id ) {
-	global $wpdb;
-
-	if ( ! is_plugin_active( 'easy-google-fonts/easy-google-fonts.php' ) )
-		return;
-
-	$source_blog_id = $template['blog_id'];
-
-	if ( ! isset( $template['to_copy']['posts'] ) && get_blog_details( $source_blog_id ) && get_blog_details( $destination_blog_id ) ) {
-		switch_to_blog( $source_blog_id );
-
-		$post_query = "SELECT t1.* FROM {$wpdb->posts} t1 ";
-		$post_query .= "WHERE t1.post_type = 'tt_font_control'";
-		$posts_results = $wpdb->get_results( $post_query );
-
-		$postmeta_query = "SELECT t1.* FROM {$wpdb->postmeta} t1 ";
-		$postmeta_query .= "INNER JOIN $wpdb->posts t2 ON t1.post_id = t2.ID WHERE t2.post_type = 'tt_font_control'";
-		$postmeta_results = $wpdb->get_results( $postmeta_query );
-		
-		restore_current_blog();
-
-		switch_to_blog( $destination_blog_id );
-		foreach ( $posts_results as $row ) {
-            $row = (array)$row;
-            $wpdb->insert( $wpdb->posts, $row );
-        }
-
-        foreach ( $postmeta_results as $row ) {
-            $row = (array)$row;
-            $wpdb->insert( $wpdb->postmeta, $row );
-        }
-
-        restore_current_blog();
-
-	}
-}
-
-/**
- * Exclude EPanel temporary folder paths.
- */
-function blog_template_exclude_epanel_temp_path ($exclude) {
-	$exclude[] = 'et_images_temp_folder';
-	return $exclude;
-}
-add_filter('blog_templates_exclude_settings', 'blog_template_exclude_epanel_temp_path');
-
 
 /** GRAVITY FORMS **/
 
 // Triggered when New Blog Templates class is created
-add_action( 'nbt_object_create', 'set_gravity_forms_hooks' );
+add_action( 'nbt_object_create', 'nbt_set_gravity_forms_hooks' );
 
 
 /**
@@ -209,7 +60,7 @@ add_action( 'nbt_object_create', 'set_gravity_forms_hooks' );
  * 
  * @param blog_templates $blog_templates Object 
  */
-function set_gravity_forms_hooks( $blog_templates ) {
+function nbt_set_gravity_forms_hooks( $blog_templates ) {
 	if ( ! function_exists( 'is_plugin_active' ) )
 		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 

@@ -7,7 +7,7 @@ function nbt_maybe_block_posts( $row, $table, $source_blog_id, $args ) {
 	}
 }
 
-add_filter( 'nbt_set_copier_args', 'nbt_copier_hooks_set_copier_args' );
+add_filter( 'copier_set_copier_args', 'nbt_copier_hooks_set_copier_args' );
 function nbt_copier_hooks_set_copier_args( $option, $destination_blog_id, $template ) {
 	$block = isset( $template['block_posts_pages'] ) && $template['block_posts_pages'] === true ? true : false;
 

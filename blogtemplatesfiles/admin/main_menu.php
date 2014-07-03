@@ -308,7 +308,7 @@ class blog_templates_main_menu {
 
 						                <?php
 
-						                $additional_tables = nbt_get_additional_tables( $template['blog_id'] );
+						                $additional_tables = copier_get_additional_tables( $template['blog_id'] );
 
 						                if ( ! empty( $additional_tables ) ) {
 						                	foreach ( $additional_tables as $table ) {

@@ -181,7 +181,7 @@ class NBT_Cloner {
         $source_blog_details = get_blog_details( $source_blog_id );
         update_blog_option( $new_blog_id, 'blogname', $source_blog_details->blogname );
 
-        $result = nbt_set_copier_args( $source_blog_id, $new_blog_id );
+        $result = copier_set_copier_args( $source_blog_id, $new_blog_id );
 
         return $new_blog_id;
     }

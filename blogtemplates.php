@@ -39,6 +39,7 @@ define( 'NBT_PLUGIN_LANG_DOMAIN', 'blog_templates' );
 
 
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/helpers.php' );
+require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/copier/copier.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/filters.php' );
 
 
