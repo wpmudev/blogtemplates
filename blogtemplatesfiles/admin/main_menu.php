@@ -18,7 +18,7 @@ class blog_templates_main_menu {
 
 	function __construct() {
 		global $wp_version;
-        
+
 		// Add the super admin page
         add_action( 'network_admin_menu', array( $this, 'network_admin_page' ) );
 
@@ -26,7 +26,6 @@ class blog_templates_main_menu {
         add_action( 'admin_init', array($this, 'admin_options_page_posted' ) );
 
         add_action( 'admin_enqueue_scripts', array( $this, 'add_javascript' ) );
-
         add_filter( 'nbt_display_create_template_form', array( &$this, 'remove_add_new_template_form' ), 99 );
 
 	}
@@ -308,7 +307,7 @@ class blog_templates_main_menu {
 
 						                <?php
 
-						                $additional_tables = nbt_get_additional_tables( $template['blog_id'] );
+						                $additional_tables = copier_get_additional_tables( $template['blog_id'] );
 
 						                if ( ! empty( $additional_tables ) ) {
 						                	foreach ( $additional_tables as $table ) {

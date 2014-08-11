@@ -1,6 +1,5 @@
 <?php
 
-include_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/premium/cloner.php' );
 include_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/premium/helpers.php' );
 include_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/premium/model.php' );
 

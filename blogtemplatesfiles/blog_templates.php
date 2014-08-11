@@ -4,6 +4,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
     class blog_templates {
 
+        public $main_menu = null;
+        
         /**
         * PHP 5 Constructor
         *
@@ -13,14 +15,13 @@ if ( ! class_exists( 'blog_templates' ) ) {
         function __construct() {
 
             if ( is_network_admin() ) {
-                new blog_templates_main_menu();                
+                $this->main_menu = new blog_templates_main_menu();                
             }
 
             
 
             add_action( 'init', array( &$this, 'maybe_upgrade' ) );
             add_action( 'init', array( &$this, 'init' ) );
-            add_action( 'wp_loaded', array( $this, 'maybe_template' ) );
 
 
             // Actions
@@ -46,7 +47,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
             add_action( 'bp_blog_details_fields', array( &$this, 'maybe_add_template_hidden_field' ) );
             add_action('bp_after_blog_details_fields', array($this, 'registration_template_selection'));
             add_filter('bp_signup_usermeta', array($this, 'registration_template_selection_add_meta'));
-            add_action( 'bp_before_blog_details_fields', 'nbt_bp_add_register_scripts' );
 
             /**
              * From 1.7.1 version we are not allowing to template the main site
@@ -65,203 +65,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
         }
 
-        
-
-        public static function process_template( $option ) {
-
-            if ( $option === false ) {
-                return array(
-                    'error' => true,
-                    'message' => "Error getting option"
-                );
-            }
-
-            // Nothing to copy
-            if ( empty( $option['to_copy'] ) ) {
-                delete_option( 'nbt-pending-template' );
-                do_action( "blog_templates-copy-after_copying", $option['template'], $option['source_blog_id'], $option['user_id'] );
-                return array(
-                    'error' => true,
-                    'message' => "Process Finished"
-                );
-            }
-
-            extract( $option );
-
-            // We need to erase the stuff done from the list
-            // So next reload it does not copy teh same things again
-            $copy = key( $option['to_copy'] );
-            if ( $copy != 'attachment' )
-                unset( $option['to_copy'][ $copy ] );
-
-            // Arguments
-            if ( 'attachment' == $copy ) {
-                $attachment_key = key( $attachment_ids );
-                if ( $attachment_key === null ) {
-                    // No attachments to copy
-                    unset( $option['to_copy']['attachment'] );
-                    update_option( 'nbt-pending-template', $option );
-                    return array(
-                        'error' => false,
-                        'message' => 'No attachments to copy'
-                    );
-                }
-
-                $args = array( 
-                    'attachment_id' => $attachment_ids[ $attachment_key ]['attachment_id'],
-                    'date' => $attachment_ids[ $attachment_key ]['date']
-                );
-                unset( $option['attachment_ids'][ $attachment_key ] );
-
-                if ( empty( $option['attachment_ids'] ) ) {
-                    // We have finished with attachments
-                    unset( $option['to_copy']['attachment'] );
-                    update_option( 'nbt-pending-template', $option );
-                }
-                else {
-                    update_option( 'nbt-pending-template', $option );
-                }
-
-            }
-            else {
-                $args = empty( $to_copy[ $copy ] ) ? array() : $to_copy[ $copy ];
-                update_option( 'nbt-pending-template', $option );
-            }
-
-            // Get the copier object
-            $copier = nbt_get_copier( $copy, $source_blog_id, $template, $args, $user_id );
-
-            if ( ! $copier ) {
-                return array(
-                    'error' => false,
-                    'message' => "Error getting class ($copy)"
-                );
-            }
-
-            // Copy!
-            $copier_result = $copier->copy();
-
-            if ( is_wp_error( $copier_result ) ) {
-                $message = $copier_result->get_error_message();
-            }
-            else {
-                if ( 'attachment' != $copy )
-                    $message = ucfirst( $copy ) . ' Copied';
-                else
-                    $message = basename( $copier_result['url'] ) . ' Copied';
-            }
-
-            return array(
-                'error' => false,
-                'message' => $message
-            );
-        }   
-
-        /**
-         * If there's something pending to template for the current blog
-         * here's when everything will be copied
-         */
-        public function maybe_template() {
-            
-            if ( defined( 'DOING_AJAX' ) && DOING_AJAX )
-                return;
-
-            if ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) )
-                return;
-
-            if ( ! $option = get_option( 'nbt-pending-template' ) )
-                return;
-
-            extract( $option );
-
-            if ( isset( $_REQUEST['nbt_step'] ) ) {
-                $result = self::process_template( $option );
-                $message = $result['message'];
-                $error = $result['error'];
-            }
-
-
-            $ajax_url = admin_url( 'admin-ajax.php' );
-            $nonce = wp_create_nonce( 'nbt_process_template' );
-
-            nocache_headers();
-            @header( 'Content-Type: ' . get_option( 'html_type' ) . '; charset=' . get_option( 'blog_charset' ) );
-            ?>
-                <!DOCTYPE html>
-                <html xmlns="http://www.w3.org/1999/xhtml" <?php language_attributes(); ?>>
-                <head>
-                    <meta name="viewport" content="width=device-width" />
-                    <meta http-equiv="Content-Type" content="<?php bloginfo( 'html_type' ); ?>; charset=<?php echo get_option( 'blog_charset' ); ?>" />
-                    <script type="text/javascript" src="<?php echo includes_url(  'wp-includes/js/jquery/jquery.js' ); ?>"></script>
-                    <title><?php _e( 'New blog Setup' ); ?></title>
-                    <?php
-                    wp_admin_css( 'install', true );
-                    wp_admin_css( 'ie', true );
-                    ?>
-                </head>
-                <body class="wp-core-ui">
-                <h1>We're setting up your new blog. Please wait... <span id="spinner" style="display:none;"><img style="width:15px;height:15px;" src="<?php echo admin_url( 'images/spinner.gif' ); ?>" /></span></h1>
-                <p class="js_alert" style="color:#a00"><?php _e( 'Please, activate Javascript and set WP_DEBUG to false if you want this screen to work automatically instead of manually', 'blog_templates' ); ?></p>
-                <p class="redirect" style="display:none"><a class="button-primary" href="<?php echo esc_url($finish_url); ?>">Click here to return to dashboard</a></p>
-                <ul id="steps">
-                    <?php if ( ! empty( $message ) ): ?>
-                        <li><?php echo $message; ?></li>
-                    <?php endif; ?>
-                </ul>
-                <p class="redirect" style="display:none"><a class="button-primary" href="<?php echo esc_url($finish_url); ?>">Click here to return to dashboard</a></p>
-                <?php if ( empty( $message ) ): ?>
-                    <a class="button button-primary next_step_link" href="<?php echo esc_url( add_query_arg( 'nbt_step', 'true', admin_url() ) ); ?>">Start</a>   
-                <?php elseif ( ! empty( $message ) && ! $error ): ?>
-                    <a class="button next_step_link" href="<?php echo esc_url( add_query_arg( 'nbt_step', 'true', admin_url() ) ); ?>">Next step</a>
-                <?php else: ?>                    
-                    <a class="button button-primary next_step_link" href="<?php echo esc_url( add_query_arg( 'nbt_step', 'true', admin_url() ) ); ?>">Return to dashboard</a>
-                <?php endif; ?>
-            </body>
-            <?php if ( ! ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ): ?>
-                <script>
-                    jQuery(document).ready(function($) {
-                        
-                        nbt_process_template();
-
-                        $('.next_step_link').detach();
-                        $('.js_alert').detach();
-                        $('#spinner').show();
-                        
-
-                        function nbt_process_template() {
-                            $.ajax({
-                                url: '<?php echo $ajax_url; ?>',
-                                type: 'POST',
-                                data: {
-                                    action: 'nbt_process_template',
-                                    security: '<?php echo $nonce; ?>'
-                                },
-                            })
-                            .done(function( data ) {
-                                console.log(data);
-                                var list = $('#steps');
-                                var list_item = $('<li></li>').text(data.data.message);
-                                list_item.appendTo(list);
-                                if ( ! data.success ) {
-                                    $('#spinner').hide();
-                                    $('.redirect').show();
-                                }
-                                else {
-                                    nbt_process_template();
-                                }
-
-                            });
-                        }
-                    });
-                </script>
-            <?php endif; ?>
-
-            <?php
-            wp_die();
-
-            
-
-        }
 
         public function enqueue_styles() {
             global $wp_version;
@@ -535,7 +338,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             if ( ! $template || 'none' == $template )
                 return; //No template, lets leave
 
-            $result = nbt_set_copier_args( $template['blog_id'], $blog_id, $template, $user_id );
+            $result = copier_set_copier_args( $template['blog_id'], $blog_id, $template, $user_id );
 
         }
 
