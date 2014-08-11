@@ -51,16 +51,3 @@ if (defined('NBT_ENSURE_LAST_PLACE') && NBT_ENSURE_LAST_PLACE)
 
 
 
-
-/**
- * Ensure the newly registered user is added to new blog.
- */
-function blog_template_add_user_as_admin ($template, $blog_id, $user_id) {
-	if (is_super_admin($user_id)) return false;
-	if (!in_array('users', $template['to_copy'])) return false; // Only apply this if we're trumping over users	
-	return add_user_to_blog($blog_id, $user_id, 'administrator');
-}
-add_action('blog_templates-copy-after_copying', 'blog_template_add_user_as_admin', 10, 3);
-
-
-

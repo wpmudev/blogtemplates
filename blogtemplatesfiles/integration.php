@@ -213,7 +213,7 @@ function blog_template_exclude_gravity_forms( $exclude ) {
 	$exclude[] = 'frmpro_db_version';
 	return $exclude;
 }
-add_filter('blog_templates_exclude_settings', 'blog_template_exclude_gravity_forms');
+add_filter('wpmudev_copier_exclude_settings', 'blog_template_exclude_gravity_forms');
 
 
 /** CONTACT FORM 7 **/
@@ -232,6 +232,7 @@ function blog_template_contact_form7_postmeta ($row, $table) {
 	
 	return $row;
 }
+
 function blog_template_convert_wpcf7_mail_fields ($row) {
 	global $_blog_template_current_templated_blog_id;
 	if (!$_blog_template_current_templated_blog_id) return $row; // Can't do the replacement
@@ -263,16 +264,18 @@ function blog_template_convert_wpcf7_mail_fields ($row) {
 	$row['meta_value'] = serialize($wpcf7);
 	return $row;
 }
-function blog_template_check_postmeta ($tbl, $templated_blog_id) {
+
+
+function blog_template_check_postmeta ( $tbl, $templated_blog_id ) {
 	global $_blog_template_current_templated_blog_id;
 	$_blog_template_current_templated_blog_id = $templated_blog_id;
-	if ("postmeta" == $tbl) add_filter('blog_templates-process_row', 'blog_template_contact_form7_postmeta', 10, 2);
+	if ("postmeta" == $tbl) add_filter('wpmudev_copier-process_row', 'blog_template_contact_form7_postmeta', 10, 2);
 }
-add_action('blog_templates-copying_table', 'blog_template_check_postmeta', 10, 2);
+add_action( 'wpmudev_copier-copying_table', 'blog_template_check_postmeta', 10, 2 );
 
 
 // Play nice with Multisite Privacy, if requested so
-if (defined('NBT_TO_MULTISITE_PRIVACY_ALLOW_SIGNUP_OVERRIDE') && NBT_TO_MULTISITE_PRIVACY_ALLOW_SIGNUP_OVERRIDE) {
+if ( defined( 'NBT_TO_MULTISITE_PRIVACY_ALLOW_SIGNUP_OVERRIDE' ) && NBT_TO_MULTISITE_PRIVACY_ALLOW_SIGNUP_OVERRIDE ) {
 	/**
 	 * Keeps user-selected Multisite Privacy settings entered on registration time.
 	 * Propagate template settings on admin blog creation time.
@@ -286,16 +289,5 @@ if (defined('NBT_TO_MULTISITE_PRIVACY_ALLOW_SIGNUP_OVERRIDE') && NBT_TO_MULTISIT
 		$exclude[] = 'blog_public';
 		return $exclude;
 	}
-	add_filter('blog_templates_exclude_settings', 'blog_template_exclude_multisite_privacy_settings');
-}
-
-/** WORDPRESS HTTPS **/
-add_action( 'blog_templates-copy-options', 'nbt_hooks_set_https_settings' );
-function nbt_hooks_set_https_settings( $template ) {
-	if ( ! function_exists( 'is_plugin_active' ) )
-		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
-	
-	if ( is_plugin_active( 'wordpress-https/wordpress-https.php' ) )
-		update_option( 'wordpress-https_ssl_host', get_site_url( get_current_blog_id(), '', 'https' ) );
-
+	add_filter( 'wpmudev_copier_exclude_settings', 'blog_template_exclude_multisite_privacy_settings' );
 }
