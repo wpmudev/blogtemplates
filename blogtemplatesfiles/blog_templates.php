@@ -338,7 +338,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             if ( ! $template || 'none' == $template )
                 return; //No template, lets leave
 
-            $result = copier_set_copier_args( $template['blog_id'], $blog_id, $template, $user_id );
+            $result = copier_set_copier_args( $template['blog_id'], $blog_id, $user_id, $template );
 
         }
 
