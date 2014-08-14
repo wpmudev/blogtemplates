@@ -61,6 +61,8 @@ class NBT_Template_copier {
             $this->clear_table($wpdb->postmeta);
             $this->clear_table($wpdb->comments);
             $this->clear_table($wpdb->commentmeta);
+
+            $this->settings['to_copy']['comments'] = true;
         }
 
 		foreach ( $this->settings['to_copy'] as $setting => $value ) {
@@ -238,6 +240,23 @@ class NBT_Template_copier {
         $this->copy_posts_table( $this->template_blog_id, "pagemeta" );
         do_action( 'blog_templates-copy-pagemeta', $this->template, $this->new_blog_id, $this->user_id );
 	}
+
+    public function copy_comments() {
+        global $wpdb;
+
+        switch_to_blog( $this->template_blog_id );
+        $source_comments = $wpdb->get_results( "SELECT * FROM $wpdb->comments" );
+        $source_commentmeta = $wpdb->get_results( "SELECT * FROM $wpdb->commentmeta" );
+        restore_current_blog();
+
+        foreach ( $source_comments as $comment ) {
+            $_comment = (array)$comment;
+            $wpdb->insert(
+                $wpdb->comments,
+                $_comment
+            );
+        }
+    }
 
 
 	public function copy_terms() {

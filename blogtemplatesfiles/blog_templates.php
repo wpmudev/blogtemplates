@@ -83,6 +83,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             if ( empty( $categories_count ) ) {
                 $model->add_default_template_category();
             }
+         
         }
 
         function maybe_upgrade() {

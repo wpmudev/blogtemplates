@@ -416,7 +416,7 @@ class blog_templates_model {
 
 			$current_site_id = ! empty ( $current_site ) ? $current_site->id : 1;
 
-			return $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $this->categories_table WHERE is_default = '1'", $current_site_id ) );
+			return $wpdb->get_var( "SELECT ID FROM $this->categories_table WHERE is_default = '1'" );
 		}
 
 		public function get_template_categories( $id ) {
