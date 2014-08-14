@@ -116,9 +116,18 @@ function nbt_set_gravity_forms_hooks( $blog_templates ) {
  * @return Array
  */
 function nbt_save_new_blog_meta( $meta ) {
-	if ( isset( $_POST['blog_template' ] ) ) {
+
+	$model = nbt_get_model();
+
+	if ( isset( $_POST['blog_template' ] ) && $model->get_template( absint( $_POST['blog_template'] ) ) )
 		$meta['blog_template'] = absint( $_POST['blog_template'] );
-	}
+
+	
+	$default_template_id = $model->get_default_template_id();
+
+	if ( empty( $meta['blog_template'] ) && $default_template_id )
+		$meta['blog_template'] = $default_template_id;
+
 	return $meta;
 }
 
