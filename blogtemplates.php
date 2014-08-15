@@ -43,6 +43,7 @@ register_deactivation_hook( __FILE__, array( 'Blog_Templates', 'deactivate' ) );
 
 
 add_action( 'plugins_loaded', array( 'Blog_Templates', 'get_instance' ) );
+require_once( 'includes/ajax-actions.php' );
 
 
 if ( is_network_admin() ) {

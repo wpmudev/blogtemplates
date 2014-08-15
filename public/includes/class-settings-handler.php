@@ -51,15 +51,7 @@ class Blog_Templates_Settings_Handler {
     		'registration-templates-appearance' => '',
     		'page-showcase-id' => false,
     		'default' => '',
-    		'previewer_button_text' => __( 'Select this theme', 'blog_templates' ),
-    		'screenshots_width' => 200,
             'show-categories-selection' => false,
-            'unselected-background-color' => '#DFD9D9',
-            'selected-background-color' => '#333333',
-            'overlay_color' => '#333333',
-            'toolbar-color' => '#d86565',
-            'toolbar-text-color' => '#ffffff',
-    		'toolbar-border-color' => '#898989',
     		'categories_selection' => false
     	);
 	}

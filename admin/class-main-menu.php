@@ -28,7 +28,6 @@ class Blog_Templates_Main_Menu {
 		// Add the options page and menu item.
 		add_action( 'network_admin_menu', array( $this, 'add_admin_menu' ) );
 
-
 	}
 
 
@@ -146,6 +145,9 @@ class Blog_Templates_Main_Menu {
                 $img = $template['screenshot'];
 
             $additional_tables = copier_get_additional_tables( $template['blog_id'] );
+
+            $categories = $model->get_templates_categories(); 
+            $template_categories = wp_list_pluck( $model->get_template_categories( $t ), 'ID' );
 
 	    	include_once( 'views/edit-template.php' );
 	    }
@@ -269,6 +271,24 @@ class Blog_Templates_Main_Menu {
             }
             $args['pages_ids'] = $pages_ids;
 
+            // TEMPLATE CATEGORY
+            if ( ! isset( $_POST['template_category'] ) ) {
+                $template_category = array( $model->get_default_category_id() );
+            }
+            else {
+                $categories = $_POST['template_category'];
+
+                $template_category = array();
+                foreach( $categories as $category ) {
+                    if ( ! is_numeric( $category ) )
+                        continue;
+
+                    $template_category[] = absint( $category );
+                }
+            }
+
+            $model->update_template_categories( $t, $template_category );
+
             do_action( 'nbt_update_template', $t );          
 
             $model->update_template( $t, $args );
@@ -300,7 +320,7 @@ class Blog_Templates_Main_Menu {
             );
 
             $template_id = $model->add_template( $blog_id, $name, $description, $settings );
-            wp_die( var_dump( $template_id ) );
+
             $to_url = add_query_arg(
             	array(
             		'page' => $this->menu_slug,

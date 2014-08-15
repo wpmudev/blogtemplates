@@ -53,6 +53,18 @@
                                 </tr>
                             <?php endif; ?>
 
+                            <?php if ( apply_filters( 'nbt_activate_block_posts_feature', true ) ): ?>
+                                <tr valign="top">
+                                    <th scope="row"><label for="nbt-block-posts-pages"><?php _e( 'Block Posts/Pages', 'blog_templates' ); ?></label></th>
+                                    <td>
+                                        <label for='nbt-block-posts-pages'>
+                                            <input type='checkbox' name='block_posts_pages' id='nbt-block-posts-pages' <?php checked( $template['block_posts_pages'] ); ?>>
+                                            <?php _e( 'If selected, pages and posts included in the template will not be allowed to be edited (even for the blog administrator). Only Super Admins will be able to edit the text of copied posts/pages.', 'blog_templates' ); ?>
+                                        </label>
+                                    </td>
+                                </tr>                                    
+                            <?php endif; ?>
+
                             <tr valign="top">
                                 <th scope="row"><label for="update_dates"><?php echo __( 'Update dates', $this->plugin_slug ); ?></label></th>
                                 <td>
@@ -112,6 +124,27 @@
                         </table>
                         
                     </div>
+
+                    <?php if ( apply_filters( 'nbt_activate_categories_feature', true ) ): ?>
+                        <div id="postbox-container-1" class="postbox-container">
+                            <div id="side-sortables" class="meta-box-sortables ui-sortable">
+                                <div id="categorydiv" class="postbox ">
+                                    <div class="handlediv" title=""><br></div><h3 class="hndle"><span><?php _e( 'Template categories' ); ?></span></h3>
+                                    <div class="inside">
+                                        <div id="taxonomy-category" class="categorydiv">
+                                            <div id="category-all" class="tabs-panel">
+                                                <ul id="templatecategorychecklist" class="categorychecklist form-no-clear">
+                                                    <?php foreach ( $categories as $category ): ?>
+                                                        <li id="template-cat-<?php echo $category['ID']; ?>"><label class="selectit"><input value="<?php echo $category['ID']; ?>" <?php checked( in_array( $category['ID'], $template_categories ) ); ?> type="checkbox" name="template_category[]"> <?php echo $category['name']; ?></label></li>
+                                                    <?php endforeach; ?>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>          
+                        </div>
+                    <?php endif; ?>
 
                     <?php do_action( 'nbt_edit_template_menu_after_content', $template, $t ); ?>
                     

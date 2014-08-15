@@ -52,9 +52,12 @@ class Blog_Templates {
 		add_action( 'init', array( $this, 'maybe_upgrade' ) );
 		add_action( 'init', array( $this, 'init_plugin' ) );
 
-		// Load public-facing style sheet and JavaScript.
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_action( 'delete_blog', array( &$this, 'maybe_delete_template' ), 10, 1 );
+
+		$action_order = defined('NBT_APPLY_TEMPLATE_ACTION_ORDER') && NBT_APPLY_TEMPLATE_ACTION_ORDER ? NBT_APPLY_TEMPLATE_ACTION_ORDER : 9999;
+        add_action('wpmu_new_blog', array($this, 'set_blog_defaults'), apply_filters('blog_templates-actions-action_order', $action_order), 6); // Set to *very high* so this runs after every other action; also, accepts 6 params so we can get to meta
+
+		do_action( 'nbt_object_create', $this );
 
 	}
 
@@ -220,23 +223,53 @@ class Blog_Templates {
 
     }
 
-	/**
-	 * Register and enqueue public-facing style sheet.
-	 *
-	 * @since    1.0.0
-	 */
-	public function enqueue_styles() {
-		wp_enqueue_style( $this->plugin_slug . '-plugin-styles', plugins_url( 'assets/css/public.css', __FILE__ ), array(), self::VERSION );
-	}
+    /**
+     * Delete templates attached to blogs that no longer exist
+     * 
+     * @param Integer $blog_id 
+     */
+    function maybe_delete_template( $blog_id ) {
 
-	/**
-	 * Register and enqueues public-facing JavaScript files.
-	 *
-	 * @since    1.0.0
-	 */
-	public function enqueue_scripts() {
-		wp_enqueue_script( $this->plugin_slug . '-plugin-script', plugins_url( 'assets/js/public.js', __FILE__ ), array( 'jquery' ), self::VERSION );
-	}
+        $delete_template_ids = array();
+        $settings = nbt_get_settings();
+
+        // Searching those templates attached to that blog
+        foreach ( $settings['templates'] as $key => $template ) {
+            if ( $template['blog_id'] == $blog_id ) {
+                $delete_template_ids[] = $key;
+            }
+        }
+
+        // Deleting and saving new options
+        if ( ! empty( $delete_template_ids ) ) {
+            $model = nbt_get_model();
+            foreach ( $delete_template_ids as $template_id ) {
+                unset( $settings['templates'][ $template_id ] );
+
+                if ( $settings['default'] == $template_id )
+                    $settings['default'] = false;
+
+                $model->delete_template( $template_id );
+
+                do_action( 'blog_templates_delete_template', $template_id );
+
+                nbt_update_settings( $settings );
+            }
+        }
+    }
+
+    /**
+     * Checks for a template to use, and if it exists, copies the templated settings to the new blog
+     *
+     * @param mixed $blog_id
+     * @param mixed $user_id
+     *
+     */
+    function set_blog_defaults( $blog_id, $user_id, $_passed_domain=false, $_passed_path=false, $_passed_site_id=false, $_passed_meta=false ) {
+        
+
+    }
+
 
 
 }

@@ -66,6 +66,7 @@ jQuery(document).ready(function($) {
 			dataType: 'json'
 		}).done(function( data ) {
 			nbt_cache[ term ] = data;
+			console.log(data);
 			response( data );
 		});
 
