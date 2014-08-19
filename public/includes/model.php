@@ -358,10 +358,22 @@ class Blog_Templates_Model {
 				return $results;
 		}
 
-		public function get_templates_categories() {
+		public function get_templates_categories( $args = array() ) {
 			global $wpdb;
 
-			$results = $wpdb->get_results( "SELECT * FROM $this->categories_table", ARRAY_A );
+			$defaults = array(
+				'hide_empty' => false
+			);
+			$args = wp_parse_args( $args, $defaults );
+
+			extract( $args );
+			
+			$query = "SELECT * FROM $this->categories_table";
+
+			if ( ! empty( $hide_empty ) )
+				$query .= " WHERE templates_count > 0";
+
+			$results = $wpdb->get_results( $query, ARRAY_A );
 
 			return $results;
 		}

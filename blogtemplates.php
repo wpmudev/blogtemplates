@@ -35,6 +35,11 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
+if ( ! defined( 'NBT_PLUGIN_DIR' ) )
+	define( 'NBT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+
+if ( ! defined( 'NBT_PLUGIN_URL' ) )
+	define( 'NBT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
 require_once( plugin_dir_path( __FILE__ ) . 'public/class-blogtemplates.php' );
 
@@ -43,7 +48,9 @@ register_deactivation_hook( __FILE__, array( 'Blog_Templates', 'deactivate' ) );
 
 
 add_action( 'plugins_loaded', array( 'Blog_Templates', 'get_instance' ) );
-require_once( 'includes/ajax-actions.php' );
+
+if ( defined( 'DOING_AJAX' ) && DOING_AJAX )
+	require_once( 'includes/ajax-actions.php' );
 
 
 if ( is_network_admin() ) {

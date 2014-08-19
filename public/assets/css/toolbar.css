@@ -1,0 +1,43 @@
+#nbt-toolbar {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 25px;
+    border-top: 1px solid #000;
+    text-align: center;
+    padding-top:25px;
+}
+
+#nbt-toolbar a {
+	text-transform: uppercase;
+	display: inline-block;
+	background: #333;
+	color: #FFF;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	margin: 0 5px 5px 0;
+	padding: 0 0.5em;
+	text-decoration: none;
+	-moz-transition: all 0.2s ease-in-out;
+	-o-transition: all 0.2s ease-in-out;
+	-webkit-transition: all 0.2s ease-in-out;
+	transition: all 0.2s ease-in-out;
+	font-size:1.1em;
+	line-height:1.5;
+}
+
+#nbt-toolbar a:hover {
+	opacity:1;
+}
+
+#nbt-toolbar .toolbar-item-selected {
+	opacity:0.62;
+}
+
+#toolbar-loader {
+	text-align:center;
+	padding: 50px 0;
+	max-width:100%;
+	width:50px;
+	margin:0 auto;
+}

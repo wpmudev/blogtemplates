@@ -1,5 +1,9 @@
 <?php
 
+function blog_templates() {
+	return Blog_Templates::get_instance();
+}
+
 class Blog_Templates {
 
 	/**
@@ -57,6 +61,13 @@ class Blog_Templates {
 		$action_order = defined('NBT_APPLY_TEMPLATE_ACTION_ORDER') && NBT_APPLY_TEMPLATE_ACTION_ORDER ? NBT_APPLY_TEMPLATE_ACTION_ORDER : 9999;
         add_action('wpmu_new_blog', array($this, 'set_blog_defaults'), apply_filters('blog_templates-actions-action_order', $action_order), 6); // Set to *very high* so this runs after every other action; also, accepts 6 params so we can get to meta
 
+        $this->signup = new Blog_Templates_Signup();
+
+        add_action( 'template_redirect', array( $this, 'bp_redirect_signup_location' ), 15 );
+		add_action( 'template_redirect', array( $this, 'redirect_signup' ), 5 );
+
+		add_filter( 'the_content', array( $this, 'display_page_showcase' ) );
+
 		do_action( 'nbt_object_create', $this );
 
 	}
@@ -64,7 +75,12 @@ class Blog_Templates {
 	private function includes() {
 		include_once( 'includes/model.php' );
 		include_once( 'includes/class-settings-handler.php' );
-		include_once( 'includes/helpers.php' );
+		include_once( 'includes/class-lock-posts.php' );
+		include_once( 'includes/helpers/general.php' );
+		include_once( 'includes/helpers/templates.php' );
+		include_once( 'includes/filters.php' );
+		include_once( 'includes/integration.php' );
+		include_once( 'includes/signup/class-signup.php' );
 	}
 
 	/**
@@ -220,7 +236,7 @@ class Blog_Templates {
     }
 
     public function init_plugin() {
-
+    	
     }
 
     /**
@@ -270,6 +286,114 @@ class Blog_Templates {
 
     }
 
+    function bp_redirect_signup_location() {
+		if ( ! class_exists( 'BuddyPress' ) )
+			return;
+
+		if ( is_admin() || ! bp_has_custom_signup_page() )
+			return;
+
+		$signup_slug = bp_get_signup_slug();
+		if ( ! $signup_slug )
+			return;
+
+		$page = get_posts( 
+			array(
+				'name' => $signup_slug,
+				'post_type' => 'page'
+			)
+		);
+
+		if ( empty( $page ) )
+			return;
+
+		$page = $page[0];
+		$is_bp_signup_page = is_page( $page->ID );
+
+		if ( $is_bp_signup_page ) {
+			$redirect_to = $this->get_showcase_redirection_location();
+			if ( $redirect_to ) {
+				wp_redirect( $redirect_to );
+				exit();
+			}
+		}
+		
+	}
+
+	function redirect_signup() {
+		global $pagenow;
+
+		if ( 'wp-signup.php' == $pagenow ) {
+
+			$redirect_to = $this->get_showcase_redirection_location();
+
+			if ( $redirect_to ) {
+				wp_redirect( $redirect_to );
+				exit();
+			}
+
+		}	
+	}
+
+
+	function get_showcase_redirection_location( $location = false ) {
+		$settings = nbt_get_settings();
+
+		if ( 'page_showcase' !== $settings['registration-templates-appearance'] )
+			return $location;
+
+		$redirect_to = get_permalink( $settings['page-showcase-id'] );
+		if ( ! $redirect_to )
+			return $location;
+
+		if ( isset( $_REQUEST['blog_template'] ) && 'just_user' == $_REQUEST['blog_template'] )
+			return $location;
+
+		$model = nbt_get_model();
+		$default_template_id = $model->get_default_template_id();
+
+		if ( empty( $_REQUEST['blog_template'] ) && ! $default_template_id ) {
+			return $redirect_to;
+		}
+
+		$_REQUEST['blog_template'] = ! empty( $_REQUEST['blog_template'] ) ? absint( $_REQUEST['blog_template'] ) : $default_template_id;
+
+		$model = nbt_get_model();
+		$template = $model->get_template( $_REQUEST['blog_template'] );
+
+		if ( ! $template ) {
+			return $redirect_to;
+		}
+
+		return $location;
+	}
+
+	function display_page_showcase( $content ) {
+		if ( is_page() ) {
+			$settings = nbt_get_settings();
+			if ( 'page_showcase' == $settings['registration-templates-appearance'] && is_page( $settings['page-showcase-id'] ) ) {
+				
+	            $tpl_file = "blog_templates-registration-page-showcase.php";
+	            $templates = $settings['templates'];
+
+	            // Setup theme file
+	            ob_start();
+	            $theme_file = locate_template( array( $tpl_file ) );
+	            $theme_file = $theme_file ? $theme_file : NBT_PLUGIN_DIR . '/blogtemplatesfiles/template/' . $tpl_file;
+	            if ( ! file_exists( $theme_file ) ) 
+	                return false;
+
+	            nbt_render_theme_selection_scripts( $settings );
+
+	            @include $theme_file;
+				
+				$content .= ob_get_clean();
+				
+			}
+		}
+
+		return $content;
+	}
 
 
 }
