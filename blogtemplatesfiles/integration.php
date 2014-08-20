@@ -218,7 +218,22 @@ function nbt_save_new_blog_meta( $meta ) {
 	if ( isset( $_POST['blog_template' ] ) && $model->get_template( absint( $_POST['blog_template'] ) ) )
 		$meta['blog_template'] = absint( $_POST['blog_template'] );
 
-	
+	// Maybe GF is activating a signup instead
+	if ( empty( $meta['blog_template'] ) && isset( $_REQUEST['key'] ) && class_exists( 'GFSignup' ) ) {
+		$signup = GFSignup::get( $_REQUEST['key'] );
+		if ( ! is_wp_error( $signup ) && ! empty( $signup->meta['blog_template'] ) ) {
+			$meta['blog_template'] = $signup->meta['blog_template'];
+		}
+		elseif ( ! empty( $signup->error_data['already_active']->meta ) ) {
+			// A little hack for GF
+			$_meta = maybe_unserialize( $signup->error_data['already_active']->meta );
+			if ( ! empty( $_meta['blog_template'] ) )
+				$meta['blog_template'] = $_meta['blog_template'];
+		}
+			
+	} 
+
+
 	$default_template_id = $model->get_default_template_id();
 
 	if ( empty( $meta['blog_template'] ) && $default_template_id )

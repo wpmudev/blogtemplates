@@ -55,7 +55,7 @@ require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/blog_templates.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/blog_templates_lock_posts.php' );
 require_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/settings-handler.php' );
 
-include_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/externals/wpmudev-dash-notification.php' );
+include_once( NBT_PLUGIN_DIR . 'externals/wpmudev-dash-notification.php' );
 global $wpmudev_notices;
 $wpmudev_notices[] = array( 'id'=> 130,'name'=> 'New Blog Templates', 'screens' => array( 'toplevel_page_blog_templates_main-network', 'blog-templates_page_blog_templates_categories-network', 'blog-templates_page_blog_templates_settings-network' ) );
 
