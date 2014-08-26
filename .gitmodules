@@ -1,4 +1,0 @@
-[submodule "blogtemplatesfiles/externals"]
-	path = blogtemplatesfiles/externals
-	url = git@bitbucket.org:incsub/wpmudev-dashboard-notification.git
-	branch = master
