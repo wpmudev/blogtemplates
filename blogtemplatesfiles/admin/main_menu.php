@@ -163,14 +163,13 @@ class blog_templates_main_menu {
 			            <p><?php _e('Please note that this will turn the blog you selected into a template blog. Any changes you make to this blog will change the template, as well! We recommend creating specific "Template Blogs" for this purpose, so you don\'t accidentally add new settings, content, or users that you don\'t want in your template.','blog_templates'); ?></p>
 			            <p><?php printf( __( 'This means that if you would like to create a dedicated template blog for this template, please <a href="%1$s">create a new blog</a> and then visit this page to create the template.','blog_templates' ), '<a href="' . ( get_bloginfo('version') >= 3 ) ? network_admin_url('site-new.php') : admin_url('wpmu-blogs.php') . '">'); ?></p>
 
-			            <p><div class="submit"><input type="submit" name="save_new_template" class="button-primary" value="Create Blog Template!" /></div></p>
+			            <?php submit_button( __( 'Create Blog Template!', 'blog_templates' ), 'primary', 'save_new_template' ); ?>
 			            
 			            
 			        <?php
 			            } else {
 			            	$model = nbt_get_model();
 			                $template = $model->get_template( $t );
-			                echo '<!-- TEMPLATE SETTINGS' . ( print_r($template,true) ) . '-->';
 			        ?>
 			            
 			            <h2><?php _e('Edit Blog Template', 'blog_templates'); ?></h2>
