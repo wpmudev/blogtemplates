@@ -221,6 +221,9 @@ class Blog_Templates_Main_Menu {
 				if ( $movefile ) {
 				    $args['screenshot'] = $movefile['url'];
 				}
+
+                $args['screenshot'] = apply_filters( 'nbt_upload_screenshot', $args['screenshot'], $uploaded_file, $movefile );
+                
             }
             else {
             	$template = $model->get_template( absint( $_POST['template_id'] ) );

@@ -16,6 +16,9 @@ class Blog_Templates_Signup {
         add_filter('bp_signup_usermeta', array($this, 'registration_template_selection_add_meta'));
         add_action( 'bp_before_blog_details_fields', 'nbt_bp_add_register_scripts' );
 
+        // Init Toolbar
+        add_action( 'nbt_before_templates_signup', array( 'Blog_Templates_Signup', 'init_toolbar' ), 10 );
+
         include_once( NBT_PLUGIN_DIR . 'public/includes/class-templates-query.php' );
         $this->templates_query = new Blog_Templates_Templates_Query();
 	}
@@ -83,9 +86,11 @@ class Blog_Templates_Signup {
         if ( ! file_exists( $theme_file ) ) 
             return false;
 
-        nbt_render_theme_selection_scripts( $settings );
+        // Showcase special case
+        if ( 'page-showcase' === $tpl_file_suffix )
+            add_action( 'nbt_before_templates_signup', array( 'Blog_Templates_Signup', 'set_signup_url_field' ), 15 );
 
-        add_action( 'nbt_before_templates_signup', array( 'Blog_Templates_Signup', 'init_toolbar' ) );
+        nbt_render_theme_selection_scripts( $settings );
         
         @include $theme_file;
 
@@ -105,11 +110,27 @@ class Blog_Templates_Signup {
     /**
      * Store selected template in blog meta on signup.
      */
-    public static function registration_template_selection_add_meta ($meta) {
+    public static function registration_template_selection_add_meta($meta) {
         $meta = $meta ? $meta : array();
         $settings = nbt_get_settings();
         $meta['blog_template'] = isset( $_POST['blog_template'] ) && is_numeric( $_POST['blog_template'] ) ? $_POST['blog_template'] : $settings['default'];
         return $meta;
+    }
+
+    public static function set_signup_url_field() {
+        if ( class_exists( 'BuddyPress' ) ) {
+            $sign_up_url = bp_get_signup_page();
+        }
+        else {
+            $sign_up_url = network_site_url( 'wp-signup.php' );
+            $sign_up_url = apply_filters( 'wp_signup_location', $sign_up_url );
+        }
+
+        $sign_up_url = add_query_arg( 'blog_template', 'just_user', $sign_up_url );
+        
+        ?>
+            <p><a href="<?php echo esc_url( $sign_up_url ); ?>"><?php _e('Just a username, please.') ?></a></p>
+        <?php
     }
 
 }

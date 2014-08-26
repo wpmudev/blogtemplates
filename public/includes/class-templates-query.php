@@ -47,6 +47,10 @@ function nbt_get_selected_template_ID() {
 	return $selected;
 }
 
+function nbt_get_the_template_screenshot() {
+	
+}
+
 
 class Blog_Templates_Templates_Query {
 	public $current_template = -1;

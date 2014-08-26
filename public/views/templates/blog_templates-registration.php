@@ -6,14 +6,13 @@
  * You can also use $templates array to iterate through your templates.
  */
 ?>
-<?php if (defined('BP_VERSION') && 'bp-default' == get_blog_option(bp_get_root_blog_id(), 'stylesheet')) echo '<br style="clear:both" />'; ?>
+
+<br style="clear:both" />
+
 <div id="blog_template-selection">
 	<h3><?php _e('Select a template', 'blog_templates') ?></h3>
 
-	<?php
-		if ( $settings['show-categories-selection'] )
-			$templates = nbt_theme_selection_toolbar( $templates );
-    ?>
+	<?php do_action( 'nbt_before_templates_signup' ); ?>
 
     <div class="blog_template-option" style="text-align:center;margin-bottom:30px;">
     	
