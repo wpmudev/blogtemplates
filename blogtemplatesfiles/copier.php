@@ -384,7 +384,7 @@ class NBT_Template_copier {
 
                 // If we set the same theme, we need to replace URLs in theme mods
                 if ( $this->settings['to_copy']['settings'] ) {
-                    $mods = get_theme_mods();
+                    $mods = is_array( get_theme_mods() ) ? get_theme_mods() : array();
                     if ( apply_filters( 'nbt_change_attachments_urls', true ) )
                         array_walk_recursive( $mods, array( &$this, 'set_theme_mods_url' ), array( $template_content_url, $new_content_url, $this->template_blog_id, $this->new_blog_id ) );
                     update_option( "theme_mods_$theme_slug", $mods );
