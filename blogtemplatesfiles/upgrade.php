@@ -182,6 +182,8 @@ function blog_templates_upgrade_20() {
 function blog_templates_upgrade_22() {
 	global $wpdb;
 
+	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+	
 	$templates_table = $wpdb->base_prefix . 'nbt_templates';
 	if ( ! empty($wpdb->charset) )
 		$db_charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";

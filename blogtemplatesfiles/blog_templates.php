@@ -93,6 +93,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             if ( $saved_version === false ) {
                 nbt_activate_plugin();
+                return;
             }
 
             if ( ! $saved_version )
