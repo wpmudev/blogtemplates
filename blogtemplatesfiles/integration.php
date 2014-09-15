@@ -331,9 +331,9 @@ function nbt_hooks_set_https_settings( $template ) {
 	
 	if ( is_plugin_active( 'wordpress-https/wordpress-https.php' ) ) {
 		if ( get_option( 'wordpress-https_ssl_admin' ) )
-			update_option( 'wordpress-https_ssl_host', get_site_url( get_current_blog_id(), '', 'https' ) );
+			update_option( 'wordpress-https_ssl_host', trailingslashit( get_site_url( get_current_blog_id(), '', 'https' ) ) );
 		else
-			update_option( 'wordpress-https_ssl_host', get_site_url( get_current_blog_id(), '', 'http' ) );
+			update_option( 'wordpress-https_ssl_host', trailingslashit( get_site_url( get_current_blog_id(), '', 'http' ) ) );
 	}
 
 }
