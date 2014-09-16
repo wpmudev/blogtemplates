@@ -352,6 +352,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             $copier_args['template_id'] = $template['ID'];
             $copier_args['block_posts_pages'] = $template['block_posts_pages'];
             $copier_args['update_dates'] = $template['update_dates'];
+            $copier_args['copy_status'] = isset( $template['copy_status'] ) && $template['copy_status'];
             $copier_args['additional_tables'] = ( isset( $template['additional_tables'] ) && is_array( $template['additional_tables'] ) ) ? $template['additional_tables'] : array();
 
             $copier = new NBT_Template_copier( $template['blog_id'], $blog_id, $user_id, $copier_args );

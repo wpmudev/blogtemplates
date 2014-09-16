@@ -96,8 +96,9 @@ class NBT_Template_copier {
         }
 
         // Now we need to update the blog status because of a conflict with Multisite Privacy Plugin
-        if ( isset( $this->settings['copy_status'] ) && $this->settings['copy_status'] &&  is_plugin_active( 'sitewide-privacy-options/sitewide-privacy-options.php' ) )
-            update_blog_status( $this->new_blog_id, 'public', get_blog_status( $this->templatd_blog_id, 'public' ) );
+        if ( isset( $this->settings['copy_status'] ) && $this->settings['copy_status'] &&  is_plugin_active( 'sitewide-privacy-options/sitewide-privacy-options.php' ) ) {
+            update_blog_status( $this->new_blog_id, 'public', get_blog_status( $this->template_blog_id, 'public' ) );
+        }
 
         $wpdb->query("COMMIT;"); //If we get here, everything's fine. Commit the transaction
 
