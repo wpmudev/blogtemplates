@@ -198,7 +198,7 @@ function set_gravity_forms_hooks( $blog_templates ) {
 	if ( ! function_exists( 'is_plugin_active' ) )
 		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 
-	if ( ! is_plugin_active( 'gravityformsuserregistration/userregistration.php' ) || ! is_plugin_active( 'gravityforms/gravityforms.php' ) )
+	if ( ! class_exists( 'GFUserData' ) || ! is_plugin_active( 'gravityforms/gravityforms.php' ) )
 		return;
 
 	add_filter( 'gform_get_form_filter', 'nbt_render_user_registration_form', 15, 2 );
@@ -253,6 +253,10 @@ function nbt_save_new_blog_meta( $meta ) {
  */
 function nbt_add_blog_templates_user_registration_option( $config ) {
 
+	if ( ! function_exists ( 'rgar' ) )
+		return;
+
+
 	$multisite_options = rgar($config['meta'], 'multisite_options');
 
 	?>
@@ -274,6 +278,9 @@ function nbt_add_blog_templates_user_registration_option( $config ) {
  * @return Array
  */
 function nbt_save_multisite_user_registration_config( $config ) {	
+	if ( ! class_exists( 'RGForms' ) )
+		return $config;
+
 	$config['meta']['multisite_options']['blog_templates'] = RGForms::post("gf_user_registration_multisite_blog_templates");
 	return $config;
 }
@@ -288,6 +295,9 @@ function nbt_save_multisite_user_registration_config( $config ) {
 function nbt_render_user_registration_form( $form_html, $form ) {
 
 	global $blog_templates;
+	
+	if ( ! class_exists( 'GFUserData' ) )
+		return $form_html;
 	
 	// Let's check if the option for New Blog Templates is activated in this form
 	$config = GFUserData::get_feed_by_form( $form['id'] );

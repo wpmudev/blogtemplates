@@ -4,10 +4,10 @@
 
 class NBT_Template_copier {
 
-	private $settings;
-	private $template_blog_id;
-	private $new_blog_id;
-	private $user_id;
+	protected $settings;
+	protected $template_blog_id;
+	protected $new_blog_id;
+	protected $user_id;
 
 	public function __construct( $src_blog_id, $new_blog_id, $user_id, $args ) {
         $defaults = $this->get_default_args();
@@ -28,7 +28,7 @@ class NBT_Template_copier {
         }
 	}
 
-	private function get_default_args() {
+	protected function get_default_args() {
 		return array(
 			'to_copy' => array(
 				'settings' 	=> false,
@@ -371,7 +371,8 @@ class NBT_Template_copier {
                 if ( ! defined('FS_CHMOD_FILE') )
                     define('FS_CHMOD_FILE', 0644 );
 
-                $result = copy_dir( $dir_to_copy, $dir_to_copy_into );
+                $skip_list = apply_filters( 'nbt_copy_files_skip_list', array(), $dir_to_copy );
+                $result = copy_dir( $dir_to_copy, $dir_to_copy_into, $skip_list );
 
                 unset( $wp_filesystem );
 
@@ -501,7 +502,7 @@ class NBT_Template_copier {
      * @param  int $blog_id Blog ID to check
      * @return string Filesystem path
      */
-    private function _get_files_fs_path( $blog_id ) {
+    protected function _get_files_fs_path( $blog_id ) {
         if ( ! is_numeric( $blog_id ) )
         	return false;
 

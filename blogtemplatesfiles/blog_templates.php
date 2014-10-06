@@ -341,7 +341,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             switch_to_blog( $blog_id ); //Switch to the blog that was just created            
 
-            include( 'copier.php' );
+            include_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/copier.php' );
 
             $copier_args = array();
             foreach( $template['to_copy'] as $value ) {
@@ -354,9 +354,16 @@ if ( ! class_exists( 'blog_templates' ) ) {
             $copier_args['update_dates'] = $template['update_dates'];
             $copier_args['copy_status'] = isset( $template['copy_status'] ) && $template['copy_status'];
             $copier_args['additional_tables'] = ( isset( $template['additional_tables'] ) && is_array( $template['additional_tables'] ) ) ? $template['additional_tables'] : array();
+            $source_blog_id = $template['blog_id'];
 
-            $copier = new NBT_Template_copier( $template['blog_id'], $blog_id, $user_id, $copier_args );
-            $copier->execute();
+            $classname = apply_filters( 'nbt_copier_classname', 'NBT_Template_copier' );
+
+            $variables = compact( 'source_blog_id', 'blog_id', 'user_id', 'copier_args' );
+            if ( class_exists( $classname ) ) {
+                $r = new ReflectionClass( $classname );
+                $copier = $r->newInstanceArgs( $variables );
+                $copier->execute();
+            }
 
             restore_current_blog(); //Switch back to our current blog
 
