@@ -211,6 +211,17 @@ class NBT_Template_copier {
                 nbt_add_membership_caps( $this->user_id, $this->new_blog_id );
             }
 
+            $source_blog_details = get_blog_details( $this->template_blog_id );
+            $new_blog_details = array(
+                'public' => $source_blog_details->public,
+                'archived' => $source_blog_details->archived,
+                'mature' => $source_blog_details->mature,
+                'spam' => $source_blog_details->spam,
+                'deleted' => $source_blog_details->deleted,
+                'lang_id' => $source_blog_details->lang_id
+            );
+            update_blog_details( $this->new_blog_id, $new_blog_details );
+
             do_action( 'blog_templates-copy-options', $this->template );
         }
         else {
