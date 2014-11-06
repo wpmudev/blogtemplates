@@ -335,7 +335,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
             }
             elseif ( isset( $_POST['blog_template'] ) && is_numeric( $_POST['blog_template'] ) ) { //If they've chosen a template, use that. For some reason, when PHP gets 0 as a posted var, it doesn't recognize it as is_numeric, so test for that specifically
                 $template = $settings['templates'][$_POST['blog_template']];
-            } elseif ($_passed_meta && isset($_passed_meta['blog_template']) && is_numeric($_passed_meta['blog_template'])) { // Do we have a template in meta?
+            } elseif ($_passed_meta && isset($_passed_meta['blog_template']) && is_numeric($_passed_meta['blog_template'] ) && isset( $settings['templates'][$_passed_meta['blog_template']] )) { // Do we have a template in meta?
                 $template = $settings['templates'][$_passed_meta['blog_template']]; // Why, yes. Yes, we do. Use that. 
             } elseif ( $default ) { //If they haven't chosen a template, use the default if it exists
                 $template = $default;
