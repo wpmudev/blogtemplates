@@ -198,7 +198,7 @@ function set_gravity_forms_hooks( $blog_templates ) {
 	if ( ! function_exists( 'is_plugin_active' ) )
 		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 
-	if ( ! class_exists( 'GFUserData' ) || ! is_plugin_active( 'gravityforms/gravityforms.php' ) )
+	if ( ! is_plugin_active( 'gravityformsuserregistration/userregistration.php' ) || ! is_plugin_active( 'gravityforms/gravityforms.php' ) )
 		return;
 
 	add_filter( 'gform_get_form_filter', 'nbt_render_user_registration_form', 15, 2 );

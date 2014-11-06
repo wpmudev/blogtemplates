@@ -341,7 +341,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             switch_to_blog( $blog_id ); //Switch to the blog that was just created            
 
-            include_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/copier.php' );
+            include( 'copier.php' );
 
             $copier_args = array();
             foreach( $template['to_copy'] as $value ) {
