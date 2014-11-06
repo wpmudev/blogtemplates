@@ -70,9 +70,6 @@ if ( ! class_exists( 'blog_templates' ) ) {
             do_action( 'nbt_object_create', $this );
         }
 
-        public static function test() {
-            wp_die();
-        }
 
         public function enqueue_styles() {
             global $wp_version;
