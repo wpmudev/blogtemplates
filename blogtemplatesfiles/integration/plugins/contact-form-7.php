@@ -42,7 +42,7 @@ function nbt_convert_cf7_email_fields( $template, $new_blog_id, $user_id ) {
 
 			}
 
-			update_post_meta( $post->ID, $new_meta_value );
+			update_post_meta( $post->ID, $meta_key, $new_meta_value );
 		}		
 
 	}
