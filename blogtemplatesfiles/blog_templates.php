@@ -1,8 +1,17 @@
 <?php
-
 if ( ! class_exists( 'blog_templates' ) ) {
 
     class blog_templates {
+
+        private static $instance = null;
+
+        public static function get_instance() {
+            if ( ! self::$instance )
+                self::$instance = new self();
+
+            return self::$instance;
+
+        }
 
         /**
         * PHP 5 Constructor
@@ -44,13 +53,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
             // Signup: WordPress            
             add_action( 'signup_hidden_fields', array( &$this, 'maybe_add_template_hidden_field' ) );
             add_action( 'signup_blogform', array( $this, 'registration_template_selection' ) );
-            add_filter( 'add_signup_meta', array( $this, 'registration_template_selection_add_meta' ) );
-
-            // Signup: BuddyPress
-            add_action( 'bp_blog_details_fields', array( &$this, 'maybe_add_template_hidden_field' ) );
-            add_action('bp_after_blog_details_fields', array($this, 'registration_template_selection'));
-            add_filter('bp_signup_usermeta', array($this, 'registration_template_selection_add_meta'));
-            add_action( 'bp_before_blog_details_fields', 'nbt_bp_add_register_scripts' );
+            add_filter( 'add_signup_meta', array( $this, 'registration_template_selection_add_meta' ) );            
+            
 
             /**
              * From 1.7.1 version we are not allowing to template the main site
@@ -64,6 +68,10 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
 
             do_action( 'nbt_object_create', $this );
+        }
+
+        public static function test() {
+            wp_die();
         }
 
         public function enqueue_styles() {
@@ -446,7 +454,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
         
 
         
-        function maybe_add_template_hidden_field() {
+        public static function maybe_add_template_hidden_field() {
             $settings = nbt_get_settings();
             if ( 'page_showcase' == $settings['registration-templates-appearance'] ) {
                 if ( 'just_user' == $_REQUEST['blog_template'] ) {
@@ -474,7 +482,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
         /**
          * Shows template selection on registration.
          */
-        function registration_template_selection () {
+        public static function registration_template_selection () {
             $settings = nbt_get_settings();
 
             if ( ! $settings['show-registration-templates'] ) 
@@ -519,7 +527,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
         /**
          * Store selected template in blog meta on signup.
          */
-        function registration_template_selection_add_meta ($meta) {
+        public static function registration_template_selection_add_meta ($meta) {
             $meta = $meta ? $meta : array();
             $settings = nbt_get_settings();
             $meta['blog_template'] = isset( $_POST['blog_template'] ) && is_numeric( $_POST['blog_template'] ) ? $_POST['blog_template'] : $settings['default'];
@@ -530,10 +538,14 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
     } // End Class
 
-    // instantiate the class
-    global $blog_templates;
-    $blog_templates = new blog_templates();
-
 } // End if blog_templates class exists statement
+
+if ( ! function_exists( 'blog_templates' ) ) {
+    function blog_templates() {
+        return blog_templates::get_instance();
+    }
+}
+
+blog_templates();
 
 

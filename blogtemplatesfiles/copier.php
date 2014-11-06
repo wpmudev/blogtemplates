@@ -222,7 +222,7 @@ class NBT_Template_copier {
             );
             update_blog_details( $this->new_blog_id, $new_blog_details );
 
-            do_action( 'blog_templates-copy-options', $this->template );
+            do_action( 'blog_templates-copy-options', $this->template, $this->user_id, $this->new_blog_id );
         }
         else {
             $error = '<div id="message" class="error"><p>' . sprintf( __( 'Deletion Error: %s - The template was not applied. (New Blog Templates - While removing auto-generated settings)', 'blog_templates' ), $wpdb->last_error ) . '</p></div>';
