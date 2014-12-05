@@ -333,11 +333,9 @@ class NBT_Template_copier {
 	public function copy_files() {
 		global $wp_filesystem, $wpdb;
 
-        if ( ! $this->settings['to_copy']['posts'] ) {
-            // We need to copy the attachment post type from posts table
-            $this->copy_posts_table( $this->template_blog_id, 'attachment' );
-            $this->copy_posts_table( $this->template_blog_id, 'attachmentmeta' );
-        }
+        // We need to copy the attachment post type from posts table
+        $this->copy_posts_table( $this->template_blog_id, 'attachment' );
+        $this->copy_posts_table( $this->template_blog_id, 'attachmentmeta' );
 
 		$new_content_url = get_bloginfo('wpurl');
 
@@ -597,7 +595,7 @@ class NBT_Template_copier {
             if ( is_array( $categories ) && count( $categories ) > 0 )
                 $query .= " INNER JOIN $wpdb->term_relationships t2 ON t2.object_id = t1.ID ";
 
-            $query .= "WHERE t1.post_type != 'page'";
+            $query .= "WHERE t1.post_type != 'page' && t1.post_type != 'attachment'";
 
             if ( is_array( $categories ) && count( $categories ) > 0 ) {
                 $categories_list = '(' . implode( ',', $categories ) . ')';
@@ -606,7 +604,7 @@ class NBT_Template_copier {
 
         }
         elseif ( 'postmeta' == $type ) {
-            $query .= "INNER JOIN $wpdb->posts t2 ON t1.post_id = t2.ID WHERE t2.post_type != 'page'";
+            $query .= "INNER JOIN $wpdb->posts t2 ON t1.post_id = t2.ID WHERE t2.post_type != 'page' && t2.post_type != 'attachment'";
         }
         elseif ( 'pages' == $type ) {
             $query .= "WHERE t1.post_type = 'page'";
