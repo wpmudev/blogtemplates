@@ -4,58 +4,58 @@
 
 class NBT_Template_copier {
 
-	protected $settings;
-	protected $template_blog_id;
-	protected $new_blog_id;
-	protected $user_id;
+    protected $settings;
+    protected $template_blog_id;
+    protected $new_blog_id;
+    protected $user_id;
 
-	public function __construct( $src_blog_id, $new_blog_id, $user_id, $args ) {
+    public function __construct( $src_blog_id, $new_blog_id, $user_id, $args ) {
         $defaults = $this->get_default_args();
         $args['to_copy'] = wp_parse_args( $args['to_copy'], $defaults['to_copy'] );
-		$this->settings = wp_parse_args( $args, $defaults );
+        $this->settings = wp_parse_args( $args, $defaults );
 
-		$this->template_blog_id = $src_blog_id;
-		$this->new_blog_id = $new_blog_id;
-		$this->user_id = $user_id;
+        $this->template_blog_id = $src_blog_id;
+        $this->new_blog_id = $new_blog_id;
+        $this->user_id = $user_id;
 
-		$model = nbt_get_model();
-		$this->template = $model->get_template( $this->settings['template_id'] );
+        $model = nbt_get_model();
+        $this->template = $model->get_template( $this->settings['template_id'] );
 
         if ( empty( $this->template ) ) {
             $this->template = array();
             $this->template['blog_id'] = $this->template_blog_id;
             $this->template['to_copy'] = $args['to_copy'];
         }
-	}
+    }
 
-	protected function get_default_args() {
-		return array(
-			'to_copy' => array(
-				'settings' 	=> false,
-				'posts'		=> false,
-				'pages'		=> false,
-				'terms'		=> false,
-				'users'		=> false,
-				'menus'		=> false,
-				'files'		=> false
-			),
-			'pages_ids'		=> array( 'all-pages' ),
-			'post_category' => array( 'all-categories' ),
-			'template_id'	=> 0,
-			'additional_tables' => array(),
+    protected function get_default_args() {
+        return array(
+            'to_copy' => array(
+                'settings'  => false,
+                'posts'     => false,
+                'pages'     => false,
+                'terms'     => false,
+                'users'     => false,
+                'menus'     => false,
+                'files'     => false
+            ),
+            'pages_ids'     => array( 'all-pages' ),
+            'post_category' => array( 'all-categories' ),
+            'template_id'   => 0,
+            'additional_tables' => array(),
             'block_posts_pages' => false,
             'update_dates' => false
-		);
-	}
+        );
+    }
 
-	public function execute() {
-		global $wpdb;
+    public function execute() {
+        global $wpdb;
 
         switch_to_blog( $this->new_blog_id );
         //Begin the transaction
         $wpdb->query("BEGIN;");
 
-		// In case we are not copying posts, we'll have to reset the terms count to 0
+        // In case we are not copying posts, we'll have to reset the terms count to 0
         if ( $this->settings['to_copy']['posts'] || $this->settings['to_copy']['pages'] ) {
             $this->clear_table($wpdb->posts);
             $this->clear_table($wpdb->postmeta);
@@ -65,12 +65,12 @@ class NBT_Template_copier {
             $this->settings['to_copy']['comments'] = true;
         }
 
-		foreach ( $this->settings['to_copy'] as $setting => $value ) {
-			if ( $value )
-				call_user_func( array( $this, 'copy_' . $setting ) );
-		}
+        foreach ( $this->settings['to_copy'] as $setting => $value ) {
+            if ( $value )
+                call_user_func( array( $this, 'copy_' . $setting ) );
+        }
 
-		$this->copy_additional_tables();
+        $this->copy_additional_tables();
 
         if ( $this->settings['block_posts_pages'] ) {
             $wpdb->query( "DELETE FROM $wpdb->postmeta WHERE meta_key = 'nbt_block_post'" );
@@ -106,7 +106,7 @@ class NBT_Template_copier {
         restore_current_blog();
 
 
-	}
+    }
 
     function update_posts_dates( $post_type ) {
         global $wpdb;
@@ -151,17 +151,17 @@ class NBT_Template_copier {
         restore_current_blog();
     }
 
-	public function copy_settings() {
-		global $wpdb;
+    public function copy_settings() {
+        global $wpdb;
 
-		$exclude_settings = apply_filters( 'blog_template_exclude_settings', "`option_name` != 'siteurl' AND `option_name` != 'blogname' AND `option_name` != 'admin_email' AND `option_name` != 'new_admin_email' AND `option_name` != 'home' AND `option_name` != 'upload_path' AND `option_name` != 'db_version' AND `option_name` != 'secret' AND `option_name` != 'fileupload_url' AND `option_name` != 'nonce_salt'" );
-		$new_prefix = $wpdb->prefix;
+        $exclude_settings = apply_filters( 'blog_template_exclude_settings', "`option_name` != 'siteurl' AND `option_name` != 'blogname' AND `option_name` != 'admin_email' AND `option_name` != 'new_admin_email' AND `option_name` != 'home' AND `option_name` != 'upload_path' AND `option_name` != 'db_version' AND `option_name` != 'secret' AND `option_name` != 'fileupload_url' AND `option_name` != 'nonce_salt'" );
+        $new_prefix = $wpdb->prefix;
 
-		//Delete the current options, except blog-specific options
+        //Delete the current options, except blog-specific options
         $wpdb->query("DELETE FROM $wpdb->options WHERE $exclude_settings");
 
         if ( ! $wpdb->last_error ) {
-        	//No error. Good! Now copy over the old settings
+            //No error. Good! Now copy over the old settings
 
             //Switch to the template blog, then grab the settings/plugins/templates values from the template blog
             switch_to_blog( $this->template_blog_id );
@@ -177,20 +177,20 @@ class NBT_Template_copier {
                 //Make sure none of the options are using wp_X_ convention, and if they are, replace the value with the new blog ID
                 $row->option_name = str_replace( $template_prefix, $new_prefix, $row->option_name );
                 if ( 'sidebars_widgets' != $row->option_name ) /* <-- Added this to prevent unserialize() call choking on badly formatted widgets pickled array */
-                	$row->option_value = str_replace( $template_prefix, $new_prefix, $row->option_value );
+                    $row->option_value = str_replace( $template_prefix, $new_prefix, $row->option_value );
 
                 //To prevent duplicate entry errors, since we're not deleting ALL of the options, there could be an ID collision
                 unset( $row->option_id );
 
                 // For template blogs with deprecated DB schema (WP3.4+)
                 if ( ! ( defined('NBT_TIGHT_ROW_DUPLICATION') && NBT_TIGHT_ROW_DUPLICATION ) )
-                	unset( $row->blog_id );
+                    unset( $row->blog_id );
 
                 // Add further processing for options row
                 $row = apply_filters( 'blog_templates-copy-options_row', $row, $this->template, $this->new_blog_id, $this->user_id );
 
                 if ( ! $row )
-                	continue; // Prevent empty row insertion
+                    continue; // Prevent empty row insertion
 
                 //Insert the row
                 $wpdb->insert( $wpdb->options, (array)$row );
@@ -230,28 +230,28 @@ class NBT_Template_copier {
             restore_current_blog(); //Switch back to our current blog
             wp_die($error);
         }
-	}
+    }
 
-	public function copy_posts() {
+    public function copy_posts() {
 
-		$categories = in_array( 'all-categories', $this->settings['post_category'] ) ? false : $this->settings['post_category'];
+        $categories = in_array( 'all-categories', $this->settings['post_category'] ) ? false : $this->settings['post_category'];
 
         $this->copy_posts_table( $this->template_blog_id, 'posts', $categories );
         do_action( 'blog_templates-copy-posts', $this->template, $this->new_blog_id, $this->user_id );
 
         $this->copy_posts_table( $this->template_blog_id, 'postmeta' );
         do_action( 'blog_templates-copy-postmeta', $this->template, $this->new_blog_id, $this->user_id );
-	}
+    }
 
-	public function copy_pages() {
-		$pages_ids = in_array( 'all-pages', $this->settings['pages_ids'] ) ? false : $this->settings['pages_ids'];
+    public function copy_pages() {
+        $pages_ids = in_array( 'all-pages', $this->settings['pages_ids'] ) ? false : $this->settings['pages_ids'];
 
         $this->copy_posts_table( $this->template_blog_id, "pages", $pages_ids );
         do_action( 'blog_templates-copy-pages', $this->template, $this->new_blog_id, $this->user_id );
 
         $this->copy_posts_table( $this->template_blog_id, "pagemeta" );
         do_action( 'blog_templates-copy-pagemeta', $this->template, $this->new_blog_id, $this->user_id );
-	}
+    }
 
     public function copy_comments() {
         global $wpdb;
@@ -271,10 +271,10 @@ class NBT_Template_copier {
     }
 
 
-	public function copy_terms() {
-		global $wpdb;
+    public function copy_terms() {
+        global $wpdb;
 
-		$this->clear_table( $wpdb->links );
+        $this->clear_table( $wpdb->links );
         $this->copy_table( $this->template_blog_id, $wpdb->links );
         do_action( 'blog_templates-copy-links', $this->template, $this->new_blog_id, $this->user_id );
 
@@ -295,32 +295,39 @@ class NBT_Template_copier {
             // So we have to set the terms count to 0
             $this->reset_terms_counts();
         }
-	}
 
-	public function copy_users() {
-		global $wpdb;
+        // Delete those terms related to menus
+        switch_to_blog( $this->new_blog_id );
+        $wpdb->query( "DELETE FROM $wpdb->terms WHERE term_id IN (SELECT term_id FROM $wpdb->term_taxonomy WHERE taxonomy = 'nav_menu')" );
+        $wpdb->query( "DELETE FROM $wpdb->term_relationships WHERE term_taxonomy_id IN (SELECT term_taxonomy_id FROM $wpdb->term_taxonomy WHERE taxonomy = 'nav_menu')" );
+        $wpdb->query( "DELETE FROM $wpdb->term_taxonomy WHERE taxonomy = 'nav_menu'" );
+        restore_current_blog();
+    }
 
-		switch_to_blog( $this->template_blog_id );
+    public function copy_users() {
+        global $wpdb;
+
+        switch_to_blog( $this->template_blog_id );
         $template_users = get_users();
         restore_current_blog();
 
         if ( ! empty( $template_users ) ) {
-        	foreach( $template_users as $user ) {
-        		$user = apply_filters( 'blog_templates-copy-user_entry', $user, $this->template, $this->new_blog_id, $this->user_id );
-        		if ( $user->ID == $this->user_id ) {
-        			add_user_to_blog( $this->new_blog_id, $user->ID, 'administrator' );
-        		}
-        		else {
-        			add_user_to_blog( $this->new_blog_id, $user->ID, $user->roles[0] );
-        		}
-        	}
+            foreach( $template_users as $user ) {
+                $user = apply_filters( 'blog_templates-copy-user_entry', $user, $this->template, $this->new_blog_id, $this->user_id );
+                if ( $user->ID == $this->user_id ) {
+                    add_user_to_blog( $this->new_blog_id, $user->ID, 'administrator' );
+                }
+                else {
+                    add_user_to_blog( $this->new_blog_id, $user->ID, $user->roles[0] );
+                }
+            }
         }
 
         do_action( 'blog_templates-copy-users', $this->template, $this->new_blog_id, $this->user_id );
-	}
+    }
 
-	public function copy_menus() {
-		global $wp_version;
+    public function copy_menus() {
+        global $wp_version;
         if ( version_compare( $wp_version, '3.6', '>=' ) ) {
             $this->copy_menu( $this->template_blog_id, $this->new_blog_id );
         }
@@ -328,18 +335,18 @@ class NBT_Template_copier {
             $this->old_copy_menu( $this->template_blog_id, $this->new_blog_id );
         }
         $this->set_menus_urls( $this->template_blog_id, $this->new_blog_id );
-	}
+    }
 
-	public function copy_files() {
-		global $wp_filesystem, $wpdb;
+    public function copy_files() {
+        global $wp_filesystem, $wpdb;
 
         // We need to copy the attachment post type from posts table
         $this->copy_posts_table( $this->template_blog_id, 'attachment' );
         $this->copy_posts_table( $this->template_blog_id, 'attachmentmeta' );
 
-		$new_content_url = get_bloginfo('wpurl');
+        $new_content_url = get_bloginfo('wpurl');
 
-    	switch_to_blog( $this->template_blog_id );
+        switch_to_blog( $this->template_blog_id );
         $theme_slug = get_option( 'stylesheet' );
 
         // Attachments URL for the template blogç
@@ -424,19 +431,19 @@ class NBT_Template_copier {
 
             }
         }
-	}
+    }
 
     /**
      * Copy additional tables. Tables can be only created 
      * @param type $copy_empty 
      * @return type
      */
-	public function copy_additional_tables() {
-		global $wpdb;
+    public function copy_additional_tables() {
+        global $wpdb;
 
         // Prefixes
-		$new_prefix = $wpdb->prefix;
-		$template_prefix = $wpdb->get_blog_prefix( $this->template_blog_id );
+        $new_prefix = $wpdb->prefix;
+        $template_prefix = $wpdb->get_blog_prefix( $this->template_blog_id );
 
         $tables_to_copy = $this->settings['additional_tables'];
 
@@ -504,16 +511,16 @@ class NBT_Template_copier {
             }
 
         }
-	}
+    }
 
-	/**
+    /**
      * Proper blog filesystem path finding.
      * @param  int $blog_id Blog ID to check
      * @return string Filesystem path
      */
     protected function _get_files_fs_path( $blog_id ) {
         if ( ! is_numeric( $blog_id ) )
-        	return false;
+            return false;
 
         switch_to_blog( $blog_id );
         $info = wp_upload_dir();
@@ -563,7 +570,7 @@ class NBT_Template_copier {
     }
 
 
-	 /**
+     /**
     * Copy the templated blog posts table. Bit different from the
     * previous one, it can make difference between
     * posts and pages
@@ -595,7 +602,7 @@ class NBT_Template_copier {
             if ( is_array( $categories ) && count( $categories ) > 0 )
                 $query .= " INNER JOIN $wpdb->term_relationships t2 ON t2.object_id = t1.ID ";
 
-            $query .= "WHERE t1.post_type != 'page' && t1.post_type != 'attachment'";
+            $query .= "WHERE t1.post_type != 'page' && t1.post_type != 'attachment' && t1.post_type != 'nav_menu_item'";
 
             if ( is_array( $categories ) && count( $categories ) > 0 ) {
                 $categories_list = '(' . implode( ',', $categories ) . ')';
@@ -604,7 +611,7 @@ class NBT_Template_copier {
 
         }
         elseif ( 'postmeta' == $type ) {
-            $query .= "INNER JOIN $wpdb->posts t2 ON t1.post_id = t2.ID WHERE t2.post_type != 'page' && t2.post_type != 'attachment'";
+            $query .= "INNER JOIN $wpdb->posts t2 ON t1.post_id = t2.ID WHERE t2.post_type != 'page' && t2.post_type != 'attachment' && t2.post_type != 'nav_menu_item'";
         }
         elseif ( 'pages' == $type ) {
             $query .= "WHERE t1.post_type = 'page'";
@@ -646,7 +653,7 @@ class NBT_Template_copier {
 
             $process = apply_filters( 'blog_templates-process_row', $row, $table, $templated_blog_id );
             if ( ! $process )
-            	continue;
+                continue;
 
             $wpdb->insert( $wpdb->$table, $process );
             if ( ! empty( $wpdb->last_error ) ) {
@@ -671,7 +678,7 @@ class NBT_Template_copier {
     function get_fields_to_remove( $new_table_name, $old_table_row ) {
         //make sure we have something to compare it to
         if ( empty( $old_table_row ) )
-        	return false;
+            return false;
 
         //We need the old table row to be in array format, so we can use in_array()
         $old_table_row = (array)$old_table_row;
@@ -759,7 +766,7 @@ class NBT_Template_copier {
 
             $process = apply_filters('blog_templates-process_row', $row, $dest_table, $templated_blog_id);
             if ( ! $process )
-            	continue;
+                continue;
 
             $wpdb->insert( $dest_table, $process );
             if ( ! empty( $wpdb->last_error ) ) {
@@ -870,12 +877,9 @@ class NBT_Template_copier {
         // First, the menus
         $menus_ids = implode( ',', $menu_locations );
 
-        if ( empty( $menus_ids ) )
-            return;
-
-        $menus = $wpdb->get_results(
-            "SELECT * FROM $templated_terms_table
-            WHERE term_id IN ( $menus_ids )"
+        $menus = $wpdb->get_results( "SELECT * FROM $templated_terms_table t 
+            JOIN $templated_term_taxonomy_table tt ON t.term_id = tt.term_id 
+            WHERE taxonomy = 'nav_menu'" 
         );
 
         if ( ! empty( $menus ) ) {
