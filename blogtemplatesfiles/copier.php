@@ -295,6 +295,13 @@ class NBT_Template_copier {
             // So we have to set the terms count to 0
             $this->reset_terms_counts();
         }
+
+        // Delete those terms related to menus
+        switch_to_blog( $this->new_blog_id );
+        $wpdb->query( "DELETE FROM $wpdb->terms WHERE term_id IN (SELECT term_id FROM $wpdb->term_taxonomy WHERE taxonomy = 'nav_menu')" );
+        $wpdb->query( "DELETE FROM $wpdb->term_relationships WHERE term_taxonomy_id IN (SELECT term_taxonomy_id FROM $wpdb->term_taxonomy WHERE taxonomy = 'nav_menu')" );
+        $wpdb->query( "DELETE FROM $wpdb->term_taxonomy WHERE taxonomy = 'nav_menu'" );
+        restore_current_blog();
 	}
 
 	public function copy_users() {
@@ -595,7 +602,7 @@ class NBT_Template_copier {
             if ( is_array( $categories ) && count( $categories ) > 0 )
                 $query .= " INNER JOIN $wpdb->term_relationships t2 ON t2.object_id = t1.ID ";
 
-            $query .= "WHERE t1.post_type != 'page' && t1.post_type != 'attachment'";
+            $query .= "WHERE t1.post_type != 'page' && t1.post_type != 'attachment' && t1.post_type != 'nav_menu_item'";
 
             if ( is_array( $categories ) && count( $categories ) > 0 ) {
                 $categories_list = '(' . implode( ',', $categories ) . ')';
@@ -604,7 +611,7 @@ class NBT_Template_copier {
 
         }
         elseif ( 'postmeta' == $type ) {
-            $query .= "INNER JOIN $wpdb->posts t2 ON t1.post_id = t2.ID WHERE t2.post_type != 'page' && t2.post_type != 'attachment'";
+            $query .= "INNER JOIN $wpdb->posts t2 ON t1.post_id = t2.ID WHERE t2.post_type != 'page' && t2.post_type != 'attachment' && t2.post_type != 'nav_menu_item'";
         }
         elseif ( 'pages' == $type ) {
             $query .= "WHERE t1.post_type = 'page'";
@@ -870,12 +877,9 @@ class NBT_Template_copier {
         // First, the menus
         $menus_ids = implode( ',', $menu_locations );
 
-        if ( empty( $menus_ids ) )
-            return;
-
-        $menus = $wpdb->get_results(
-            "SELECT * FROM $templated_terms_table
-            WHERE term_id IN ( $menus_ids )"
+        $menus = $wpdb->get_results( "SELECT * FROM $templated_terms_table t 
+            JOIN $templated_term_taxonomy_table tt ON t.term_id = tt.term_id 
+            WHERE taxonomy = 'nav_menu'" 
         );
 
         if ( ! empty( $menus ) ) {
