@@ -102,7 +102,21 @@ class NBT_Template_copier {
 
         $wpdb->query("COMMIT;"); //If we get here, everything's fine. Commit the transaction
 
+        if ( isset( $this->settings['to_copy']['settings'] ) && $this->settings['to_copy']['settings'] ) {
+            switch_to_blog( $this->template_blog_id );
+            $theme_mods = get_theme_mods();
+            restore_current_blog();
+
+            if ( is_array( $theme_mods ) ) {
+                foreach ( $theme_mods as $theme_mod => $value ) {
+                    set_theme_mod( $theme_mod, $value );        
+                }
+            }
+            
+        }
+
         do_action( "blog_templates-copy-after_copying", $this->template, $this->new_blog_id, $this->user_id );
+
         restore_current_blog();
 
 
