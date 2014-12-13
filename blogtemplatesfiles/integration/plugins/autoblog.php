@@ -49,6 +49,7 @@ function nbt_copy_autoblog_feeds( $template ) {
 			// We need to replace the source blog URL for the new one
 			$feed_meta = str_replace( $source_url, $current_url, $feed_meta );
 			$feed_meta = str_replace( $source_url_ssl, $current_url_ssl, $feed_meta );
+			$feed_meta['blog'] = $current_blog_id;
 
 			$row->feed_meta = maybe_serialize( $feed_meta );
 

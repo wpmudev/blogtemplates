@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: New Blog Templates\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-09-16 16:23+0100\n"
-"PO-Revision-Date: 2014-09-16 16:23+0100\n"
+"POT-Creation-Date: 2014-12-13 12:16+0100\n"
+"PO-Revision-Date: 2014-12-13 12:17+0100\n"
 "Last-Translator: Ignacio <igmoweb@gmail.com>\n"
 "Language-Team: WPMU DEV\n"
 "Language: English\n"
@@ -25,6 +25,57 @@ msgstr ""
 
 #: ../blogtemplates.php:227 ../blogtemplates.php:260
 msgid "View demo"
+msgstr ""
+
+#: ../blogtemplatesfiles/model.php:322 ../blogtemplatesfiles/upgrade.php:124
+msgid "Default category"
+msgstr ""
+
+#: ../blogtemplatesfiles/upgrade.php:58
+#: ../blogtemplatesfiles/settings-handler.php:26
+msgid "Select this theme"
+msgstr ""
+
+#: ../blogtemplatesfiles/copier.php:214
+#, php-format
+msgid ""
+"Insertion Error: %s - The template was not applied. (New Blog Templates - "
+"While inserting templated settings)"
+msgstr ""
+
+#: ../blogtemplatesfiles/copier.php:242
+#, php-format
+msgid ""
+"Deletion Error: %s - The template was not applied. (New Blog Templates - "
+"While removing auto-generated settings)"
+msgstr ""
+
+#: ../blogtemplatesfiles/copier.php:441
+#, php-format
+msgid ""
+"File System Error: Unable to create directory %s. (New Blog Templates - "
+"While copying files)"
+msgstr ""
+
+#: ../blogtemplatesfiles/copier.php:521
+#, php-format
+msgid ""
+"Insertion Error: %s - The template was not applied. (New Blog Templates - "
+"With CREATE TABLE query for Additional Tables)"
+msgstr ""
+
+#: ../blogtemplatesfiles/copier.php:674 ../blogtemplatesfiles/copier.php:787
+#, php-format
+msgid ""
+"Insertion Error: %1$s - The template was not applied. (New Blog Templates - "
+"While copying %2$s)"
+msgstr ""
+
+#: ../blogtemplatesfiles/copier.php:740
+#, php-format
+msgid ""
+"Deletion Error: %1$s - The template was not applied. (New Blog Templates - "
+"While clearing %2$s)"
 msgstr ""
 
 #: ../blogtemplatesfiles/helpers.php:43
@@ -56,103 +107,6 @@ msgstr ""
 msgid "There are no additional tables to display for this blog"
 msgstr ""
 
-#: ../blogtemplatesfiles/blog_templates.php:218
-#, php-format
-msgid ""
-"<strong>New Blog Templates alert:</strong> The main site cannot be templated "
-"from 1.7.1 version, please <a href=\"%s\">go to settings page</a> and remove "
-"that template (will not be shown as a choice from now on)"
-msgstr ""
-
-#: ../blogtemplatesfiles/blog_templates.php:243
-#: ../blogtemplatesfiles/blog_templates_theme_selection_toolbar.php:127
-#: ../blogtemplatesfiles/template/blog_templates-registration.php:22
-msgid "None"
-msgstr ""
-
-#: ../blogtemplatesfiles/blog_templates.php:272
-msgid "Template"
-msgstr ""
-
-#: ../blogtemplatesfiles/blog_templates.php:378
-msgid "Default Blog Template"
-msgstr ""
-
-#: ../blogtemplatesfiles/blog_templates.php:381
-msgid "Default"
-msgstr ""
-
-#: ../blogtemplatesfiles/blog_templates.php:389
-msgid "Default Blog Template used for this domain."
-msgstr ""
-
-#: ../blogtemplatesfiles/blog_templates.php:416
-msgid "Blog Template"
-msgstr ""
-
-#: ../blogtemplatesfiles/blog_templates_theme_selection_toolbar.php:33
-msgid "ALL"
-msgstr ""
-
-#: ../blogtemplatesfiles/model.php:322 ../blogtemplatesfiles/upgrade.php:124
-msgid "Default category"
-msgstr ""
-
-#: ../blogtemplatesfiles/copier.php:200
-#, php-format
-msgid ""
-"Insertion Error: %s - The template was not applied. (New Blog Templates - "
-"While inserting templated settings)"
-msgstr ""
-
-#: ../blogtemplatesfiles/copier.php:217
-#, php-format
-msgid ""
-"Deletion Error: %s - The template was not applied. (New Blog Templates - "
-"While removing auto-generated settings)"
-msgstr ""
-
-#: ../blogtemplatesfiles/copier.php:410
-#, php-format
-msgid ""
-"File System Error: Unable to create directory %s. (New Blog Templates - "
-"While copying files)"
-msgstr ""
-
-#: ../blogtemplatesfiles/copier.php:490
-#, php-format
-msgid ""
-"Insertion Error: %s - The template was not applied. (New Blog Templates - "
-"With CREATE TABLE query for Additional Tables)"
-msgstr ""
-
-#: ../blogtemplatesfiles/copier.php:643 ../blogtemplatesfiles/copier.php:756
-#, php-format
-msgid ""
-"Insertion Error: %1$s - The template was not applied. (New Blog Templates - "
-"While copying %2$s)"
-msgstr ""
-
-#: ../blogtemplatesfiles/copier.php:709
-#, php-format
-msgid ""
-"Deletion Error: %1$s - The template was not applied. (New Blog Templates - "
-"While clearing %2$s)"
-msgstr ""
-
-#: ../blogtemplatesfiles/upgrade.php:58
-#: ../blogtemplatesfiles/settings-handler.php:26
-msgid "Select this theme"
-msgstr ""
-
-#: ../blogtemplatesfiles/integration.php:260
-msgid "New Blog Templates"
-msgstr ""
-
-#: ../blogtemplatesfiles/integration.php:262
-msgid "Display Templates Selector"
-msgstr ""
-
 #: ../blogtemplatesfiles/blog_templates_lock_posts.php:43
 msgid "Post Status"
 msgstr ""
@@ -173,118 +127,50 @@ msgstr ""
 msgid "[Blocked by Super Admin]"
 msgstr ""
 
-#: ../blogtemplatesfiles/template/blog_templates-registration.php:12
-#: ../blogtemplatesfiles/template/blog_templates-registration-page-showcase.php:2
-#: ../blogtemplatesfiles/template/blog_templates-registration-screenshot_plus.php:11
-#: ../blogtemplatesfiles/template/blog_templates-registration-screenshot.php:11
-#: ../blogtemplatesfiles/template/blog_templates-registration-previewer.php:2
-#: ../blogtemplatesfiles/template/blog_templates-registration-description.php:14
-msgid "Select a template"
-msgstr ""
-
-#: ../blogtemplatesfiles/template/blog_templates-registration-page-showcase.php:13
-msgid "Just a username, please."
-msgstr ""
-
-#: ../blogtemplatesfiles/admin/settings_menu.php:42
-#: ../blogtemplatesfiles/admin/settings_menu.php:186
-#: ../blogtemplatesfiles/admin/settings_menu.php:188
-#: ../blogtemplatesfiles/admin/settings_menu.php:190
-#: ../blogtemplatesfiles/admin/main_menu.php:373
-#: ../blogtemplatesfiles/admin/main_menu.php:375
-#: ../blogtemplatesfiles/admin/main_menu.php:377
-msgid "Settings"
-msgstr ""
-
-#: ../blogtemplatesfiles/admin/settings_menu.php:63
-msgid "Options"
-msgstr ""
-
-#: ../blogtemplatesfiles/admin/settings_menu.php:65
-msgid "Template selection"
-msgstr ""
-
-#: ../blogtemplatesfiles/admin/settings_menu.php:70
+#: ../blogtemplatesfiles/blog_templates.php:218
+#, php-format
 msgid ""
-"Selecting this option will allow your new users to choose between templates "
-"when they sign up for a site."
+"<strong>New Blog Templates alert:</strong> The main site cannot be templated "
+"from 1.7.1 version, please <a href=\"%s\">go to settings page</a> and remove "
+"that template (will not be shown as a choice from now on)"
 msgstr ""
 
-#: ../blogtemplatesfiles/admin/settings_menu.php:72
-msgid "Show templates selection on registration:"
+#: ../blogtemplatesfiles/blog_templates.php:243
+#: ../blogtemplatesfiles/blog_templates_theme_selection_toolbar.php:127
+#: ../blogtemplatesfiles/template/blog_templates-registration.php:22
+msgid "None"
 msgstr ""
 
-#: ../blogtemplatesfiles/admin/settings_menu.php:93
-msgid "Select a page"
+#: ../blogtemplatesfiles/blog_templates.php:272
+msgid "Template"
 msgstr ""
 
-#: ../blogtemplatesfiles/admin/settings_menu.php:104
-msgid "\"Select this Theme\" button text"
+#: ../blogtemplatesfiles/blog_templates.php:385
+msgid "Default Blog Template"
 msgstr ""
 
-#: ../blogtemplatesfiles/admin/settings_menu.php:111
-msgid "Screenshots width"
+#: ../blogtemplatesfiles/blog_templates.php:388
+msgid "Default"
 msgstr ""
 
-#: ../blogtemplatesfiles/admin/settings_menu.php:115
-msgid "Selected overlay/border color"
+#: ../blogtemplatesfiles/blog_templates.php:396
+msgid "Default Blog Template used for this domain."
 msgstr ""
 
-#: ../blogtemplatesfiles/admin/settings_menu.php:122
-msgid "Unselected background color screenshot"
+#: ../blogtemplatesfiles/blog_templates.php:423
+msgid "Blog Template"
 msgstr ""
 
-#: ../blogtemplatesfiles/admin/settings_menu.php:126
-msgid "Selected background color screenshot"
+#: ../blogtemplatesfiles/integration.php:265
+msgid "New Blog Templates"
 msgstr ""
 
-#: ../blogtemplatesfiles/admin/settings_menu.php:130
-msgid "Type of selection"
+#: ../blogtemplatesfiles/integration.php:267
+msgid "Display Templates Selector"
 msgstr ""
 
-#: ../blogtemplatesfiles/admin/settings_menu.php:134
-msgid "Categories Toolbar"
-msgstr ""
-
-#: ../blogtemplatesfiles/admin/settings_menu.php:139
-msgid ""
-"A new toolbar will appear on to on the selection screen. Users will be able "
-"to filter by templates categories."
-msgstr ""
-
-#: ../blogtemplatesfiles/admin/settings_menu.php:141
-msgid "Show categories menu"
-msgstr ""
-
-#: ../blogtemplatesfiles/admin/settings_menu.php:149
-msgid "Toolbar background color"
-msgstr ""
-
-#: ../blogtemplatesfiles/admin/settings_menu.php:157
-msgid "Toolbar text color"
-msgstr ""
-
-#: ../blogtemplatesfiles/admin/settings_menu.php:165
-msgid "Toolbar border color"
-msgstr ""
-
-#: ../blogtemplatesfiles/admin/settings_menu.php:169
-msgid "Save Settings"
-msgstr ""
-
-#: ../blogtemplatesfiles/admin/settings_menu.php:225
-#: ../blogtemplatesfiles/admin/main_menu.php:412
-#: ../blogtemplatesfiles/admin/main_menu.php:511
-#: ../blogtemplatesfiles/admin/main_menu.php:546
-#: ../blogtemplatesfiles/admin/main_menu.php:560
-#: ../blogtemplatesfiles/admin/main_menu.php:576
-msgid ""
-"Whoops! There was a problem with the data you posted. Please go back and try "
-"again. (Generated by New Blog Templates)"
-msgstr ""
-
-#: ../blogtemplatesfiles/admin/settings_menu.php:258
-msgid "Options saved."
+#: ../blogtemplatesfiles/blog_templates_theme_selection_toolbar.php:33
+msgid "ALL"
 msgstr ""
 
 #: ../blogtemplatesfiles/admin/categories_menu.php:31
@@ -537,6 +423,27 @@ msgstr ""
 msgid "Save template"
 msgstr ""
 
+#: ../blogtemplatesfiles/admin/main_menu.php:373
+#: ../blogtemplatesfiles/admin/main_menu.php:375
+#: ../blogtemplatesfiles/admin/main_menu.php:377
+#: ../blogtemplatesfiles/admin/settings_menu.php:42
+#: ../blogtemplatesfiles/admin/settings_menu.php:186
+#: ../blogtemplatesfiles/admin/settings_menu.php:188
+#: ../blogtemplatesfiles/admin/settings_menu.php:190
+msgid "Settings"
+msgstr ""
+
+#: ../blogtemplatesfiles/admin/main_menu.php:412
+#: ../blogtemplatesfiles/admin/main_menu.php:511
+#: ../blogtemplatesfiles/admin/main_menu.php:546
+#: ../blogtemplatesfiles/admin/main_menu.php:560
+#: ../blogtemplatesfiles/admin/main_menu.php:576
+#: ../blogtemplatesfiles/admin/settings_menu.php:225
+msgid ""
+"Whoops! There was a problem with the data you posted. Please go back and try "
+"again. (Generated by New Blog Templates)"
+msgstr ""
+
 #: ../blogtemplatesfiles/admin/main_menu.php:428
 msgid "The uploaded file is not a valid image. Please try again."
 msgstr ""
@@ -573,22 +480,94 @@ msgstr ""
 msgid "Success! The template was successfully deleted."
 msgstr ""
 
-#: ../blogtemplatesfiles/tables/categories_table.php:32
-msgid "Name"
+#: ../blogtemplatesfiles/admin/settings_menu.php:63
+msgid "Options"
 msgstr ""
 
-#: ../blogtemplatesfiles/tables/categories_table.php:33
-msgid "Description"
+#: ../blogtemplatesfiles/admin/settings_menu.php:65
+msgid "Template selection"
 msgstr ""
 
-#: ../blogtemplatesfiles/tables/categories_table.php:56
+#: ../blogtemplatesfiles/admin/settings_menu.php:70
+msgid ""
+"Selecting this option will allow your new users to choose between templates "
+"when they sign up for a site."
+msgstr ""
+
+#: ../blogtemplatesfiles/admin/settings_menu.php:72
+msgid "Show templates selection on registration:"
+msgstr ""
+
+#: ../blogtemplatesfiles/admin/settings_menu.php:93
+msgid "Select a page"
+msgstr ""
+
+#: ../blogtemplatesfiles/admin/settings_menu.php:104
+msgid "\"Select this Theme\" button text"
+msgstr ""
+
+#: ../blogtemplatesfiles/admin/settings_menu.php:111
+msgid "Screenshots width"
+msgstr ""
+
+#: ../blogtemplatesfiles/admin/settings_menu.php:115
+msgid "Selected overlay/border color"
+msgstr ""
+
+#: ../blogtemplatesfiles/admin/settings_menu.php:122
+msgid "Unselected background color screenshot"
+msgstr ""
+
+#: ../blogtemplatesfiles/admin/settings_menu.php:126
+msgid "Selected background color screenshot"
+msgstr ""
+
+#: ../blogtemplatesfiles/admin/settings_menu.php:130
+msgid "Type of selection"
+msgstr ""
+
+#: ../blogtemplatesfiles/admin/settings_menu.php:134
+msgid "Categories Toolbar"
+msgstr ""
+
+#: ../blogtemplatesfiles/admin/settings_menu.php:139
+msgid ""
+"A new toolbar will appear on to on the selection screen. Users will be able "
+"to filter by templates categories."
+msgstr ""
+
+#: ../blogtemplatesfiles/admin/settings_menu.php:141
+msgid "Show categories menu"
+msgstr ""
+
+#: ../blogtemplatesfiles/admin/settings_menu.php:149
+msgid "Toolbar background color"
+msgstr ""
+
+#: ../blogtemplatesfiles/admin/settings_menu.php:157
+msgid "Toolbar text color"
+msgstr ""
+
+#: ../blogtemplatesfiles/admin/settings_menu.php:165
+msgid "Toolbar border color"
+msgstr ""
+
+#: ../blogtemplatesfiles/admin/settings_menu.php:169
+msgid "Save Settings"
+msgstr ""
+
+#: ../blogtemplatesfiles/admin/settings_menu.php:258
+msgid "Options saved."
+msgstr ""
+
 #: ../blogtemplatesfiles/tables/templates_table.php:68
+#: ../blogtemplatesfiles/tables/categories_table.php:56
 #, php-format
 msgid "<a href=\"%s\">Edit</a>"
 msgstr ""
 
-#: ../blogtemplatesfiles/tables/categories_table.php:62
 #: ../blogtemplatesfiles/tables/templates_table.php:69
+#: ../blogtemplatesfiles/tables/categories_table.php:62
 #, php-format
 msgid "<a href=\"%s\">Delete</a>"
 msgstr ""
@@ -617,4 +596,25 @@ msgstr ""
 
 #: ../blogtemplatesfiles/tables/templates_table.php:105
 msgid "Blog"
+msgstr ""
+
+#: ../blogtemplatesfiles/tables/categories_table.php:32
+msgid "Name"
+msgstr ""
+
+#: ../blogtemplatesfiles/tables/categories_table.php:33
+msgid "Description"
+msgstr ""
+
+#: ../blogtemplatesfiles/template/blog_templates-registration-page-showcase.php:2
+#: ../blogtemplatesfiles/template/blog_templates-registration-screenshot_plus.php:11
+#: ../blogtemplatesfiles/template/blog_templates-registration.php:12
+#: ../blogtemplatesfiles/template/blog_templates-registration-screenshot.php:11
+#: ../blogtemplatesfiles/template/blog_templates-registration-description.php:14
+#: ../blogtemplatesfiles/template/blog_templates-registration-previewer.php:2
+msgid "Select a template"
+msgstr ""
+
+#: ../blogtemplatesfiles/template/blog_templates-registration-page-showcase.php:13
+msgid "Just a username, please."
 msgstr ""
