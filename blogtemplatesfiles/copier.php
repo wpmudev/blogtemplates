@@ -985,7 +985,7 @@ class NBT_Template_copier {
                     WHERE ID IN ( $objects_ids )", ARRAY_N );
 
                 foreach ( $objects as $object ) {
-                    $values = '("' . implode( '","', $object ) . '")';
+                    $values = '("' . implode( '","', esc_sql( $object ) ) . '")';
                     $wpdb->query( "INSERT IGNORE INTO $new_posts_table VALUES $values" );
                 }
 
@@ -995,7 +995,7 @@ class NBT_Template_copier {
                     WHERE post_id IN ( $objects_ids )", ARRAY_N );
 
                 foreach ( $objects_meta as $object_meta ) {
-                    $values = '("' . implode( '","', $object_meta ) . '")';
+                    $values = '("' . implode( '","', esc_sql( $object_meta ) ) . '")';
                     $wpdb->query( "INSERT IGNORE INTO $new_postmeta_table VALUES $values" );
                 }
 
