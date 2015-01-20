@@ -351,3 +351,23 @@ function nbt_hooks_set_https_settings( $template ) {
 	}
 
 }
+
+/** WOOCOMMERCE */
+
+add_filter( 'nbt_copy_files_skip_list', 'nbt_woo_copy_files_skip_list', 10, 2 );
+function nbt_woo_copy_files_skip_list( $skip_list, $dir_to_copy ) {
+	if ( is_file( $dir_to_copy . '/woocommerce_uploads/.htaccess' ) )
+		$skip_list[] = 'woocommerce_uploads/.htaccess';
+
+	return $skip_list;
+}
+
+add_action( "blog_templates-copy-after_copying", 'nbt_woo_after_copy' );
+function nbt_woo_after_copy() {
+	
+	if ( is_file( WP_CONTENT_DIR . '/plugins/woocommerce/includes/admin/class-wc-admin-settings.php' ) )
+		include_once( WP_CONTENT_DIR . '/plugins/woocommerce/includes/admin/class-wc-admin-settings.php' );
+
+	if ( class_exists( 'WC_Admin_Settings' ) )
+		WC_Admin_Settings::check_download_folder_protection();
+}
