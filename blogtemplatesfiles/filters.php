@@ -134,7 +134,7 @@ add_filter('blog_template_exclude_settings', 'blog_template_exclude_epanel_temp_
  */
 function blog_template_add_user_as_admin ($template, $blog_id, $user_id) {
 	if (is_super_admin($user_id)) return false;
-	if (!in_array('users', $template['to_copy'])) return false; // Only apply this if we're trumping over users	
+    if ( empty($template['to_copy']['users']) ) return false; // Only apply this if we're trumping over users
 	return add_user_to_blog($blog_id, $user_id, 'administrator');
 }
 add_action('blog_templates-copy-after_copying', 'blog_template_add_user_as_admin', 10, 3);
@@ -147,7 +147,7 @@ add_action('blog_templates-copy-after_copying', 'blog_template_add_user_as_admin
  * Optionally transfer post ownership to the new or predefined user ID.
  */
 function blog_template_reassign_post_authors ( $template, $blog_id, $user_id ) {
-	if ( ! in_array( 'users', $template['to_copy'] ) ) {
+    if ( empty($template['to_copy']['users']) ) {
 		global $wpdb;
 		$wpdb->query($wpdb->prepare( "UPDATE {$wpdb->posts} SET post_author=%d", $user_id ) );
 	}
