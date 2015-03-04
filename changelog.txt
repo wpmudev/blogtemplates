@@ -7,6 +7,12 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+2.7.5 - 2015-03-04
+----------------------------------------------------------------------
+- Fixed: Incompatibility with WooCommerce
+- Fixed: Escaping queries when copying terms
+- Fixed: Fatal error when creating several blogs at the same time
+
 2.7.4 - 2014-12-13
 ----------------------------------------------------------------------
 - Fixed: Incompatibility with Autoblog
