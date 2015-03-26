@@ -1,49 +1,57 @@
 <?php 
 
-add_action( 'blog_templates-copy-after_copying', 'nbt_convert_cf7_email_fields', 10, 3 );
-function nbt_convert_cf7_email_fields( $template, $new_blog_id, $user_id ) {
-	$source_blog_id = absint( $template['blog_id'] );
-	if ( ! get_blog_details( $source_blog_id ) )
-		return;
 
-	if ( defined( 'NBT_PASSTHROUGH_WPCF7_MAIL_FIELDS' ) && NBT_PASSTHROUGH_WPCF7_MAIL_FIELDS ) 
-		return;
-
-	// Get all CF7 Posts
-	$cf7_posts = get_posts( array(
-		'posts_per_page' => -1,
-		'ignore_sticky_posts' => true,
-		'post_type' => 'wpcf7_contact_form',
-		'post_status' => 'any'
-	) );
-
-	foreach ( $cf7_posts as $post ) {
-
-		switch_to_blog($source_blog_id);
-		$admin_email = get_option( "admin_email" );
-		$site_url = get_bloginfo( 'url' );
-		restore_current_blog();
-
-		$new_site_url = get_bloginfo('url');
-		$new_admin_email = get_option('admin_email');
-
-		$metas = array( '_mail', '_mail_2' );
-		foreach ( $metas as $meta_key ) {
-			$meta_value = get_post_meta( $post->ID, $meta_key, true );
-			if ( ! is_array( $meta_value ) )
-				continue;
-
-			$new_meta_value = $meta_value;
-			foreach ( $meta_value as $key => $value ) {
-				$new_value = preg_replace( '/' . preg_quote( $site_url, '/' ) . '/i', $new_site_url, $value );
-				$new_value = preg_replace( '/' . preg_quote( $admin_email, '/' ) . '/i', $new_admin_email, $new_value );
-
-				$new_meta_value[ $key ] = $new_value;
-
-			}
-
-			update_post_meta( $post->ID, $meta_key, $new_meta_value );
-		}		
-
-	}
+/**
+ * Exclude Contact Form 7 postmeta fields 
+ */
+function blog_template_contact_form7_postmeta ($row, $table) {
+	if ("postmeta" != $table) return $row;
+	
+	$key = @$row['meta_key'];
+	$wpcf7 = array('mail', 'mail_2');
+	if (defined('NBT_PASSTHROUGH_WPCF7_MAIL_FIELDS') && NBT_PASSTHROUGH_WPCF7_MAIL_FIELDS) return $row;
+	if (defined('NBT_CONVERT_WPCF7_MAIL_FIELDS') && NBT_CONVERT_WPCF7_MAIL_FIELDS) return blog_template_convert_wpcf7_mail_fields($row);
+	if (in_array($key, $wpcf7)) return false;
+	
+	return $row;
 }
+
+function blog_template_convert_wpcf7_mail_fields ($row) {
+	global $_blog_template_current_templated_blog_id;
+	if (!$_blog_template_current_templated_blog_id) return $row; // Can't do the replacement
+
+	$value = @$row['meta_value'];
+	$wpcf7 = $value ? unserialize($value) : false;
+	if (!$wpcf7) return $row; // Something went wrong
+
+	// Get convertable values
+	switch_to_blog($_blog_template_current_templated_blog_id);
+	$admin_email = get_option("admin_email");
+	$site_url = get_bloginfo('url');
+	// ... more stuff at some point
+	restore_current_blog();
+
+	// Get target values
+	$new_site_url = get_bloginfo('url');
+	$new_admin_email = get_option('admin_email');
+	// ... more stuff at some point
+	
+	// Do the replace
+	foreach ($wpcf7 as $key => $val) {
+		$val = preg_replace('/' . preg_quote($site_url, '/') . '/i', $new_site_url, $val);
+		$val = preg_replace('/' . preg_quote($admin_email, '/') . '/i', $new_admin_email, $val);
+		$wpcf7[$key] = $val;
+	}
+
+	// Right, so now we have the replaced array - populate it.
+	$row['meta_value'] = serialize($wpcf7);
+	return $row;
+}
+
+
+function blog_template_check_postmeta ($tbl, $templated_blog_id) {
+	global $_blog_template_current_templated_blog_id;
+	$_blog_template_current_templated_blog_id = $templated_blog_id;
+	if ("postmeta" == $tbl) add_filter('blog_templates-process_row', 'blog_template_contact_form7_postmeta', 10, 2);
+}
+add_action('blog_templates-copying_table', 'blog_template_check_postmeta', 10, 2);

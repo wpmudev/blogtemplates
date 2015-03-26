@@ -24,3 +24,4 @@ $integration_files = apply_filters( 'blog_templates_integration_files', $integra
 foreach ( $integration_files as $file ) {
 	if ( is_file( NBT_PLUGIN_DIR . 'blogtemplatesfiles/integration/' . $file ) )
 		include_once( NBT_PLUGIN_DIR . 'blogtemplatesfiles/integration/' . $file );
+

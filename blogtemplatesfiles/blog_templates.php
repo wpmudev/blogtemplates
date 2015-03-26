@@ -346,7 +346,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             switch_to_blog( $blog_id ); //Switch to the blog that was just created            
 
-            include( 'copier.php' );
+            include_once( 'copier.php' );
 
             $copier_args = array();
             foreach( $template['to_copy'] as $value ) {
