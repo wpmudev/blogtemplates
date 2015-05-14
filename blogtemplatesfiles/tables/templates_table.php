@@ -18,11 +18,16 @@ class NBT_Templates_Table extends WP_List_Table {
     }
 
 
-    function column_default( $item, $column_name ){
+    function column_default( $item, $column_name ) {
+        $content = '';
         switch($column_name){
-            default:
-                return $item[ $column_name ];
+            default: {
+                if ( isset( $item[ $column_name ] ) )
+                    $content = $item[ $column_name ];
+            }
         }
+        
+        return apply_filters( 'blog_templates-templates_table_custom_column', $content, $item, $column_name );
     }
 
     function column_name( $item ) {
@@ -103,10 +108,9 @@ class NBT_Templates_Table extends WP_List_Table {
         $columns = array(
             'name'          => __( 'Template Name', $this->localization_domain ),
             'blog'          => __( 'Blog', $this->localization_domain ),
-            //'categories'    => __( 'Categories', $this->localization_domain ),
             'screenshot'    => __( 'Screenshot', $this->localization_domain ),
         );
-        return $columns;
+        return apply_filters( 'blog_templates-templates_table_columns', $columns );
     }
 
     function prepare_items() {
