@@ -1,11 +1,16 @@
 Plugin Name: New Blog Templates
 Author: WPMU DEV
 Requires at least: 3.8
-Tested up to: 4.1
+Tested up to: 4.2.2
 
 Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
+
+2.7.6 - 2015-05-14
+----------------------------------------------------------------------
+- Fixed: Plugin was deleting source plugin tables when the plugin creates the tables before NBT starts to copy
+- Added new filters to manage admin templates columns.
 
 2.7.5 - 2015-03-04
 ----------------------------------------------------------------------
