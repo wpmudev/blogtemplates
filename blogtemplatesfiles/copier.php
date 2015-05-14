@@ -487,11 +487,11 @@ class NBT_Template_copier {
             if ( ! empty( $result ) ) {
                 // The table is already present in the new blog
                 // Clear it
-                $this->clear_table( $tablebase );
+                $this->clear_table( $new_table );
 
                 if ( $add ) {
                     // And copy the content if needed
-                    $this->copy_table( $this->template['blog_id'], $tablebase );
+                    $this->copy_table( $this->template['blog_id'], $new_table );
                 }
             }
             else {
