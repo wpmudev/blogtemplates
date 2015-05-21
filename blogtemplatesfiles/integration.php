@@ -371,3 +371,34 @@ function nbt_woo_after_copy() {
 	if ( class_exists( 'WC_Admin_Settings' ) )
 		WC_Admin_Settings::check_download_folder_protection();
 }
+
+add_action( "blog_templates-copy-after_copying", 'nbt_upfront_copy_options', 10, 2 );
+function nbt_upfront_copy_options( $template, $destination_blog_id ) {
+	global $wpdb;
+
+	$source_blog_id = absint( $template['blog_id'] );
+
+	switch_to_blog( $destination_blog_id );
+	$theme_name = wp_get_theme();
+	restore_current_blog();
+
+	if ( $theme_name->Template === 'upfront' ) {
+		$source_url = get_site_url( $source_blog_id );
+		$destination_url = get_site_url( $destination_blog_id );
+		$source_url = preg_replace( '/^https?\:\/\//', '', $source_url );
+		$destination_url = preg_replace( '/^https?\:\/\//', '', $destination_url );
+		
+		$results = $wpdb->get_col( "SELECT option_name FROM $wpdb->options WHERE option_name LIKE '$theme_name%'");	
+
+		foreach ( $results as $option_name ) {
+			$json_value = get_option( $option_name );
+			$value = json_decode( $json_value );
+			if ( is_object( $value ) ) {
+
+				$json_value = str_replace( $source_url, $destination_url, $json_value );
+				update_option( $option_name, $json_value );
+			}
+		}
+	}
+}
+
