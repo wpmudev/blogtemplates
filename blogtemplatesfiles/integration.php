@@ -372,6 +372,9 @@ function nbt_woo_after_copy() {
 		WC_Admin_Settings::check_download_folder_protection();
 }
 
+/**
+ * UPFRONT
+ */
 add_action( "blog_templates-copy-after_copying", 'nbt_upfront_copy_options', 10, 2 );
 function nbt_upfront_copy_options( $template, $destination_blog_id ) {
 	global $wpdb;
