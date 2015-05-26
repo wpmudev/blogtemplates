@@ -610,3 +610,10 @@ function nbt_activate_plugin() {
 	$model->create_tables();
 	update_site_option( 'nbt_plugin_version', NBT_PLUGIN_VERSION );
 }
+
+
+function nbt_debug( $m ) {
+	echo '<pre>';
+	print_r( $m ); 
+	echo '</pre>';
+}
