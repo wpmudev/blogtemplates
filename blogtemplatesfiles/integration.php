@@ -41,11 +41,6 @@ function nbt_appplus_unregister_action() {
 	}
 }
 
-add_filter( 'blog_template_exclude_settings', 'nbt_popover_remove_install_setting', 10, 1 );
-function nbt_popover_remove_install_setting( $query ) {
-	$query .= " AND `option_name` != 'popover_installed' ";
-	return $query;
-}
 
 // Framemarket theme
 add_filter( 'framemarket_list_shops', 'nbt_framemarket_list_shops' );
@@ -403,6 +398,35 @@ function nbt_upfront_copy_options( $template, $destination_blog_id ) {
 				update_option( $option_name, $json_value );
 			}
 		}
+	}
+}
+
+
+//POPUP PRO
+add_filter( 'nbt_copier_settings', 'nbt_popover_template_settings', 10, 3 );
+function nbt_popover_template_settings( $settings, $src_blog_id, $new_blog_id ) {
+	global $wpdb;
+
+	switch_to_blog( $src_blog_id );
+	if ( ! function_exists( 'is_plugin_active' ) )
+		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+
+	if ( in_array( 'settings', $settings['to_copy'] ) && is_plugin_active( 'popover/popover.php' ) ) {
+		if ( ! in_array( $wpdb->prefix . 'popover_ip_cache', $settings['additional_tables'] ) )
+			$settings['additional_tables'][] = $wpdb->prefix . 'popover_ip_cache';
+	}
+
+	restore_current_blog();
+	return $settings;
+}
+//add_action( 'blog_templates-copy-after_copying', 'nbt_popover_copy_settings', 10, 2 );
+function nbt_popover_copy_settings( $template, $new_blog_id ) {
+	if ( in_array( 'settings', $template['to_copy'] ) ) {
+		$popup_options = get_blog_option( $template['blog_id'], 'inc_popup-config' );
+		if ( ! $popup_options )
+			return;
+
+		update_option( 'inc_popup-config', $popup_options );
 	}
 }
 
