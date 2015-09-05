@@ -91,7 +91,7 @@ function nbt_get_default_screenshot_url( $blog_id ) {
 function nbt_display_page_showcase( $content ) {
 	if ( is_page() ) {
 		$settings = nbt_get_settings();
-		if ( 'page_showcase' == $settings['registration-templates-appearance'] && is_page( $settings['page-showcase-id'] ) ) {
+		if ( 'page_showcase' == $settings['registration-templates-appearance'] && is_page( $settings['page-showcase-id'] ) && is_main_site() ) {
 			
             $tpl_file = "blog_templates-registration-page-showcase.php";
             $templates = $settings['templates'];
