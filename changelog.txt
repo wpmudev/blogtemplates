@@ -1,11 +1,15 @@
 Plugin Name: New Blog Templates
 Author: WPMU DEV
 Requires at least: 3.8
-Tested up to: 4.2.2
+Tested up to: 4.3
 
 Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
+
+2.7.9 - 2015-09-05
+----------------------------------------------------------------------
+- Fixed: Themes showcase was appearing in all blogs when the pages ID were the same than selected one in main blog
 
 2.7.8 - 2015-08-22
 ----------------------------------------------------------------------
