@@ -172,6 +172,10 @@ function nbt_bp_redirect_signup_location() {
 	if ( is_admin() || ! bp_has_custom_signup_page() )
 		return;
 
+	// If the user has selected a template, do not redirect.
+	if ( isset( $_GET['blog_template'] ) )
+		return;
+
 	$signup_slug = bp_get_signup_slug();
 	if ( ! $signup_slug )
 		return;
@@ -198,7 +202,7 @@ function nbt_bp_redirect_signup_location() {
 	}
 	
 }
-add_filter( 'template_redirect', 'nbt_bp_redirect_signup_location', 15 );
+add_action( 'template_redirect', 'nbt_bp_redirect_signup_location', 15 );
 
 function nbt_render_theme_selection_item( $type, $tkey, $template, $options = array() ) {
 

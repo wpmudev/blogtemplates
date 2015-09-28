@@ -430,3 +430,31 @@ function nbt_popover_copy_settings( $template, $new_blog_id ) {
 	}
 }
 
+
+/**
+ * PRO SITES
+ */
+add_filter( 'psts_setting_checkout_url', 'nbt_pro_sites_checkout_url' );
+function nbt_pro_sites_checkout_url( $value ) {
+	global $pagenow, $psts;
+
+	if ( ! is_object( $psts ) )
+		return $value;
+
+	$show_signup = $psts->get_setting( 'show_signup' );
+
+	if ( ! is_admin() && 'wp-signup.php' == $pagenow && $show_signup && isset( $_REQUEST['blog_template'] ) ) {
+		$value = add_query_arg( 'blog_template', $_REQUEST['blog_template'], $value );
+	}
+
+	return $value;
+}
+
+add_filter( 'psts_redirect_signup_page_url', 'nbt_pro_sites_checkout_url' );
+function nbt_pro_sites_checkout_url( $url ) {
+	if ( isset( $_REQUEST['blog_template'] ) ) {
+		$url = add_query_arg( 'blog_template', $_REQUEST['blog_template'], $url );
+	}
+
+	return $url;
+}
