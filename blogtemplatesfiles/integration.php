@@ -434,8 +434,8 @@ function nbt_popover_copy_settings( $template, $new_blog_id ) {
 /**
  * PRO SITES
  */
-add_filter( 'psts_setting_checkout_url', 'nbt_pro_sites_checkout_url' );
-function nbt_pro_sites_checkout_url( $value ) {
+add_filter( 'psts_setting_checkout_url', 'nbt_pro_sites_checkout_url_setting' );
+function nbt_pro_sites_checkout_url_setting( $value ) {
 	global $pagenow, $psts;
 
 	if ( ! is_object( $psts ) )
