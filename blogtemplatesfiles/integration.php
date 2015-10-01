@@ -390,6 +390,9 @@ function nbt_upfront_copy_options( $template, $destination_blog_id ) {
 
 		foreach ( $results as $option_name ) {
 			$json_value = get_option( $option_name );
+			if ( ! is_string( $json_value ) )
+				continue;
+			
 			$value = json_decode( $json_value );
 
 			
