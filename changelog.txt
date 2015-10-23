@@ -7,6 +7,11 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+2.7.10 - 2015-10-23
+----------------------------------------------------------------------
+- Enhancement: Better Pro Sites Integration
+- Fixed: Upfront Integration warning
+
 2.7.9 - 2015-09-05
 ----------------------------------------------------------------------
 - Fixed: Themes showcase was appearing in all blogs when the pages ID were the same than selected one in main blog
