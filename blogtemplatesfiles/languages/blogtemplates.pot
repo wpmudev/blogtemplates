@@ -1,0 +1,617 @@
+# Copyright (C) 2016 New Blog Templates
+# This file is distributed under the same license as the New Blog Templates package.
+msgid ""
+msgstr ""
+"Project-Id-Version: New Blog Templates 2.8.1\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/blogtemplates\n"
+"POT-Creation-Date: 2016-03-17 17:16:09+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2016-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+
+#: blogtemplates.php:34
+msgid ""
+"The New Blog Template plugin is only compatible with WordPress Multisite."
+msgstr ""
+
+#: blogtemplates.php:231 blogtemplates.php:264
+msgid "View demo"
+msgstr ""
+
+#: blogtemplatesfiles/admin/categories_menu.php:31
+#: blogtemplatesfiles/admin/main_menu.php:334
+msgid "Template categories"
+msgstr ""
+
+#: blogtemplatesfiles/admin/categories_menu.php:44
+msgid "Changes have been applied"
+msgstr ""
+
+#: blogtemplatesfiles/admin/categories_menu.php:60
+msgid "The category does not exist"
+msgstr ""
+
+#: blogtemplatesfiles/admin/categories_menu.php:70
+msgid "Category name"
+msgstr ""
+
+#: blogtemplatesfiles/admin/categories_menu.php:78
+msgid "Category description"
+msgstr ""
+
+#: blogtemplatesfiles/admin/categories_menu.php:105
+msgid "Add new category"
+msgstr ""
+
+#: blogtemplatesfiles/admin/categories_menu.php:109
+msgid "Category Name"
+msgstr ""
+
+#: blogtemplatesfiles/admin/categories_menu.php:114
+msgid "Category Description"
+msgstr ""
+
+#: blogtemplatesfiles/admin/categories_menu.php:118
+msgid "Add New Category"
+msgstr ""
+
+#: blogtemplatesfiles/admin/categories_menu.php:133
+#: blogtemplatesfiles/admin/categories_menu.php:153
+msgid "Security check error"
+msgstr ""
+
+#: blogtemplatesfiles/admin/categories_menu.php:147
+#: blogtemplatesfiles/admin/categories_menu.php:167
+msgid "Name cannot be empty"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:58
+#: blogtemplatesfiles/admin/main_menu.php:127
+msgid "Blog Templates"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:67
+msgid "Templates"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:75
+msgid "All categories"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:94
+msgid "All pages"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:134
+msgid "Create New Blog Template"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:135
+msgid ""
+"Create a blog template based on the blog of your choice! This allows you "
+"(and other admins) to copy all of the selected blog's settings and allow you "
+"to create other blogs that are almost exact copies of that blog. (Blog name, "
+"URL, etc will change, so it's not a 100% copy)"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:136
+msgid ""
+"Simply fill out the form below and click \"Create Blog Template!\" to "
+"generate the template for later use!"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:140
+#: blogtemplatesfiles/admin/main_menu.php:184
+msgid "Template Name:"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:143
+msgid "Blog ID"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:145
+msgid "Or search by blog path"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:147
+msgid ""
+"For example, if the blog you are searching has an URL like http://ablog."
+"mydomain.com, you can type \"ablog\""
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:150
+msgid "Blog ID:"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:154
+msgid "Template Description:"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:158
+msgid ""
+"After you add this template, a set of options will show up on the edit "
+"screen."
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:160
+msgid "More options"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:163
+msgid ""
+"Please note that this will turn the blog you selected into a template blog. "
+"Any changes you make to this blog will change the template, as well! We "
+"recommend creating specific \"Template Blogs\" for this purpose, so you "
+"don't accidentally add new settings, content, or users that you don't want "
+"in your template."
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:164
+msgid ""
+"This means that if you would like to create a dedicated template blog for "
+"this template, please <a href=\"%1$s\">create a new blog</a> and then visit "
+"this page to create the template."
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:166
+msgid "Create Blog Template!"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:175
+msgid "Edit Blog Template"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:176
+msgid "Back to Blog Templates"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:188
+msgid "Template Description"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:194
+msgid "Wordpress Settings, Current Theme, and Active Plugins"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:198
+msgid "Posts"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:202
+msgid "Pages"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:206
+msgid "Categories, Tags, and Links"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:210
+msgid "Users"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:214
+msgid "Menus"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:218
+msgid "Files"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:236
+msgid "What To Copy To New Blog?"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:242
+msgid "Check if you want also to copy the blog status (Public or not)"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:243
+msgid "Copy Status?"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:249
+msgid ""
+"If selected, pages and posts included in the template will not be allowed to "
+"be edited (even for the blog administrator). Only Super Admins will be able "
+"to edit the text of copied posts/pages."
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:250
+msgid "Lock Posts/Pages"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:256
+msgid ""
+"If selected, the dates of the posts/pages will be updated to the date when "
+"the blog is created"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:258
+msgid "Update dates"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:272
+msgid "Upload new screenshot"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:275
+msgid "Reset screenshot"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:277
+#: blogtemplatesfiles/tables/templates_table.php:111
+msgid "Screenshot"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:281
+msgid "Advanced Options"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:288
+msgid ""
+"The tables listed here were likely created by plugins you currently have or "
+"have had running on this blog. If you want the data from these tables copied "
+"over to your new blogs, add a checkmark next to the table. Note that the "
+"only tables displayed here begin with %s, which is the standard table prefix "
+"for this specific blog. Plugins not following this convention will not have "
+"their tables listed here."
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:308
+#: blogtemplatesfiles/helpers.php:159
+msgid "There are no additional tables to display for this blog"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:313
+msgid "Additional Tables"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:354
+msgid "Save template"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:373
+#: blogtemplatesfiles/admin/main_menu.php:375
+#: blogtemplatesfiles/admin/main_menu.php:377
+#: blogtemplatesfiles/admin/settings_menu.php:42
+#: blogtemplatesfiles/admin/settings_menu.php:186
+#: blogtemplatesfiles/admin/settings_menu.php:188
+#: blogtemplatesfiles/admin/settings_menu.php:190
+msgid "Settings"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:412
+#: blogtemplatesfiles/admin/main_menu.php:511
+#: blogtemplatesfiles/admin/main_menu.php:546
+#: blogtemplatesfiles/admin/main_menu.php:560
+#: blogtemplatesfiles/admin/main_menu.php:576
+#: blogtemplatesfiles/admin/settings_menu.php:225
+msgid ""
+"Whoops! There was a problem with the data you posted. Please go back and try "
+"again. (Generated by New Blog Templates)"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:428
+msgid "The uploaded file is not a valid image. Please try again."
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:506
+msgid "Your changes were successfully saved!"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:514
+msgid ""
+"Whoops! The blog ID you posted is incorrect. Please go back and try again. "
+"(Generated by New Blog Templates)"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:517
+msgid ""
+"Whoops! The blog ID you posted is incorrect. You cannot template the main "
+"site. Please go back and try again. (Generated by New Blog Templates)"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:519
+msgid "A template"
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:554
+msgid "The default template was successfully turned off."
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:570
+msgid "The default template was successfully updated."
+msgstr ""
+
+#: blogtemplatesfiles/admin/main_menu.php:580
+msgid "Success! The template was successfully deleted."
+msgstr ""
+
+#: blogtemplatesfiles/admin/settings_menu.php:63
+msgid "Options"
+msgstr ""
+
+#: blogtemplatesfiles/admin/settings_menu.php:65
+msgid "Template selection"
+msgstr ""
+
+#: blogtemplatesfiles/admin/settings_menu.php:70
+msgid ""
+"Selecting this option will allow your new users to choose between templates "
+"when they sign up for a site."
+msgstr ""
+
+#: blogtemplatesfiles/admin/settings_menu.php:72
+msgid "Show templates selection on registration:"
+msgstr ""
+
+#: blogtemplatesfiles/admin/settings_menu.php:93
+msgid "Select a page"
+msgstr ""
+
+#: blogtemplatesfiles/admin/settings_menu.php:104
+msgid "\"Select this Theme\" button text"
+msgstr ""
+
+#: blogtemplatesfiles/admin/settings_menu.php:111
+msgid "Screenshots width"
+msgstr ""
+
+#: blogtemplatesfiles/admin/settings_menu.php:115
+msgid "Selected overlay/border color"
+msgstr ""
+
+#: blogtemplatesfiles/admin/settings_menu.php:122
+msgid "Unselected background color screenshot"
+msgstr ""
+
+#: blogtemplatesfiles/admin/settings_menu.php:126
+msgid "Selected background color screenshot"
+msgstr ""
+
+#: blogtemplatesfiles/admin/settings_menu.php:130
+msgid "Type of selection"
+msgstr ""
+
+#: blogtemplatesfiles/admin/settings_menu.php:134
+msgid "Categories Toolbar"
+msgstr ""
+
+#: blogtemplatesfiles/admin/settings_menu.php:139
+msgid ""
+"A new toolbar will appear on to on the selection screen. Users will be able "
+"to filter by templates categories."
+msgstr ""
+
+#: blogtemplatesfiles/admin/settings_menu.php:141
+msgid "Show categories menu"
+msgstr ""
+
+#: blogtemplatesfiles/admin/settings_menu.php:149
+msgid "Toolbar background color"
+msgstr ""
+
+#: blogtemplatesfiles/admin/settings_menu.php:157
+msgid "Toolbar text color"
+msgstr ""
+
+#: blogtemplatesfiles/admin/settings_menu.php:165
+msgid "Toolbar border color"
+msgstr ""
+
+#: blogtemplatesfiles/admin/settings_menu.php:258
+msgid "Options saved."
+msgstr ""
+
+#: blogtemplatesfiles/blog_templates.php:218
+msgid ""
+"<strong>New Blog Templates alert:</strong> The main site cannot be templated "
+"from 1.7.1 version, please <a href=\"%s\">go to settings page</a> and remove "
+"that template (will not be shown as a choice from now on)"
+msgstr ""
+
+#: blogtemplatesfiles/blog_templates.php:243
+#: blogtemplatesfiles/blog_templates_theme_selection_toolbar.php:127
+#: blogtemplatesfiles/template/blog_templates-registration.php:22
+msgid "None"
+msgstr ""
+
+#: blogtemplatesfiles/blog_templates.php:272
+msgid "Template"
+msgstr ""
+
+#: blogtemplatesfiles/blog_templates.php:385
+msgid "Default Blog Template"
+msgstr ""
+
+#: blogtemplatesfiles/blog_templates.php:388
+msgid "Default"
+msgstr ""
+
+#: blogtemplatesfiles/blog_templates.php:396
+msgid "Default Blog Template used for this domain."
+msgstr ""
+
+#: blogtemplatesfiles/blog_templates.php:423
+msgid "Blog Template"
+msgstr ""
+
+#: blogtemplatesfiles/blog_templates_lock_posts.php:43
+msgid "Post Status"
+msgstr ""
+
+#: blogtemplatesfiles/blog_templates_lock_posts.php:63
+msgid "Locked"
+msgstr ""
+
+#: blogtemplatesfiles/blog_templates_lock_posts.php:64
+msgid "Unlocked"
+msgstr ""
+
+#: blogtemplatesfiles/blog_templates_lock_posts.php:66
+msgid "Locked posts cannot be edited by anyone other than Super admins."
+msgstr ""
+
+#: blogtemplatesfiles/blog_templates_lock_posts.php:114
+msgid "[Blocked by Super Admin]"
+msgstr ""
+
+#: blogtemplatesfiles/blog_templates_theme_selection_toolbar.php:33
+msgid "ALL"
+msgstr ""
+
+#: blogtemplatesfiles/copier.php:214
+msgid ""
+"Insertion Error: %s - The template was not applied. (New Blog Templates - "
+"While inserting templated settings)"
+msgstr ""
+
+#: blogtemplatesfiles/copier.php:242
+msgid ""
+"Deletion Error: %s - The template was not applied. (New Blog Templates - "
+"While removing auto-generated settings)"
+msgstr ""
+
+#: blogtemplatesfiles/copier.php:441
+msgid ""
+"File System Error: Unable to create directory %s. (New Blog Templates - "
+"While copying files)"
+msgstr ""
+
+#: blogtemplatesfiles/copier.php:521
+msgid ""
+"Insertion Error: %s - The template was not applied. (New Blog Templates - "
+"With CREATE TABLE query for Additional Tables)"
+msgstr ""
+
+#: blogtemplatesfiles/copier.php:674 blogtemplatesfiles/copier.php:787
+msgid ""
+"Insertion Error: %1$s - The template was not applied. (New Blog Templates - "
+"While copying %2$s)"
+msgstr ""
+
+#: blogtemplatesfiles/copier.php:740
+msgid ""
+"Deletion Error: %1$s - The template was not applied. (New Blog Templates - "
+"While clearing %2$s)"
+msgstr ""
+
+#: blogtemplatesfiles/helpers.php:43
+msgid "As simple selection box"
+msgstr ""
+
+#: blogtemplatesfiles/helpers.php:44
+msgid "As radio-box selection with descriptions"
+msgstr ""
+
+#: blogtemplatesfiles/helpers.php:45
+msgid "As theme screenshot selection"
+msgstr ""
+
+#: blogtemplatesfiles/helpers.php:46
+msgid "As theme screenshot selection with titles and description"
+msgstr ""
+
+#: blogtemplatesfiles/helpers.php:47
+msgid "As a theme previewer"
+msgstr ""
+
+#: blogtemplatesfiles/helpers.php:48
+msgid "As a showcase inside a page"
+msgstr ""
+
+#. #-#-#-#-#  blogtemplates.pot (New Blog Templates 2.8.1)  #-#-#-#-#
+#. Plugin Name of the plugin/theme
+#: blogtemplatesfiles/integration/gravity-forms.php:84
+msgid "New Blog Templates"
+msgstr ""
+
+#: blogtemplatesfiles/integration/gravity-forms.php:90
+#: blogtemplatesfiles/integration/gravity-forms.php:94
+msgid "Display Templates Selector"
+msgstr ""
+
+#: blogtemplatesfiles/model.php:322 blogtemplatesfiles/upgrade.php:124
+msgid "Default category"
+msgstr ""
+
+#: blogtemplatesfiles/settings-handler.php:26
+#: blogtemplatesfiles/upgrade.php:58
+msgid "Select this theme"
+msgstr ""
+
+#: blogtemplatesfiles/tables/categories_table.php:32
+msgid "Name"
+msgstr ""
+
+#: blogtemplatesfiles/tables/categories_table.php:33
+msgid "Description"
+msgstr ""
+
+#: blogtemplatesfiles/tables/categories_table.php:56
+#: blogtemplatesfiles/tables/templates_table.php:73
+msgid "<a href=\"%s\">Edit</a>"
+msgstr ""
+
+#: blogtemplatesfiles/tables/categories_table.php:62
+#: blogtemplatesfiles/tables/templates_table.php:74
+msgid "<a href=\"%s\">Delete</a>"
+msgstr ""
+
+#: blogtemplatesfiles/tables/templates_table.php:78
+msgid "<a href=\"%s\">Remove default</a>"
+msgstr ""
+
+#: blogtemplatesfiles/tables/templates_table.php:79
+msgid "(Default)"
+msgstr ""
+
+#: blogtemplatesfiles/tables/templates_table.php:82
+msgid "<a href=\"%s\">Make default</a>"
+msgstr ""
+
+#: blogtemplatesfiles/tables/templates_table.php:94
+msgid "Go to Dashboard"
+msgstr ""
+
+#: blogtemplatesfiles/tables/templates_table.php:109
+msgid "Template Name"
+msgstr ""
+
+#: blogtemplatesfiles/tables/templates_table.php:110
+msgid "Blog"
+msgstr ""
+
+#: blogtemplatesfiles/template/blog_templates-registration-description.php:14
+#: blogtemplatesfiles/template/blog_templates-registration-page-showcase.php:2
+#: blogtemplatesfiles/template/blog_templates-registration-previewer.php:2
+#: blogtemplatesfiles/template/blog_templates-registration-screenshot.php:11
+#: blogtemplatesfiles/template/blog_templates-registration-screenshot_plus.php:11
+#: blogtemplatesfiles/template/blog_templates-registration.php:12
+msgid "Select a template"
+msgstr ""
+
+#: blogtemplatesfiles/template/blog_templates-registration-page-showcase.php:13
+msgid "Just a username, please."
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "http://premium.wpmudev.org/project/new-blog-template"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid ""
+"Allows the site admin to create new blogs based on templates, to speed up "
+"the blog creation process"
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "WPMU DEV"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "http://premium.wpmudev.org/"
+msgstr ""
