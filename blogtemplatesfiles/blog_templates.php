@@ -498,8 +498,10 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
 
             $tpl_file_suffix = $settings['registration-templates-appearance'] ? '-' . $settings['registration-templates-appearance'] : '';
+            if ( '-page_showcase' === $tpl_file_suffix ) {
+                $tpl_file_suffix = '-page-showcase';
+            }
             $tpl_file = "blog_templates-registration{$tpl_file_suffix}.php";
-
 
             // Setup theme file
             $theme_file = locate_template( array( $tpl_file ) );
