@@ -77,7 +77,7 @@ function nbt_get_additional_tables( $blog_id ) {
     // Get all the tables for that blog
     $results = $wpdb->get_results("SHOW TABLES LIKE '{$pfx}%'", ARRAY_N);
 
-    $default_tables = array( 'posts', 'comments', 'links', 'options', 'postmeta', 'terms', 'term_taxonomy', 'term_relationships', 'commentmeta' );
+    $default_tables = array( 'posts', 'comments', 'links', 'options', 'postmeta', 'terms', 'term_taxonomy', 'termmeta', 'term_relationships', 'commentmeta' );
 
     $tables = array();
     if ( ! empty( $results ) ) {
