@@ -501,7 +501,15 @@ class NBT_Template_copier {
 
                 if ( $create_script && preg_match( '/\(.*\)/s', $create_script, $match ) ) {
                     $table_body = $match[0];
-                    $wpdb->query( "CREATE TABLE IF NOT EXISTS {$new_table} {$table_body}" );
+                    /**
+                     * Allows to filter the query of the table creation
+                     *
+                     * @param string $query Current query to create the table
+                     * @param string $new_table The name of the new table that will be created
+                     * @param string $table Source table name
+                     */
+                    $create_table_query = apply_filters( 'nbt_create_additional_table_query', "CREATE TABLE IF NOT EXISTS {$new_table} {$table_body}", $new_table, $table );
+                    $wpdb->query( $create_table_query );
 
                     if ( $add ) {
                         // And copy the content if needed
