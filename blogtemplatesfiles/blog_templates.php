@@ -449,7 +449,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
         function maybe_add_template_hidden_field() {
             $settings = nbt_get_settings();
             if ( 'page_showcase' == $settings['registration-templates-appearance'] ) {
-                if ( 'just_user' == $_REQUEST['blog_template'] ) {
+                if ( isset( $_REQUEST['blog_template'] ) && 'just_user' == $_REQUEST['blog_template'] ) {
                     ?>
                         <input type="text" name="blog_template" value="just_user">
                         <script>
@@ -465,7 +465,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
                 else {
                     $value = isset( $_REQUEST['blog_template'] ) ? $_REQUEST['blog_template'] : '';
                     ?>
-                        <input type="hidden" name="blog_template" value="<?php echo absint( $_REQUEST['blog_template'] ); ?>">
+                        <input type="hidden" name="blog_template" value="<?php echo absint( $value ); ?>">
                     <?php
                 }
                 return;

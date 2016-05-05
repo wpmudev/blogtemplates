@@ -120,6 +120,10 @@ add_filter( 'the_content', 'nbt_display_page_showcase' );
 function nbt_get_showcase_redirection_location( $location = false ) {
 	$settings = nbt_get_settings();
 
+	if ( ! $settings['show-registration-templates'] ) {
+		return false;
+	}
+
 	if ( 'page_showcase' !== $settings['registration-templates-appearance'] )
 		return $location;
 
