@@ -180,7 +180,7 @@ class blog_templates_main_menu {
 			            		<div id="post-body-content">
 					            	<table class="form-table">
 						               	 <?php ob_start(); ?>
-						                    <input name="template_name" type="text" id="template_name" class="regular-text" value="<?php esc_attr_e( $template['name'] );?>"/>
+						                    <input name="template_name" type="text" id="template_name" class="regular-text" value="<?php esc_attr_e( $template['name'], 'blog_templates' );?>"/>
 						                <?php $this->render_row( __( 'Template Name:', 'blog_templates' ), ob_get_clean() ); ?>
 
 						                <?php ob_start(); ?>
@@ -331,7 +331,7 @@ class blog_templates_main_menu {
 						            <div id="postbox-container-1" class="postbox-container">
 										<div id="side-sortables" class="meta-box-sortables ui-sortable">
 											<div id="categorydiv" class="postbox ">
-												<div class="handlediv" title=""><br></div><h3 class="hndle"><span><?php _e( 'Template categories' ); ?></span></h3>
+												<div class="handlediv" title=""><br></div><h3 class="hndle"><span><?php _e( 'Template categories', 'blog_templates' ); ?></span></h3>
 												<div class="inside">
 													<div id="taxonomy-category" class="categorydiv">
 														<div id="category-all" class="tabs-panel">
@@ -425,7 +425,7 @@ class blog_templates_main_menu {
                 	$uploaded_file = $_FILES['screenshot'];
                 	$wp_filetype = wp_check_filetype_and_ext( $uploaded_file['tmp_name'], $uploaded_file['name'], false );
 					if ( ! wp_match_mime_types( 'image', $wp_filetype['type'] ) )
-						wp_die( '<div class="error"><p>' . __( 'The uploaded file is not a valid image. Please try again.' ) . '</p></div>' );
+						wp_die( '<div class="error"><p>' . __( 'The uploaded file is not a valid image. Please try again.', 'blog_templates' ) . '</p></div>' );
 
 					$movefile = wp_handle_upload( $uploaded_file, array( 'test_form' => false ) );
 

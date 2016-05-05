@@ -1,0 +1,31 @@
+{
+  "name": "blogtemplates",
+  "version": "2.8.2",
+  "description": "Allows the site admin to create new blogs based on templates, to speed up the blog creation process",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/incsub/blogtemplates.git"
+  },
+  "author": "WPMU DEV <contact@wpmudev.org>",
+  "license": "GPLv2+",
+  "homepage": "https://bitbucket.org/incsub/blogtemplates#readme",
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-checktextdomain": "^0.1.1",
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt-contrib-compress": "~0.8.0",
+    "grunt-contrib-copy": "~0.5.0",
+    "grunt-contrib-jshint": "^1.0.0",
+    "grunt-contrib-uglify": "^1.0.1",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-exec": "~0.4.5",
+    "grunt-open": "^0.2.3",
+    "grunt-potomo": "~2.1.0",
+    "grunt-wp-i18n": "~0.5.0",
+    "load-grunt-tasks": "~3.5.0"
+  }
+}

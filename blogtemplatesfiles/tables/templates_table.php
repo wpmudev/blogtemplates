@@ -70,16 +70,16 @@ class NBT_Templates_Table extends WP_List_Table {
         $url_remove_default = wp_nonce_url( $url_remove_default, 'blog_templates-remove_default' );
 
         $actions = array(
-            'edit'      => sprintf( __( '<a href="%s">Edit</a>', $this->localization_domain ), $url ),
-            'delete'    => sprintf( __( '<a href="%s">Delete</a>', $this->localization_domain ), $url_delete ),
+            'edit'      => sprintf( __( '<a href="%s">Edit</a>', 'blog_templates' ), $url ),
+            'delete'    => sprintf( __( '<a href="%s">Delete</a>', 'blog_templates' ), $url_delete ),
         );
 
         if ( $item['is_default'] ) {
-            $actions['remove_default'] = sprintf( __( '<a href="%s">Remove default</a>', $this->localization_domain ), $url_remove_default );
-            $default = ' <strong>' . __( '(Default)', $this->localization_domain ) . '</strong>';
+            $actions['remove_default'] = sprintf( __( '<a href="%s">Remove default</a>', 'blog_templates' ), $url_remove_default );
+            $default = ' <strong>' . __( '(Default)', 'blog_templates' ) . '</strong>';
         }
         else {
-            $actions['make_default'] = sprintf( __( '<a href="%s">Make default</a>', $this->localization_domain ), $url_default );
+            $actions['make_default'] = sprintf( __( '<a href="%s">Make default</a>', 'blog_templates' ), $url_default );
             $default = '';
         }
 
@@ -91,7 +91,7 @@ class NBT_Templates_Table extends WP_List_Table {
         $name = get_bloginfo( 'name' );
         $url = admin_url();
         restore_current_blog();
-        return $name . ' <a href="' . $url . '">' . __( 'Go to Dashboard', $this->localization_domain ) . '</a>';
+        return $name . ' <a href="' . $url . '">' . __( 'Go to Dashboard', 'blog_templates' ) . '</a>';
     }
 
     function column_screenshot( $item ) {
@@ -106,9 +106,9 @@ class NBT_Templates_Table extends WP_List_Table {
 
     function get_columns(){
         $columns = array(
-            'name'          => __( 'Template Name', $this->localization_domain ),
-            'blog'          => __( 'Blog', $this->localization_domain ),
-            'screenshot'    => __( 'Screenshot', $this->localization_domain ),
+            'name'          => __( 'Template Name', 'blog_templates' ),
+            'blog'          => __( 'Blog', 'blog_templates' ),
+            'screenshot'    => __( 'Screenshot', 'blog_templates' ),
         );
         return apply_filters( 'blog_templates-templates_table_columns', $columns );
     }

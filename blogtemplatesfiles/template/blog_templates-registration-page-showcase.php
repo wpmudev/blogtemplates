@@ -10,7 +10,7 @@
 		}
 		$sign_up_url = add_query_arg( 'blog_template', 'just_user', $sign_up_url );
 	?>
-	<p><a href="<?php echo esc_url( $sign_up_url ); ?>"><?php _e('Just a username, please.') ?></a></p>
+	<p><a href="<?php echo esc_url( $sign_up_url ); ?>"><?php _e('Just a username, please.', 'blog_templates') ?></a></p>
 	<?php
 		if ( $settings['show-categories-selection'] )
 			$templates = nbt_theme_selection_toolbar( $templates );
