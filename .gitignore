@@ -1,2 +1,5 @@
 node_modules/
+/lang/blog_templates.mo
+/lang/blog_templates.po
+/.gitignore
 build/

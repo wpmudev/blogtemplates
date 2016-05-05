@@ -34,6 +34,45 @@ module.exports = function( grunt ) {
             }
         },
 
+        copy: {
+            main: {
+                src:  [
+                    '**',
+                    '!npm-debug.log',
+                    '!node_modules/**',
+                    '!build/**',
+                    '!bin/**',
+                    '!.git/**',
+                    '!Gruntfile.js',
+                    '!package.json',
+                    '!.gitignore',
+                    '!.gitmodules',
+                    '!sourceMap.map',
+                    '!phpunit.xml',
+                    '!travis.yml',
+                    '!tests/**',
+                    '!**/Gruntfile.js',
+                    '!**/package.json',
+                    '!**/README.md',
+                    '!**/*~'
+                ],
+                dest: 'build/<%= pkg.name %>/'
+            }
+        },
+
+        compress: {
+            main: {
+                options: {
+                    mode: 'zip',
+                    archive: './build/<%= pkg.name %>-<%= pkg.version %>.zip'
+                },
+                expand: true,
+                cwd: 'build/<%= pkg.name %>/',
+                src: ['**/*'],
+                dest: '<%= pkg.name %>/'
+            }
+        },
+
         // Generate POT files.
         makepot: {
             options: {
@@ -53,8 +92,26 @@ module.exports = function( grunt ) {
                     ]
                 }
             }
+        },
+
+        open: {
+            dev : {
+                path: '<%= pkg.projectEditUrl %>',
+                app: 'Google Chrome'
+            }
+        },
+
+        clean: {
+            main: ['build/<%= pkg.name %>']
         }
     });
-    grunt.registerTask('default', [
+
+    grunt.registerTask('build', [
+        'clean',
+        'checktextdomain',
+        'makepot',
+        'copy',
+        'compress',
+        'open'
     ]);
 };
