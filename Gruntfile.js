@@ -60,6 +60,34 @@ module.exports = function( grunt ) {
             }
         },
 
+        search: {
+            files: {
+                src: ['<%= pkg.main %>']
+            },
+            options: {
+                searchString: /^[ \t\/*#@]*Version:(.*)$/mig,
+                onMatch: function(match) {
+                    var regExp = /^[ \t\/*#@]*Version:(.*)$/mig;
+                    var groupedMatches = regExp.exec( match.match );
+                    var versionFound = groupedMatches[1].trim();
+                    if ( versionFound != grunt.file.readJSON('package.json').version ) {
+                        grunt.fail.fatal("Plugin version does not match with package.json version. Please, fix.");
+                    }
+                },
+                onComplete: function( matches ) {
+                    if ( ! matches.numMatches ) {
+                        if ( ! grunt.file.readJSON('package.json').main ) {
+                            grunt.fail.fatal("main field is not defined in package.json. Please, add the plugin main file on that field.");
+                        }
+                        else {
+                            grunt.fail.fatal("Version Plugin header not found in " + grunt.file.readJSON('package.json').main + " file or the file does not exist" );
+                        }
+
+                    }
+                }
+            }
+        },
+
         compress: {
             main: {
                 options: {
@@ -106,7 +134,13 @@ module.exports = function( grunt ) {
         }
     });
 
+    grunt.loadNpmTasks('grunt-search');
+
+    grunt.registerTask('version-compare', [ 'search' ] );
+
     grunt.registerTask('build', [
+        'version-compare',
+        'search',
         'clean',
         'checktextdomain',
         'makepot',

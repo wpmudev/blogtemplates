@@ -1,11 +1,18 @@
 Plugin Name: New Blog Templates
 Author: WPMU DEV
 Requires at least: 3.8
-Tested up to: 4.4.2
+Tested up to: 4.5.1
 
 Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
+
+2.8.2 - 2016-05-05
+----------------------------------------------------------------------
+Fix: Showcase on a sepcific Page also shows template selection on signup page even if it's deactivated
+Fix: Added wp_termmeta table to the default tables list
+Fix: Warnings on signup page
+Fix: Several text domains
 
 2.8.1 - 2016-03-17
 ----------------------------------------------------------------------

@@ -3,7 +3,7 @@
   "version": "2.8.2",
   "projectEditUrl": "https://premium.wpmudev.org/wp-admin/edit.php?post_type=project&page=projects-manage&manage_files=130",
   "description": "Allows the site admin to create new blogs based on templates, to speed up the blog creation process",
-  "main": "index.js",
+  "main": "blogtemplates.php",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
