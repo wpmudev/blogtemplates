@@ -3,3 +3,4 @@ node_modules/
 /lang/blog_templates.po
 /.gitignore
 build/
+tmp/

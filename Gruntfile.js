@@ -54,7 +54,8 @@ module.exports = function( grunt ) {
                     '!**/Gruntfile.js',
                     '!**/package.json',
                     '!**/README.md',
-                    '!**/*~'
+                    '!**/*~',
+                    '!tmp/**'
                 ],
                 dest: 'build/<%= pkg.name %>/'
             }
@@ -65,6 +66,7 @@ module.exports = function( grunt ) {
                 src: ['<%= pkg.main %>']
             },
             options: {
+                logFile: 'tmp/log-search.log',
                 searchString: /^[ \t\/*#@]*Version:(.*)$/mig,
                 onMatch: function(match) {
                     var regExp = /^[ \t\/*#@]*Version:(.*)$/mig;
@@ -140,7 +142,6 @@ module.exports = function( grunt ) {
 
     grunt.registerTask('build', [
         'version-compare',
-        'search',
         'clean',
         'checktextdomain',
         'makepot',
