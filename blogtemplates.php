@@ -247,7 +247,7 @@ function nbt_render_theme_selection_item( $type, $tkey, $template, $options = ar
 	elseif ( 'page-showcase' == $type || 'page_showcase' == $type ) {
 		$img = ( ! empty( $template['screenshot'] ) ) ? $template['screenshot'] : nbt_get_default_screenshot_url( $template['blog_id'] );
 		$tplid = $template['name'];
-		$blog_url = get_site_url( $template['blog_id'], '' );
+		$blog_url = get_site_url( $template['blog_id'], '', 'http' );
 
 		if ( class_exists( 'BuddyPress' ) ) {
 			$sign_up_url = bp_get_signup_page();

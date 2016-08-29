@@ -9,6 +9,11 @@
 #nbtpoststuff #post-body.columns-2 {
 	margin-right: 300px;
 }
+.rtl #nbtpoststuff #post-body.columns-2 {
+	margin-left: 300px;
+	margin-right: 0;
+}
+
 #nbtpoststuff #post-body {
 padding: 0;
 }
