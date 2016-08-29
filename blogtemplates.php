@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/new-blog-template
 Description: Allows the site admin to create new blogs based on templates, to speed up the blog creation process
 Author: WPMU DEV
 Author URI: http://premium.wpmudev.org/
-Version: 2.8.2
+Version: 2.8.3
 Network: true
 Text Domain: blog_templates
 Domain Path: lang
@@ -29,7 +29,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-define( 'NBT_PLUGIN_VERSION', '2.8.2' );
+define( 'NBT_PLUGIN_VERSION', '2.8.3' );
 if ( ! is_multisite() )
 	exit( __( 'The New Blog Template plugin is only compatible with WordPress Multisite.', 'blog_templates' ) );
 
@@ -247,7 +247,7 @@ function nbt_render_theme_selection_item( $type, $tkey, $template, $options = ar
 	elseif ( 'page-showcase' == $type || 'page_showcase' == $type ) {
 		$img = ( ! empty( $template['screenshot'] ) ) ? $template['screenshot'] : nbt_get_default_screenshot_url( $template['blog_id'] );
 		$tplid = $template['name'];
-		$blog_url = get_site_url( $template['blog_id'], '', 'http' );
+		$blog_url = get_site_url( $template['blog_id'], '' );
 
 		if ( class_exists( 'BuddyPress' ) ) {
 			$sign_up_url = bp_get_signup_page();

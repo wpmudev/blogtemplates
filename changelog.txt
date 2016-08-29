@@ -1,7 +1,7 @@
 Plugin Name: New Blog Templates
 Author: WPMU DEV
 Requires at least: 3.8
-Tested up to: 4.5.1
+Tested up to: 4.6
 
 Change Log:
 ----------------------------------------------------------------------
