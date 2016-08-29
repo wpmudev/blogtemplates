@@ -120,43 +120,5 @@ function nbt_get_additional_tables( $blog_id ) {
     restore_current_blog();
 
     return $tables;
-
-    if (!empty($results)) {
-
-        foreach($results as $result) {
-            if ( ! in_array( str_replace( $wpdb->prefix, '', $result['0'] ), $default_tables ) ) {
-
-                if (class_exists("m_wpdb")) {
-                    $db = $wpdb->analyze_query("SHOW TABLES LIKE '{$pfx}%'");
-                    $dataset = $db['dataset'];
-                    $current_db = '';
-                    foreach ( $wpdb->dbh_connections as $connection ) {
-                    	if ( $connection['ds'] == $dataset ) {
-                    		$current_db = $connection['name'];
-                    		break;
-                    	}
-                    }
-                    $val = $current_db . '.' . $result[0];
-                } else {
-                    $val =  $result[0];
-                }
-                if ( stripslashes_deep( $pfx ) == $wpdb->base_prefix ) {
-                    // If we are on the main blog, we'll have to avoid those tables from other blogs
-                    $pattern = '/^' . stripslashes_deep( $pfx ) . '[0-9]/';
-                    if ( preg_match( $pattern, $result[0] ) )
-                        continue;
-                }
-                //echo "<input type='checkbox' name='additional_template_tables[]' value='$result[0]'";
-                echo "<input type='checkbox' name='additional_template_tables[]' value='{$val}'";
-                if ( isset( $template['additional_tables'] ) && is_array( $template['additional_tables'] ) )
-                    //if ( in_array( $result[0], $template['additional_tables']'] ) )
-                    if ( in_array( $val, $template['additional_tables'] ) )
-                        echo ' checked="CHECKED"';
-                echo " id='nbt-{$val}'>&nbsp;<label for='nbt-{$val}'>{$result[0]}</label><br/>";
-            }
-        }
-    } else {
-        _e('There are no additional tables to display for this blog','blog_templates');
-    }
     // End changed
 }

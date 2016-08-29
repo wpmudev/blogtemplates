@@ -39,6 +39,7 @@ module.exports = function( grunt ) {
                 src:  [
                     '**',
                     '!npm-debug.log',
+                    '!phpunit.xml.dist',
                     '!node_modules/**',
                     '!build/**',
                     '!bin/**',
@@ -148,5 +149,14 @@ module.exports = function( grunt ) {
         'copy',
         'compress',
         'open'
+    ]);
+
+    grunt.registerTask('build:beta', [
+        'version-compare',
+        'clean',
+        'checktextdomain',
+        'makepot',
+        'copy',
+        'compress'
     ]);
 };
