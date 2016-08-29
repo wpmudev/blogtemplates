@@ -304,9 +304,12 @@ class NBT_Template_copier {
         $this->copy_table( $this->template_blog_id, $wpdb->term_taxonomy );
         do_action( 'blog_templates-copy-term_taxonomy', $this->template, $this->new_blog_id, $this->user_id );
 
-	    $this->clear_table( $wpdb->termmeta );
-	    $this->copy_table( $this->template_blog_id, $wpdb->termmeta );
-	    do_action( 'blog_templates-copy-termmeta', $this->template, $this->new_blog_id, $this->user_id );
+	    if ( isset( $wpdb->termmeta ) ) {
+		    $this->clear_table( $wpdb->termmeta );
+		    $this->copy_table( $this->template_blog_id, $wpdb->termmeta );
+		    do_action( 'blog_templates-copy-termmeta', $this->template, $this->new_blog_id, $this->user_id );
+	    }
+
 
         if ( ! $this->settings['to_copy']['posts'] ) {
             // The new blog will not have any post
