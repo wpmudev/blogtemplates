@@ -133,7 +133,7 @@ module.exports = function( grunt ) {
         },
 
         clean: {
-            main: ['build/<%= pkg.name %>']
+            main: ['build/*']
         }
     });
 
