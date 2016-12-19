@@ -2,9 +2,9 @@
 # This file is distributed under the same license as the New Blog Templates package.
 msgid ""
 msgstr ""
-"Project-Id-Version: New Blog Templates 2.8.2\n"
+"Project-Id-Version: New Blog Templates 2.8.3\n"
 "Report-Msgid-Bugs-To: https://wpmudev.org\n"
-"POT-Creation-Date: 2016-05-05 13:45:48+00:00\n"
+"POT-Creation-Date: 2016-08-29 15:39:17+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -261,7 +261,6 @@ msgid ""
 msgstr ""
 
 #: blogtemplatesfiles/admin/main_menu.php:308
-#: blogtemplatesfiles/helpers.php:159
 msgid "There are no additional tables to display for this blog"
 msgstr ""
 
@@ -475,25 +474,25 @@ msgid ""
 "While removing auto-generated settings)"
 msgstr ""
 
-#: blogtemplatesfiles/copier.php:441
+#: blogtemplatesfiles/copier.php:448
 msgid ""
 "File System Error: Unable to create directory %s. (New Blog Templates - "
 "While copying files)"
 msgstr ""
 
-#: blogtemplatesfiles/copier.php:529
+#: blogtemplatesfiles/copier.php:536
 msgid ""
 "Insertion Error: %s - The template was not applied. (New Blog Templates - "
 "With CREATE TABLE query for Additional Tables)"
 msgstr ""
 
-#: blogtemplatesfiles/copier.php:682 blogtemplatesfiles/copier.php:795
+#: blogtemplatesfiles/copier.php:689 blogtemplatesfiles/copier.php:802
 msgid ""
 "Insertion Error: %1$s - The template was not applied. (New Blog Templates - "
 "While copying %2$s)"
 msgstr ""
 
-#: blogtemplatesfiles/copier.php:748
+#: blogtemplatesfiles/copier.php:755
 msgid ""
 "Deletion Error: %1$s - The template was not applied. (New Blog Templates - "
 "While clearing %2$s)"
