@@ -1,0 +1,12 @@
+.theme-screenshot-plus-wrap {
+	width:45%;
+	float:left;
+	margin-right:10%;
+	margin-bottom:25px;
+	box-sizing:border-box;
+	position:relative;
+
+}
+.theme-screenshot-plus-image-wrap {
+	padding:3px;
+}

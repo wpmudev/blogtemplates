@@ -1,0 +1,33 @@
+.theme-page-showcase-wrap {
+	padding:2px;
+}
+.theme-page-showcase-wrap:hover img {
+	opacity:0.5;
+}
+.theme-page-showcase-wrap:hover .theme-page-showcase-overlay {
+	display:block;
+}
+.theme-page-showcase-overlay {
+	display:none;
+	position:absolute;
+	top:50%;
+	opacity:1;
+	width:100%;
+	margin-top:-25%;
+	box-sizing:border-box;
+	white-space: nowrap;
+	text-align: center;
+}
+.view-demo-button {
+	font-size:90%;
+}
+.select-theme-button {
+	font-size:100%;
+	font-weight:bold;
+}
+.template-name {
+	display:inline-block;
+	font-size:100%;
+	color:white;
+	text-shadow:1px 1px 1px black;
+}
