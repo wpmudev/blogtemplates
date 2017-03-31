@@ -112,7 +112,10 @@ class NBT_Template_copier {
                     set_theme_mod( $theme_mod, $value );        
                 }
             }
-            
+
+            // Privacy options
+	        $blog_details = get_blog_details( $this->template_blog_id );
+            update_blog_status( get_current_blog_id(),'public', $blog_details->public );
         }
 
         do_action( "blog_templates-copy-after_copying", $this->template, $this->new_blog_id, $this->user_id );
