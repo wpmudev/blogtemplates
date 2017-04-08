@@ -439,6 +439,33 @@ class blog_templates_main_menu {
                 }
 
                 if ( ! empty( $_POST['reset-screenshot'] ) ) {
+					$template = $model->get_template( absint( $_POST['template_id'] ) );
+					if( ! empty( $template['screenshot'] ) ){
+
+						$upload_dir 		= wp_upload_dir();
+
+						//Remove the WP-Content part form the URL
+						$screenshot_url 	= $template['screenshot'];
+						$content_url 		= $upload_dir['baseurl'];
+						$screenshot_path 	= str_replace($content_url, "", $screenshot_url);
+
+						//Get the url pieces
+						$screenshot_path_array 	= explode( "/", $screenshot_path );
+						$screenshot_file 		= $upload_dir['basedir'];
+
+						$total_screenshot_fragments = count( $screenshot_path_array );
+						for( $i=0; $i<$total_screenshot_fragments; $i++ ){
+							if( isset( $screenshot_path_array[$i+1] ) ){
+								$screenshot_file .= DIRECTORY_SEPARATOR.$screenshot_path_array[$i+1];
+							}
+						}
+
+						//If the file exists, we remove it
+						if( !is_dir( $screenshot_file ) && file_exists( $screenshot_file ) ){
+							unlink( $screenshot_file );
+						}
+					}
+
             		$args['screenshot'] = false;
             	}
 
