@@ -38,8 +38,10 @@ class NBT_Lock_Posts {
 	function add_meta_box () {
 		if ( ! is_super_admin() ) 
 			return;
+        
+        $types = apply_filters('nbt_custom_lock_types', $this->_lock_types);
 
-		foreach ( $this->_lock_types as $type ) {
+		foreach ( $types as $type ) {
 			add_meta_box( 'postlock', __( 'Post Status', 'blog_templates' ), array( $this, 'meta_box_output' ), $type, 'advanced', 'high' );
 		}
 	}
