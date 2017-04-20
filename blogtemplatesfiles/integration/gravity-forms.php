@@ -53,25 +53,11 @@ function nbt_gf_form_render( $button_input, $form ) {
 		// Display the selector
 		$blog_templates->registration_template_selection();
 
-		$nbt_selection = ob_get_clean();
+		$nbt_selection = ob_get_contents();
+        ob_end_clean();
 
-		$form_html .= '<div id="gf_nbt_selection" style="display:none">' . $nbt_selection . '</div>';
-		$form_id = $form['id'];
-
-		ob_start();
-		// Adding some Javascript
-		?>
-		<script type="text/javascript">
-			jQuery(document).ready(function($) {
-				var submit_button = $( '#gform_submit_button_' + <?php echo $form_id; ?> );
-
-				$('#blog_template-selection').insertBefore( submit_button );
-			});
-		</script>
-		<?php
-		$form_html .= ob_get_clean();
-
-		$button_input = $form_html . $button_input;
+		//Show for each field
+		return $nbt_selection .'<br/>'. $button_input;
 
 	}
 
