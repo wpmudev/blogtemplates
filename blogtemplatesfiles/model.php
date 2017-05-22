@@ -275,18 +275,18 @@ class blog_templates_model {
 			global $wpdb, $current_site;
 
 			$current_site_id = ! empty ( $current_site ) ? $current_site->id : 1;
-                        $sql = "SELECT * FROM $this->templates_table WHERE network_id = %d";
+			$sql = "SELECT * FROM $this->templates_table WHERE network_id = %d";
 
-                        $order_by = apply_filters( 'blog_templates-templates_order_by', '' );
+			$order_by = filter_input( INPUT_GET, 'orderby' );
 
-                        if ( !empty( $order_by ) ) {
-                            $order_direction = strtoupper( apply_filters( 'blog_templates-templates_order_direction', '' ) );
-                            if ( !in_array( $order_direction, array( 'ASC', 'DESC' ) ) ) {
-                                $order_direction = '';
-                            }
+			if ( in_array( $order_by, array( 'name', 'blog_id' ) ) ) {
+			    $order_direction = strtoupper( filter_input( INPUT_GET, 'order' ) );
+			    if ( !in_array( $order_direction, array( 'ASC', 'DESC' ) ) ) {
+			        $order_direction = '';
+			    }
 
-                            $sql .= " ORDER BY `" . esc_sql( $order_by ) . "` " . $order_direction;
-                        }
+			    $sql .= " ORDER BY `" . $order_by . "` " . $order_direction;
+			}
 
 			$results = $wpdb->get_results( $wpdb->prepare( $sql, $current_site_id ), ARRAY_A );
 
