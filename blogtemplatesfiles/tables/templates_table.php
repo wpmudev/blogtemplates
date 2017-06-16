@@ -113,12 +113,20 @@ class NBT_Templates_Table extends WP_List_Table {
         return apply_filters( 'blog_templates-templates_table_columns', $columns );
     }
 
+    function get_sortable_columns(){
+        $sortable_columns = array(
+            'name'          => array( 'name', false ),
+            'blog'          => array( 'blog_id', false ),
+        );
+        return $sortable_columns;
+    }
+
     function prepare_items() {
         $per_page = 30;
 
         $columns = $this->get_columns();
         $hidden = array();
-        $sortable = array();
+        $sortable = $this->get_sortable_columns();
 
         $this->_column_headers = array($columns, $hidden, $sortable);
 
