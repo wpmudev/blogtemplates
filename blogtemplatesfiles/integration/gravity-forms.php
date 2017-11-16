@@ -39,13 +39,12 @@ function nbt_gf_form_render( $button_input, $form ) {
 		return $button_input;
 	}
 
-	$config = GFUserData::get_feed_by_form( $form['id'] );
+	$user_registration = gf_user_registration();
+	$config = $user_registration->get_feed( $form['id'] );
 
 	if ( empty( $config ) ) {
 		return $button_input;
 	}
-
-	$config = $config[0];
 
 	if ( isset( $config['meta']['gf_user_registration_multisite_blog_templates'] ) && absint( $config['meta']['gf_user_registration_multisite_blog_templates'] ) ) {
 		$form_html = '';
