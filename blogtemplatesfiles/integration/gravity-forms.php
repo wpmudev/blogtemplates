@@ -40,39 +40,45 @@ function nbt_gf_form_render( $button_input, $form ) {
 	}
 
 	$user_registration = gf_user_registration();
-	$config = $user_registration->get_feed( $form['id'] );
+	$feeds = $user_registration->get_active_feeds( $form['id'] );
 
-	if ( empty( $config ) ) {
+	if ( empty( $feeds ) ) {
 		return $button_input;
 	}
 
-	if ( isset( $config['meta']['gf_user_registration_multisite_blog_templates'] ) && absint( $config['meta']['gf_user_registration_multisite_blog_templates'] ) ) {
-		$form_html = '';
-		ob_start();
+	foreach ( $feeds as $feed_key => $feed ) {
+		
+		// If at least one feed contains blog_template option, template selector will be included
+		if ( isset( $feed['meta']['gf_user_registration_multisite_blog_templates'] ) && 
+			 absint( $feed['meta']['gf_user_registration_multisite_blog_templates'] ) ) {
 
-		// Display the selector
-		$blog_templates->registration_template_selection();
+			$form_html = '';
+			ob_start();
+			
+			$blog_templates->registration_template_selection();
 
-		$nbt_selection = ob_get_clean();
+			$nbt_selection = ob_get_clean();
 
-		$form_html .= '<div id="gf_nbt_selection" style="display:none">' . $nbt_selection . '</div>';
-		$form_id = $form['id'];
+			$form_html .= '<div id="gf_nbt_selection" style="display:none">' . $nbt_selection . '</div>';
+			$form_id = $form['id'];
 
-		ob_start();
-		// Adding some Javascript
-		?>
-		<script type="text/javascript">
-			jQuery(document).ready(function($) {
-				var submit_button = $( '#gform_submit_button_' + <?php echo $form_id; ?> );
+			ob_start();
+			// Adding some Javascript
+			?>
+			<script type="text/javascript">
+				jQuery(document).ready(function($) {
+					var submit_button = $( '#gform_submit_button_' + <?php echo $form_id; ?> );
 
-				$('#blog_template-selection').insertBefore( submit_button );
-			});
-		</script>
-		<?php
-		$form_html .= ob_get_clean();
+					$('#blog_template-selection').insertBefore( submit_button );
+				});
+			</script>
+			<?php
+			$form_html .= ob_get_clean();
 
-		$button_input = $form_html . $button_input;
+			$button_input = $form_html . $button_input;
+			break;
 
+		}	
 	}
 
 	return $button_input;
@@ -141,7 +147,3 @@ function nbt_save_new_blog_meta( $meta ) {
 
 	return $meta;
 }
-
-
-
-
