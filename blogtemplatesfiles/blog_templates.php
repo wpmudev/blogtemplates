@@ -32,7 +32,9 @@ if ( ! class_exists( 'blog_templates' ) ) {
             add_action('wpmu_new_blog', array($this, 'set_blog_defaults'), apply_filters('blog_templates-actions-action_order', $action_order), 6); // Set to *very high* so this runs after every other action; also, accepts 6 params so we can get to meta
             add_action('admin_enqueue_scripts', array($this,'add_template_dd'));
 
-            add_action('wp_enqueue_scripts', create_function('', 'wp_enqueue_script("jquery");'));
+            add_action('wp_enqueue_scripts', function() {
+                wp_enqueue_script("jquery");
+            });
 
             // Special features for Multi-Domains
             add_action( 'add_multi_domain_form_field', array($this, 'multi_domain_form_field' ) ); // add field to domain addition form
