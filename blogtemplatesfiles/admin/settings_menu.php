@@ -58,8 +58,7 @@ class blog_templates_settings_menu {
 			<div class="wrap">
 			    <form method="post" id="options">
 		        	<?php wp_nonce_field('blog_templates-update-options', '_nbtnonce'); ?> 
-		            
-                    <?php screen_icon( 'blogtemplates' ); ?>
+                    
 		            <h2><?php _e('Options', 'blog_templates'); ?></h2>
 					
 					<h3><?php _e( 'Template selection', 'blog_templates' ); ?></h3>

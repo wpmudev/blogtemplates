@@ -119,7 +119,6 @@ class blog_templates_main_menu {
 			?>
 
 			<div class="wrap">
-				<?php screen_icon( 'blogtemplates' ); ?>
 			    <form method="post" id="options" enctype="multipart/form-data">
 			        <?php wp_nonce_field('blog_templates-update-options', '_nbtnonce'); 
 			        
