@@ -96,7 +96,8 @@ class NBT_Template_copier {
         }
 
         // Now we need to update the blog status because of a conflict with Multisite Privacy Plugin
-        if ( isset( $this->settings['copy_status'] ) && $this->settings['copy_status'] &&  is_plugin_active( 'sitewide-privacy-options/sitewide-privacy-options.php' ) ) {
+        // Added check to avoid update if Pro Sites is enabled
+        if ( ! class_exists( 'ProSites' ) && isset( $this->settings['copy_status'] ) && $this->settings['copy_status'] && is_plugin_active( 'sitewide-privacy-options/sitewide-privacy-options.php' ) ) {
             update_blog_status( $this->new_blog_id, 'public', get_blog_status( $this->template_blog_id, 'public' ) );
         }
 
@@ -234,6 +235,12 @@ class NBT_Template_copier {
                 'deleted' => $source_blog_details->deleted,
                 'lang_id' => $source_blog_details->lang_id
             );
+
+            // Remove 'public' from the array if Pro Sites is Enabled
+            if ( class_exists( 'ProSites' ) ) {
+                unset( $new_blog_details['public'] );
+            }
+
             update_blog_details( $this->new_blog_id, $new_blog_details );
 
             do_action( 'blog_templates-copy-options', $this->template );
