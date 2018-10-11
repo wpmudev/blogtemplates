@@ -210,13 +210,22 @@ add_action( 'template_redirect', 'nbt_bp_redirect_signup_location', 15 );
 
 function nbt_render_theme_selection_item( $type, $tkey, $template, $options = array() ) {
 
-	$selected = isset( $_REQUEST['blog_template'] ) ? absint( $_REQUEST['blog_template'] ) : '';
+	// First try to get selected template from $_POST.
+	$selected = isset( $_POST['blog_template'] ) ? absint( $_POST['blog_template'] ) : '';
+	// If not found, try the whole $_REQUEST.
+	$selected = empty( $selected ) && isset( $_REQUEST['blog_template'] ) ? absint( $_REQUEST['blog_template'] ) : $selected;
 
 	if ( $selected == $tkey ) {
 		$default = "blog_template-default_item";
 	}
 	else {
 		$default = @$options['default'] == $tkey ? "blog_template-default_item" : "";
+	}
+
+	// If in case template is in wrong format.
+	if ( isset( $template['options'] ) ) {
+		$template = array_merge( $template, $template['options'] );
+		unset( $template['options'] );
 	}
 
 	if ( 'previewer' == $type ) {
