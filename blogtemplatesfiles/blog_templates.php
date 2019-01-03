@@ -507,7 +507,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             // Setup theme file
             $theme_file = locate_template( array( $tpl_file ) );
-            $theme_file = $theme_file ? $theme_file : NBT_PLUGIN_DIR . '/blogtemplatesfiles/template/' . $tpl_file;
+            $theme_file = $theme_file ? $theme_file : NBT_PLUGIN_DIR . 'blogtemplatesfiles/template/' . $tpl_file;
 
             if ( ! file_exists( $theme_file ) ) 
                 return false;

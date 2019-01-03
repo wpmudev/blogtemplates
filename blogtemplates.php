@@ -99,7 +99,7 @@ function nbt_display_page_showcase( $content ) {
             // Setup theme file
             ob_start();
             $theme_file = locate_template( array( $tpl_file ) );
-            $theme_file = $theme_file ? $theme_file : NBT_PLUGIN_DIR . '/blogtemplatesfiles/template/' . $tpl_file;
+            $theme_file = $theme_file ? $theme_file : NBT_PLUGIN_DIR . 'blogtemplatesfiles/template/' . $tpl_file;
             if ( ! file_exists( $theme_file ) ) 
                 return false;
 
@@ -350,8 +350,8 @@ function nbt_render_theme_selection_scripts( $options ) {
 	$overlay_color = $options['overlay_color'];
 	$screenshots_width = $options['screenshots_width'];
 
-	wp_enqueue_script( 'nbt-template-selector', NBT_PLUGIN_URL . '/blogtemplatesfiles/assets/js/nbt-template-selector.js', array( 'jquery' ) );
-	wp_enqueue_style( 'nbt-template-selector', NBT_PLUGIN_URL . '/blogtemplatesfiles/assets/css/nbt-template-selector.css' );
+	wp_enqueue_script( 'nbt-template-selector', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/js/nbt-template-selector.js', array( 'jquery' ) );
+	wp_enqueue_style( 'nbt-template-selector', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/css/nbt-template-selector.css' );
 	?>
 		<style>
 			.theme-previewer-wrap,
@@ -365,12 +365,12 @@ function nbt_render_theme_selection_scripts( $options ) {
 		</style>
 	<?php
 	if ( 'previewer' == $type ) {
-		wp_enqueue_script( 'nbt-template-selector-previewer', NBT_PLUGIN_URL . '/blogtemplatesfiles/assets/js/nbt-template-selector-previewer.js', array( 'jquery' ) );
-		wp_enqueue_style( 'nbt-template-selector-previewer', NBT_PLUGIN_URL . '/blogtemplatesfiles/assets/css/nbt-template-selector-previewer.css' );
+		wp_enqueue_script( 'nbt-template-selector-previewer', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/js/nbt-template-selector-previewer.js', array( 'jquery' ) );
+		wp_enqueue_style( 'nbt-template-selector-previewer', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/css/nbt-template-selector-previewer.css' );
 	}
 	elseif ( 'page_showcase' == $type ) {
-		wp_enqueue_script( 'nbt-template-selector-page_showcase', NBT_PLUGIN_URL . '/blogtemplatesfiles/assets/js/nbt-template-selector-page_showcase.js', array( 'jquery' ) );
-		wp_enqueue_style( 'nbt-template-selector-page_showcase', NBT_PLUGIN_URL . '/blogtemplatesfiles/assets/css/nbt-template-selector-page_showcase.css' );
+		wp_enqueue_script( 'nbt-template-selector-page_showcase', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/js/nbt-template-selector-page_showcase.js', array( 'jquery' ) );
+		wp_enqueue_style( 'nbt-template-selector-page_showcase', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/css/nbt-template-selector-page_showcase.css' );
 		?>
 			<style>
 				.theme-page-showcase-wrap {
@@ -381,11 +381,11 @@ function nbt_render_theme_selection_scripts( $options ) {
 		<?php
 	}
 	elseif ( 'screenshot' === $type ) {
-		wp_enqueue_script( 'nbt-template-selector-screenshot', NBT_PLUGIN_URL . '/blogtemplatesfiles/assets/js/nbt-template-selector-screenshot.js', array( 'jquery' ) );
+		wp_enqueue_script( 'nbt-template-selector-screenshot', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/js/nbt-template-selector-screenshot.js', array( 'jquery' ) );
 	}
 	elseif ( 'screenshot_plus' === $type ) {
-		wp_enqueue_script( 'nbt-template-selector-screenshot_plus', NBT_PLUGIN_URL . '/blogtemplatesfiles/assets/js/nbt-template-selector-screenshot_plus.js', array( 'jquery' ) );
-		wp_enqueue_style( 'nbt-template-selector-screenshot_plus', NBT_PLUGIN_URL . '/blogtemplatesfiles/assets/css/nbt-template-selector-screenshot_plus.css' );
+		wp_enqueue_script( 'nbt-template-selector-screenshot_plus', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/js/nbt-template-selector-screenshot_plus.js', array( 'jquery' ) );
+		wp_enqueue_style( 'nbt-template-selector-screenshot_plus', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/css/nbt-template-selector-screenshot_plus.css' );
 		?>
 			<style>
 				.theme-screenshot-plus-image-wrap {
@@ -395,7 +395,7 @@ function nbt_render_theme_selection_scripts( $options ) {
 		<?php
 	}
 	elseif ( 'description' === $type ) {
-		wp_enqueue_style( 'nbt-template-selector-description', NBT_PLUGIN_URL . '/blogtemplatesfiles/assets/css/nbt-template-selector-description.css' );
+		wp_enqueue_style( 'nbt-template-selector-description', NBT_PLUGIN_URL . 'blogtemplatesfiles/assets/css/nbt-template-selector-description.css' );
 	}
 }
 
