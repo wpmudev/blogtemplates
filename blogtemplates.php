@@ -348,6 +348,7 @@ function nbt_render_theme_selection_scripts( $options ) {
 	$selected_color = $options['selected-background-color'];
 	$unselected_color = $options['unselected-background-color'];
 	$overlay_color = $options['overlay_color'];
+	$unselected_overlay_color = $options['unselected-overlay_color'];
 	$screenshots_width = $options['screenshots_width'];
 
 	wp_enqueue_script( 'nbt-template-selector', NBT_PLUGIN_URL . '/blogtemplatesfiles/assets/js/nbt-template-selector.js', array( 'jquery' ) );
@@ -374,8 +375,11 @@ function nbt_render_theme_selection_scripts( $options ) {
 		?>
 			<style>
 				.theme-page-showcase-wrap {
-					background:<?php echo $overlay_color; ?>;
+					background:<?php echo $unselected_overlay_color; ?>;
 					width:<?php echo $screenshots_width; ?>px;
+				}
+				.blog_template-default_item {
+					background: <?php echo $overlay_color; ?>;
 				}
 			</style>
 		<?php

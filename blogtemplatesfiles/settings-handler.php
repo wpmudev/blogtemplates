@@ -28,6 +28,7 @@ class NBT_Plugin_Settings_Handler {
             'show-categories-selection' => false,
             'unselected-background-color' => '#DFD9D9',
             'selected-background-color' => '#333333',
+            'unselected-overlay_color' => '#DFD9D9',
             'overlay_color' => '#333333',
             'toolbar-color' => '#d86565',
             'toolbar-text-color' => '#ffffff',

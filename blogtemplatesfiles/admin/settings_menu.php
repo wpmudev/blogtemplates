@@ -111,8 +111,12 @@ class blog_templates_settings_menu {
                                 <input type="text" name="registration-screenshots-width" id="registration-templates-screenshots-width" value="<?php echo $settings['screenshots_width']; ?>" class="small-text" /> px
                             </label>
                             <label style="margin-left:20px;margin-top:20px;display:block;">
-                                <?php _e( 'Selected overlay/border color', 'blog_templates'); ?><br/>
+                                <?php _e( 'Selected overlay color', 'blog_templates'); ?><br/>
                                 <input type="text" class="color-field" id="selected-overlay-color" name="selected-overlay-color" value="<?php echo $settings['overlay_color']; ?>" />
+                            </label>
+                            <label style="margin-left:20px;margin-top:20px;display:block;">
+                                <?php _e( 'Unselected overlay color', 'blog_templates'); ?><br/>
+                                <input type="text" class="color-field" id="selected-showcase-background-color" name="unselected-overlay_color" value="<?php echo $settings['unselected-overlay_color']; ?>" />
                             </label>
                         </div>
 
@@ -244,6 +248,7 @@ class blog_templates_settings_menu {
                 $settings['toolbar-border-color'] = isset($_POST['toolbar-border-color']) ? $_POST['toolbar-border-color'] : $defaults['toolbar-border-color'];
                 $settings['selected-background-color'] = isset($_POST['selected-background-color']) ? $_POST['selected-background-color'] : $defaults['selected-background-color'];
                 $settings['unselected-background-color'] = isset($_POST['unselected-background-color']) ? $_POST['unselected-background-color'] : $defaults['unselected-background-color'];
+                $settings['unselected-overlay_color'] = isset($_POST['unselected-overlay_color']) ? $_POST['unselected-overlay_color'] : $defaults['unselected-overlay_color'];
                 $settings['overlay_color'] = isset($_POST['selected-overlay-color']) ? $_POST['selected-overlay-color'] : $defaults['overlay_color'];
 
                 if ( ! empty( $_POST['registration-templates-button-text'] ) )
