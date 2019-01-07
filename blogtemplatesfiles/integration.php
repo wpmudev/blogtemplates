@@ -168,12 +168,12 @@ function nbt_copy_easy_google_fonts_controls( $template, $destination_blog_id ) 
 		switch_to_blog( $destination_blog_id );
 		foreach ( $posts_results as $row ) {
             $row = (array)$row;
-            $wpdb->insert( $wpdb->posts, $row );
+            $wpdb->replace( $wpdb->posts, $row );
         }
 
         foreach ( $postmeta_results as $row ) {
             $row = (array)$row;
-            $wpdb->insert( $wpdb->postmeta, $row );
+            $wpdb->replace( $wpdb->postmeta, $row );
         }
 
         restore_current_blog();
