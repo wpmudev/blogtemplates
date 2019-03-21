@@ -271,25 +271,37 @@ class blog_templates_model {
 			return $default_template_id;
 		}
 
+		/**
+		 * Get available templates list.
+		 *
+		 * @return mixed|void
+		 */
 		public function get_templates() {
 			global $wpdb, $current_site;
 
+			// Initialize the results array.
+			$final_results = array();
+			// Get current id.
 			$current_site_id = ! empty ( $current_site ) ? $current_site->id : 1;
 
+			// Get templates from db.
 			$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $this->templates_table WHERE network_id = %d", $current_site_id ), ARRAY_A );
 
 			if ( ! empty( $results ) ) {
-				$final_results = array();
 				foreach ( $results as $template ) {
 					$final_results[$template['ID']] = $template;
 					$final_results[$template['ID']]['options'] = maybe_unserialize( $template['options'] );
 				}
-				return $final_results;
-			}
-			else {
-				return array();
 			}
 
+			/**
+			 * Filter to modify the templates.
+			 *
+			 * @param array $final_results List of templates.
+			 *
+			 * @since 2.8.5
+			 */
+			return apply_filters( 'nbt_get_templates', $final_results );
 		}
 
 		public function set_default_template( $id ) {
