@@ -28,6 +28,7 @@ module.exports = function(grunt) {
                 src:  [
                     '**/*.php', // Include all files
                     '!node_modules/**', // Exclude node_modules/
+                    '!blogtemplatesfiles/externals/**'
                     '!tests/**', // Exclude tests/
                     '!admin/assets/shared-ui/**', // Exclude WPMU DEV Shared UI
                     '!externals/**'
