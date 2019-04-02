@@ -1,11 +1,11 @@
-module.exports = function( grunt ) {
+module.exports = function(grunt) {
     require('load-grunt-tasks')(grunt);
-
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
 
         checktextdomain: {
             options:{
+                report_missing: false,
                 text_domain: 'blog_templates',
                 keywords: [
                     '__:1,2d',
@@ -28,7 +28,9 @@ module.exports = function( grunt ) {
                 src:  [
                     '**/*.php', // Include all files
                     '!node_modules/**', // Exclude node_modules/
-                    '!blogtemplatesfiles/externals/**'
+                    '!tests/**', // Exclude tests/
+                    '!admin/assets/shared-ui/**', // Exclude WPMU DEV Shared UI
+                    '!externals/**'
                 ],
                 expand: true
             }
@@ -39,7 +41,6 @@ module.exports = function( grunt ) {
                 src:  [
                     '**',
                     '!npm-debug.log',
-                    '!phpunit.xml.dist',
                     '!node_modules/**',
                     '!build/**',
                     '!bin/**',
@@ -49,16 +50,59 @@ module.exports = function( grunt ) {
                     '!.gitignore',
                     '!.gitmodules',
                     '!sourceMap.map',
-                    '!phpunit.xml',
+                    '!phpunit.xml.dist',
                     '!travis.yml',
                     '!tests/**',
                     '!**/Gruntfile.js',
                     '!**/package.json',
                     '!**/README.md',
-                    '!**/*~',
-                    '!tmp/**'
+                    '!lite-vs-pro.txt',
+                    '!composer.json',
+                    '!vendor/**',
+                    '!tmp/**',
+                    '!phpunit.xml',
+                    '!**/*~'
                 ],
                 dest: 'build/<%= pkg.name %>/'
+            }
+        },
+
+        // Generate POT files.
+        makepot: {
+            options: {
+                type: 'wp-plugin',
+                domainPath: 'lang',
+                potHeaders: {
+                    'report-msgid-bugs-to': 'https://wpmudev.org',
+                    'language-team': 'LANGUAGE <EMAIL@ADDRESS>'
+                }
+            },
+            dist: {
+                options: {
+                    potFilename: 'blog_templates.pot',
+                    exclude: [
+                        'tests/.*',
+                        'node_modules/.*',
+                        'externals/*'
+                    ]
+                }
+            }
+        },
+
+        clean: {
+            main: ['build/*']
+        },
+
+        compress: {
+            main: {
+                options: {
+                    mode: 'zip',
+                    archive: './build/<%= pkg.name %>-<%= pkg.version %>.zip'
+                },
+                expand: true,
+                cwd: 'build/<%= pkg.name %>/',
+                src: ['**/*'],
+                dest: '<%= pkg.name %>/'
             }
         },
 
@@ -91,49 +135,11 @@ module.exports = function( grunt ) {
             }
         },
 
-        compress: {
-            main: {
-                options: {
-                    mode: 'zip',
-                    archive: './build/<%= pkg.name %>-<%= pkg.version %>.zip'
-                },
-                expand: true,
-                cwd: 'build/<%= pkg.name %>/',
-                src: ['**/*'],
-                dest: '<%= pkg.name %>/'
-            }
-        },
-
-        // Generate POT files.
-        makepot: {
-            options: {
-                type: 'wp-plugin',
-                domainPath: 'lang',
-                potHeaders: {
-                    'report-msgid-bugs-to': 'https://wpmudev.org',
-                    'language-team': 'LANGUAGE <EMAIL@ADDRESS>'
-                }
-            },
-            dist: {
-                options: {
-                    potFilename: 'blog_templates.pot',
-                    exclude: [
-                        'node_modules/.*',
-                        'blogtemplatesfiles/externals/.*'
-                    ]
-                }
-            }
-        },
-
         open: {
             dev : {
                 path: '<%= pkg.projectEditUrl %>',
                 app: 'Google Chrome'
             }
-        },
-
-        clean: {
-            main: ['build/*']
         }
     });
 
@@ -142,16 +148,6 @@ module.exports = function( grunt ) {
     grunt.registerTask('version-compare', [ 'search' ] );
 
     grunt.registerTask('build', [
-        'version-compare',
-        'clean',
-        'checktextdomain',
-        'makepot',
-        'copy',
-        'compress',
-        'open'
-    ]);
-
-    grunt.registerTask('build:beta', [
         'version-compare',
         'clean',
         'checktextdomain',
