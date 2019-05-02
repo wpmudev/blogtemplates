@@ -11,9 +11,9 @@ function blog_template_ensure_last_place () {
 	global $wp_filter, $blog_templates;
 	if (!$wp_filter || !$blog_templates) return false;
 
-	$tag = 'wpmu_new_blog';
+	$tag = 'wp_initialize_site';
 	$method = 'set_blog_defaults';
-	$action_order = false;
+	$action_order = $highest = 0;
 
 	$bt_callback = array($blog_templates, $method);
 	if (!is_callable($bt_callback)) return false;
@@ -21,8 +21,28 @@ function blog_template_ensure_last_place () {
 	if (has_action($tag, $bt_callback)) { 
 		// This is all provided it's even bound
 		$actions = !empty($wp_filter[$tag]) ? $wp_filter[$tag] : false;
-		if (!$actions) return false;
 
+		if ( ! $actions ) return false;
+
+		$priorities = array();
+
+		
+		foreach ( $actions->callbacks as $priority => $callbacks ) {
+
+			$priorities[] = $priority;
+
+			foreach ( $callbacks as $tag_key => $callback ) {
+				if ( substr_compare( $tag_key, $method, strlen( $tag_key )-strlen( $method ), strlen( $method ) ) === 0 ) {
+		            $action_order = $priority;
+		        }
+			}
+	    }
+
+	    if ( ! empty( $priorities ) ) {
+	    	$highest = max( $priorities );
+	    }	    
+
+/*
 		$highest = max(array_keys($actions));
 		if (!$idx = _wp_filter_build_unique_id($tag, $bt_callback, false)) return false; // Taken from core (`has_filter()`)
 
@@ -31,19 +51,20 @@ function blog_template_ensure_last_place () {
 			$action_order = $priority;
 			break;
 		}
-
+*/
 		if ($action_order >= $highest) return true; // We're the on the bottom, all good.
 
 		// If we reached here, this is not good - we need to re-bind to highest position
-		remove_action($tag, $bt_callback, $action_order, 6);
+		remove_action($tag, $bt_callback, $action_order, 2);
 		$action_order = $highest + 10;
+
 	} else {
 		// No action bound, let's do our thing
 		$action_order = defined('NBT_APPLY_TEMPLATE_ACTION_ORDER') && NBT_APPLY_TEMPLATE_ACTION_ORDER ? NBT_APPLY_TEMPLATE_ACTION_ORDER : 9999;
 		$action_order = apply_filters('blog_templates-actions-action_order', $action_order);
 	}
 
-	add_action($tag, $bt_callback, $action_order, 6);
+	add_action($tag, $bt_callback, $action_order, 2);
 	return true;
 }
 if (defined('NBT_ENSURE_LAST_PLACE') && NBT_ENSURE_LAST_PLACE) add_action('init', 'blog_template_ensure_last_place', 99);

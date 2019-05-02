@@ -29,7 +29,7 @@ if ( ! class_exists( 'blog_templates' ) ) {
 
             // Actions
             $action_order = defined('NBT_APPLY_TEMPLATE_ACTION_ORDER') && NBT_APPLY_TEMPLATE_ACTION_ORDER ? NBT_APPLY_TEMPLATE_ACTION_ORDER : 9999;
-            add_action('wpmu_new_blog', array($this, 'set_blog_defaults'), apply_filters('blog_templates-actions-action_order', $action_order), 6); // Set to *very high* so this runs after every other action; also, accepts 6 params so we can get to meta
+            add_action('wp_initialize_site', array($this, 'set_blog_defaults'), apply_filters('blog_templates-actions-action_order', $action_order), 2 ); // Set to *very high* so this runs after every other action; also, accepts 2 params so we can get to meta
             add_action('admin_enqueue_scripts', array($this,'add_template_dd'));
 
             add_action('wp_enqueue_scripts', function() {
@@ -288,8 +288,12 @@ if ( ! class_exists( 'blog_templates' ) ) {
         *
         * @since 1.0
         */
-        function set_blog_defaults( $blog_id, $user_id, $_passed_domain=false, $_passed_path=false, $_passed_site_id=false, $_passed_meta=false ) {
+        function set_blog_defaults( $new_site, $args ) {
             global $wpdb, $multi_dm;
+
+            $blog_id = $new_site->blog_id;
+            $user_id = isset( $args[ 'user_id' ] ) ? intval( $args[ 'user_id' ] ) : 0;
+            $meta    = ! empty( $args['options'] ) ? $args['options'] : array();
 
             $settings = nbt_get_settings();
 
@@ -332,8 +336,8 @@ if ( ! class_exists( 'blog_templates' ) ) {
             }
             elseif ( isset( $_POST['blog_template'] ) && is_numeric( $_POST['blog_template'] ) ) { //If they've chosen a template, use that. For some reason, when PHP gets 0 as a posted var, it doesn't recognize it as is_numeric, so test for that specifically
                 $template = $settings['templates'][$_POST['blog_template']];
-            } elseif ($_passed_meta && isset($_passed_meta['blog_template']) && is_numeric($_passed_meta['blog_template'])) { // Do we have a template in meta?
-                $template = $settings['templates'][$_passed_meta['blog_template']]; // Why, yes. Yes, we do. Use that. 
+            } elseif ($meta && isset($meta['blog_template']) && is_numeric($meta['blog_template'])) { // Do we have a template in meta?
+                $template = $settings['templates'][$meta['blog_template']]; // Why, yes. Yes, we do. Use that. 
             } elseif ( $default ) { //If they haven't chosen a template, use the default if it exists
                 $template = $default;
             }
