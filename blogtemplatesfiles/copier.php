@@ -489,18 +489,10 @@ class NBT_Template_copier {
             $all_source_tables = $tables_to_copy;
 
         $all_source_tables = apply_filters( 'nbt_copy_additional_tables', $all_source_tables );
+        $table_pairs = $this->associate_tables( $all_source_tables );
 
-        foreach ( $all_source_tables as $table ) {
-            $add = in_array( $table, $tables_to_copy );
-            $table = esc_sql( $table );
-
-            // MultiDB Hack
-            if ( is_a( $wpdb, 'm_wpdb' ) )
-                $tablebase = end( explode( '.', $table, 2 ) );
-            else
-                $tablebase = $table;
-
-            $new_table = $new_prefix . substr( $tablebase, strlen( $template_prefix ) );
+        foreach ( $table_pairs as $source_table => $new_table ) {
+            $add = in_array( $new_table, $tables_to_copy );
 
             $result = $wpdb->get_results( "SHOW TABLES LIKE '{$new_table}'", ARRAY_N );
             if ( ! empty( $result ) ) {
@@ -516,7 +508,7 @@ class NBT_Template_copier {
             else {
                 // The table does not exist in the new blog
                 // Let's create it
-                $create_script = current( $wpdb->get_col( 'SHOW CREATE TABLE ' . $table, 1 ) );
+                $create_script = current( $wpdb->get_col( 'SHOW CREATE TABLE ' . $source_table, 1 ) );
 
                 if ( $create_script && preg_match( '/\(.*\)/s', $create_script, $match ) ) {
                     $table_body = $match[0];
@@ -525,20 +517,30 @@ class NBT_Template_copier {
                      *
                      * @param string $query Current query to create the table
                      * @param string $new_table The name of the new table that will be created
-                     * @param string $table Source table name
+                     * @param string $source_table Source table name
                      */
-                    $create_table_query = apply_filters( 'nbt_create_additional_table_query', "CREATE TABLE IF NOT EXISTS {$new_table} {$table_body}", $new_table, $table );
+
+                    $table_body = str_replace(
+                        array_keys( $table_pairs ),
+                        array_values( $table_pairs ),
+                        $table_body
+                    );
+
+                    $create_table_query = apply_filters( 'nbt_create_additional_table_query', "CREATE TABLE IF NOT EXISTS {$new_table} {$table_body}", $new_table, $source_table );
+
+                    $wpdb->query( 'SET foreign_key_checks = 0' );
                     $wpdb->query( $create_table_query );
+                    $wpdb->query( 'SET foreign_key_checks = 1' );
 
                     if ( $add ) {
                         // And copy the content if needed
                         if ( is_a( $wpdb, 'm_wpdb' ) ) {
-                            $rows = $wpdb->get_results( "SELECT * FROM {$table}", ARRAY_A );
+                            $rows = $wpdb->get_results( "SELECT * FROM {$source_table}", ARRAY_A );
                             foreach ( $rows as $row ) {
                                 $wpdb->insert( $new_table, $row );
                             }
                         } else {
-                            $wpdb->query( "INSERT INTO {$new_table} SELECT * FROM {$table}" );
+                            $wpdb->query( "INSERT INTO {$new_table} SELECT * FROM {$source_table}" );
                         }
                     }
 
@@ -552,6 +554,44 @@ class NBT_Template_copier {
             }
 
         }
+    }
+
+
+    /**
+     * Generates an array associating source table names with target table names with new prefix
+     * @param array $tables 
+     * @return array $paired_tables
+     */
+    public function associate_tables( $tables = array() ) {
+
+        if ( empty( $tables ) ) {
+            return array();
+        }
+
+        global $wpdb;
+        $paired_tables          = array();
+        $new_prefix             = $wpdb->prefix;
+        $template_prefix        = $wpdb->get_blog_prefix( $this->template_blog_id );
+
+        foreach ( $tables as $source_table ) {
+
+            $target_table = esc_sql( $source_table );
+
+            // MultiDB Hack
+            if ( is_a( $wpdb, 'm_wpdb' ) ) {
+                $tablebase = end( explode( '.', $target_table, 2 ) );
+            } else {
+                $tablebase = $target_table;
+            }
+
+            $new_table = $new_prefix . substr( $tablebase, strlen( $template_prefix ) );
+
+            $paired_tables[ $source_table ] = $new_table;
+
+        }
+
+        return $paired_tables;
+
     }
 
     /**
