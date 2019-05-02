@@ -169,7 +169,12 @@ class NBT_Template_copier {
     public function copy_settings() {
         global $wpdb;
 
-        $exclude_settings = apply_filters( 'blog_template_exclude_settings', "`option_name` != 'siteurl' AND `option_name` != 'blogname' AND `option_name` != 'admin_email' AND `option_name` != 'new_admin_email' AND `option_name` != 'home' AND `option_name` != 'upload_path' AND `option_name` != 'db_version' AND `option_name` != 'secret' AND `option_name` != 'fileupload_url' AND `option_name` != 'nonce_salt'" );
+        $exclude_public_option = '';
+        if ( class_exists( 'ProSites' ) ) {
+            $exclude_public_option = "AND `option_name` != 'blog_public'";
+        }
+
+        $exclude_settings = apply_filters( 'blog_template_exclude_settings', "`option_name` != 'siteurl' AND `option_name` != 'blogname' AND `option_name` != 'admin_email' AND `option_name` != 'new_admin_email' AND `option_name` != 'home' AND `option_name` != 'upload_path' AND `option_name` != 'db_version' AND `option_name` != 'secret' AND `option_name` != 'fileupload_url' AND `option_name` != 'nonce_salt' {$exclude_public_option}" );
         $new_prefix = $wpdb->prefix;
 
         //Delete the current options, except blog-specific options
